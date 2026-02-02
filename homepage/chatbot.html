@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LaunchNext AI Assistant</title>
+  <link rel="stylesheet" href="chatbot.css" />
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <h1>🚀 LaunchNext AI Assistant</h1>
+    <p>Your smart business setup companion</p>
+  </header>
+
+  <!-- Chat Window -->
+  <main class="chat-container">
+    <div class="chat-box" id="chat-box">
+      <div class="bot-message">Hi! I'm LaunchBot 🤖<br>Tell me your business idea and I’ll help you set it up!</div>
+    </div>
+    <form id="chat-form">
+      <input type="text" id="user-input" placeholder="Type your business idea..." autocomplete="off" required />
+      <button type="submit">Send</button>
+    </form>
+  </main>
+
+</body>
+   <script>
+  const chatForm = document.getElementById("chatForm");
+  const chatBox = document.getElementById("chatBox");
+
+  chatForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const userInput = document.getElementById("userInput").value.trim();
+    if (!userInput) return;
+
+    appendMessage("You", userInput);
+    document.getElementById("userInput").value = "";
+
+    appendMessage("AI", "Typing...");
+
+    // === API PLACEHOLDER ===
+    const response = await getAIResponse(userInput); // Function below
+    updateLastMessage(response);
+  });
+
+  function appendMessage(sender, message) {
+    const messageElement = document.createElement("div");
+    messageElement.classList.add("message");
+    messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
+    chatBox.appendChild(messageElement);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  function updateLastMessage(newText) {
+    const messages = chatBox.querySelectorAll(".message");
+    if (messages.length > 0) {
+      messages[messages.length - 1].innerHTML = `<strong>AI:</strong> ${newText}`;
+    }
+  }
+
+  // === Replace with your actual AI API logic ===
+  async function getAIResponse(prompt) {
+    // GPT / Gemini / DeepSeek API call placeholder
+    const apiKey = "YOUR_API_KEY_HERE";
+    const endpoint = "https://api.openai.com/v1/chat/completions"; // Or your chosen provider
+    const payload = {
+      model: "gpt-4", // or your model
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7
+    };
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+      return data.choices[0].message.content.trim();
+    } catch (error) {
+      console.error("AI API error:", error);
+      return "Sorry, something went wrong.";
+    }
+  }
+</script>
+
+</html>

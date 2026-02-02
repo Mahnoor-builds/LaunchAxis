@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login – LaunchAxis</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #0f172a;
+      color: #f1f5f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      display: flex;
+      background-color: #1e293b;
+      border-radius: 16px;
+      overflow: hidden;
+      max-width: 900px;
+      width: 100%;
+      box-shadow: 0 0 25px rgba(0,0,0,0.3);
+    }
+
+    .left-panel {
+      background-color: #0f172a;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      flex: 1;
+    }
+
+    .left-panel img {
+      width: 120px;
+      margin-bottom: 0.1rem;
+    }
+
+    .left-panel h1 {
+      color: #a855f7;
+      font-size: 2rem;
+      text-align: center;
+    }
+
+    .form-panel {
+      background-color: #1e293b;
+      padding: 2rem 3rem;
+      flex: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .form-panel h2 {
+      margin-bottom: 1.5rem;
+      color: #38bdf8;
+    }
+
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      border: none;
+      border-radius: 8px;
+      background-color: #334155;
+      color: #f1f5f9;
+    }
+
+    button {
+      background-color: #38bdf8;
+      color: #0f172a;
+      font-weight: bold;
+      border: none;
+      padding: 0.75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin-top: 0.5rem;
+    }
+
+    button:hover {
+      background-color: #0ea5e9;
+    }
+
+    .google-btn {
+      background-color: #ffffff;
+      color: #1f2937;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      border: none;
+      padding: 0.7rem;
+      border-radius: 8px;
+      font-weight: 500;
+      margin-top: 1rem;
+    }
+
+    .google-btn img {
+      width: 20px;
+      height: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+        height: auto;
+        margin: 1rem;
+      }
+      .left-panel {
+        padding: 1rem;
+      }
+      .form-panel {
+        padding: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Left Brand Panel -->
+    <div class="left-panel">
+      <img src="images/mainlogo.png" alt="LaunchAxis Logo" />
+      <h1>LaunchAxis</h1>
+    </div>
+
+    <!-- Login Form Panel -->
+    <!-- Login Form Panel -->
+<div class="form-panel">
+  <h2>Welcome Back</h2>
+  <form id="loginForm">
+    <input type="email" id="email" name="email" placeholder="Email Address" required />
+    <input type="password" id="password" name="password" placeholder="Password" required />
+    <button type="submit">Login</button>
+  </form>
+  <button class="google-btn" id="googleLogin">
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google Icon" />
+    Login with Google
+  </button>
+</div>
+
+
+  <!-- Optional Firebase Integration JS -->
+  <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyCgW3AW6wuebd8nde-Udenu-3X6hPbLkhY",
+    authDomain: "launchaxis.firebaseapp.com",
+    projectId: "launchaxis",
+    storageBucket: "launchaxis.firebasestorage.app",
+    messagingSenderId: "986994724231",
+    appId: "1:986994724231:web:cf895161f7cf6c366a9722"
+  };
+
+  // Initialize Firebase
+  // Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+document.getElementById("loginForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  signInWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      alert("Login successful!");
+      window.location.href = "index.html"; // ✅ Redirect
+    })
+    .catch((error) => {
+      alert("Login failed: " + error.message);
+    });
+});
+
+
+
+
+</script>
+</body>
+</html>

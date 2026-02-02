@@ -1,0 +1,580 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #0F172A;
+    color: #FFFFFF;
+    line-height: 1.6;
+  }
+  
+  /* Navbar */
+  /* nav {
+    background-color: #0F172A;
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #1E293B;
+  } */
+  nav {
+  background: linear-gradient(to right, #1A1F2B, #1E1E30);
+  height: 80px; /* increase height to match logo */
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #2A2A3B;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+
+/* Logo container (no restrictions) */
+/* .logo {
+  display: flex;
+  align-items: center;
+  height: 100%;
+} */
+
+ /* Actual logo image */ 
+.logo-img {
+  height: 100px;         
+  width: auto;          
+  display: block;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 2px; 
+  height: 100%;
+} 
+
+.logo-text {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #612bc4;
+  letter-spacing: 0.5px;
+}
+  /* .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #38BDF8;
+  } */
+  
+  nav ul {
+    list-style: none;
+    display: flex;
+    gap: 1.5rem;
+  }
+  
+  nav ul li a {
+    text-decoration: none;
+    color: #FFFFFF;
+    font-weight: 500;
+    transition: color 0.3s;
+  }
+  
+  nav ul li a:hover {
+    color: #38BDF8;
+  }
+  /* Optional, if not using Tailwind */
+/* .group:hover .group-hover\:block {
+  display: block;
+} */
+.auth-link {
+  color: #ffffff; /* white text to match theme */
+  text-decoration: none;
+  font-weight: 500;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.auth-link:hover {
+  color: #38bdf8; /* blue on hover */
+}
+
+.auth-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 100%;
+  height: 2px;
+  background-color: #38bdf8;
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+  transform-origin: left;
+}
+
+.auth-link:hover::after {
+  transform: scaleX(1);
+}
+
+  button {
+    background-color: #38BDF8;
+    color: #0F172A;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: #0ea5e9;
+  }
+  /* LOGO image style */
+/* .logo-img {
+  height: 40px;
+  object-fit: contain;
+} */
+
+/* Gradient heading text */
+.hero h1, .section-title, .feature-section h2, .how-it-works-section h2, .faq-section h2, .testimonials-section h2 {
+  background: linear-gradient(to right, #7F00FF, #00C2FF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Optional - make footer title match brand color */
+.footer-column h3, .footer-column h4 {
+  color: #7F00FF;
+}
+
+  /* Hero Section */
+  .hero {
+    text-align: center;
+    padding: 6rem 2rem 4rem;
+    background-color: #0F172A;
+  }
+  
+  .hero h1 {
+    font-size: 2.9rem;
+    color: #ffffff;
+    margin-bottom: 1rem;
+  }
+  
+  .hero p {
+    font-size: 1.2rem;
+    color: #CBD5E1;
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .hero .cta {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .cta-button {
+    display: inline-block;
+    padding: 12px 24px;
+    margin-top: 10px;
+    background-color: #4F46E5; /* Indigo tone */
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  .hero-img {
+    width: 90%; /* or try 90% if you want it larger */
+    max-width: 800px;
+    height: auto;
+    display: block;
+    margin: 1px auto 0 auto;
+
+  }
+  
+  .cta-button:hover {
+    background-color: #4338CA;
+  }
+  .hero-img-container {
+    text-align: center;
+  }
+  
+  .cta-button-container {
+    text-align: center;
+    margin-top: 20px;
+  }
+  /* this is service style */
+
+  .services-section {
+    background-color: #1a1e2d; /* slightly lighter than the header for contrast */
+    color: #ffffff;
+    padding: 60px 20px;
+    text-align: center;
+  }
+  
+  .section-title {
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+    color: #00bfff; /* accent color */
+  }
+  
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  
+  .service-card {
+    background-color: #22283a;
+    padding: 25px;
+    border-radius: 10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  }
+  
+  .service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  }
+  
+  .service-card h3 {
+    color: #00bfff;
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+  }
+  
+  .service-card p {
+    font-size: 0.95rem;
+    color: #ccc;
+  }
+/* this is why choose us style   */
+
+.feature-section {
+  background-color: #121e2d; /* contrast background */
+  padding: 4rem 2rem;
+  color: #ffffff;
+  text-align: center;
+}
+
+.feature-section h2 {
+  font-size: 2.2rem;
+  margin-bottom: 2.5rem;
+}
+
+.feature-section h2 span {
+  color: #00bfff;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.feature-card {
+  background-color: #0c1624;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+}
+
+.feature-icon {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 1rem;
+}
+
+/* this is pricing section */
+.pricing-section {
+  background-color: #0F172A;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.pricing-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.plan-card {
+  background-color: #1E293B;
+  color: #FFFFFF;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 300px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.plan-card:hover {
+  transform: translateY(-5px);
+}
+
+.plan-card h3 {
+  color: #38BDF8;
+  font-size: 1.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.plan-price {
+  font-size: 1.1rem;
+  color: #CBD5E1;
+  margin-bottom: 1rem;
+}
+
+.plan-card ul {
+  list-style: none;
+  padding: 0;
+  text-align: left;
+  margin-bottom: 1.5rem;
+}
+
+.plan-card ul li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #334155;
+}
+
+.plan-card button {
+  background-color: #38BDF8;
+  color: #0F172A;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.plan-card button:hover {
+  background-color: #0ea5e9;
+}
+
+.coming-soon button {
+  background-color: #475569;
+  cursor: not-allowed;
+}
+
+
+
+/* this is how its work style */
+
+.how-it-works-section {
+  background-color: #0a0f1a; /* slightly darker contrast */
+  padding: 4rem 2rem;
+  color: #ffffff;
+  text-align: center;
+}
+
+.how-it-works-section h2 {
+  font-size: 2.2rem;
+  margin-bottom: 2.5rem;
+}
+
+.how-it-works-section h2 span {
+  color: #00bfff;
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.step-card {
+  background-color: #121b2c;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.step-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+.step-card img {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 1rem;
+}
+/* this is testimonial css */
+.testimonials-section {
+  background-color: #1c1f26;
+  color: #fff;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.testimonials-section h2 {
+  font-size: 2rem;
+  margin-bottom: 40px;
+  color: #e1e1e1;
+}
+
+.testimonials-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: center;
+}
+
+.testimonial-box {
+  background-color: #2b2f36;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 300px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+.testimonial-box p {
+  font-size: 1rem;
+  margin-bottom: 15px;
+  color: #ccc;
+}
+
+.testimonial-box h4 {
+  font-weight: normal;
+  color: #9fcbfa;
+}
+/* this is FAQ css */
+.faq-section {
+  background-color: #24272e;
+  color: #fff;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.faq-section h2 {
+  font-size: 2rem;
+  margin-bottom: 40px;
+  color: #eaeaea;
+}
+
+.faq-container {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.faq-item {
+  margin-bottom: 30px;
+  border-bottom: 1px solid #444;
+  padding-bottom: 20px;
+}
+
+.faq-item h3 {
+  font-size: 1.2rem;
+  color: #9fcbfa;
+  margin-bottom: 10px;
+}
+
+.faq-item p {
+  font-size: 1rem;
+  color: #ccc;
+}
+/* this is footer css */
+.footer {
+  background-color: #1a1c22;
+  color: #ccc;
+  padding: 60px 20px 30px;
+  font-size: 0.95rem;
+}
+
+.footer-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 40px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.footer-column h3, .footer-column h4 {
+  color: #9fcbfa;
+  margin-bottom: 15px;
+}
+
+.footer-column ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-column ul li {
+  margin-bottom: 10px;
+}
+
+.footer-column ul li a {
+  color: #ccc;
+  text-decoration: none;
+}
+
+.footer-column ul li a:hover {
+  color: #9fcbfa;
+}
+
+.social-icons a {
+  margin-right: 10px;
+  display: inline-block;
+}
+
+.social-icons img {
+  width: 24px;
+  height: 24px;
+  filter: brightness(0) invert(1);
+}
+
+.footer-bottom {
+  text-align: center;
+  margin-top: 30px;
+  border-top: 1px solid #333;
+  padding-top: 15px;
+  color: #777;
+}
+
+
+
+/* this is chatbot css */
+
+.chatbot-icon {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #111827; /* dark background */
+  border-radius: 50%;
+  padding: 12px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+  z-index: 999;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.chatbot-icon:hover {
+  transform: scale(1.1);
+}
+
+.chatbot-icon img {
+  width: 55px;
+  height: 55px;
+}
+
+    

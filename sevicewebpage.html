@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Service Website - LaunchAxis</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background: #fff; color: #111; }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #000;
+      padding: 1rem 2rem;
+      color: #fff;
+    }
+
+    .nav-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .nav-links a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .nav-links a:hover {
+      text-decoration: underline;
+    }
+
+    .hero {
+      width: 100%;
+      height: 400px;
+      background-image: url('https://via.placeholder.com/1500x400?text=Your+Service+Banner');
+      background-size: cover;
+      background-position: center;
+      margin-bottom: 2rem;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      padding: 2rem;
+    }
+
+    h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      color: #333;
+    }
+
+    .service-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .service-card {
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 1rem;
+      background-color: #f9f9f9;
+      cursor: pointer;
+      text-align: center;
+      transition: transform 0.2s;
+      text-decoration: none;
+      color: #000;
+    }
+
+    .service-card:hover {
+      transform: scale(1.03);
+    }
+
+    .service-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.9rem;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav>
+    <div class="nav-title">[Your Business Name]</div>
+    <div class="nav-links">
+      <a href="usercontact.html">Contact us</a>
+    </div>
+  </nav>
+
+  <!-- Hero Image -->
+  <div class="hero"></div>
+
+  <!-- Main Container -->
+  <div class="container">
+    <h2>Our Services</h2>
+    <p>Click on a service to view more details or send an inquiry.</p>
+
+    <!-- Service Grid -->
+    <div class="service-grid" id="serviceGrid">
+      <!-- Example Cards -->
+      <a href="service.html?serviceId=logo123" class="service-card">
+        <img src="https://via.placeholder.com/400x250?text=Logo+Design" alt="Logo Design">
+        <h3>Logo Design</h3>
+      </a>
+      <a href="service.html?serviceId=webdev456" class="service-card">
+        <img src="https://via.placeholder.com/400x250?text=Website+Development" alt="Web Dev">
+        <h3>Website Development</h3>
+      </a>
+      <a href="service.html?serviceId=social789" class="service-card">
+        <img src="https://via.placeholder.com/400x250?text=Social+Media+Kit" alt="Social Kit">
+        <h3>Social Media Kit</h3>
+      </a>
+      <!-- More cards will be added dynamically with Firebase -->
+    </div>
+  </div>
+
+  <footer>
+    &copy; 2025 LaunchAxis — All rights reserved.
+  </footer>
+
+</body>
+</html>

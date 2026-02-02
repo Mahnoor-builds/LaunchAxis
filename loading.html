@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Preparing Your Setup – LaunchAxis</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #f1f5f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    .step {
+      font-size: 1.3rem;
+      margin-top: 1rem;
+      animation: fadeIn 1s ease-in-out;
+      min-height: 30px;
+    }
+
+    .loader {
+      border: 5px solid #1e293b;
+      border-top: 5px solid #38bdf8;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 25px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="loader"></div>
+  <h1>🚀 Launching Your Business Setup</h1>
+  <div class="step" id="status">Initializing...</div>
+
+  <script>
+    const steps = [
+      "🔍 Reading your business idea...",
+      "🧠 AI is preparing your assets...",
+      "🎨 Designing your brand identity...",
+      "💻 Building your website layout...",
+      "📦 Finalizing your setup..."
+    ];
+
+    let currentStep = 0;
+    const statusEl = document.getElementById("status");
+
+    function showNextStep() {
+      if (currentStep < steps.length) {
+        statusEl.innerText = steps[currentStep];
+        currentStep++;
+        setTimeout(showNextStep, 2000);
+      } else {
+        statusEl.innerText = "✅ Setup Complete! Redirecting...";
+        setTimeout(() => {
+          window.location.href = "dashboard.html";
+        }, 1500);
+      }
+    }
+
+    // Start animation sequence
+    setTimeout(showNextStep, 1000);
+  </script>
+</body>
+</html>

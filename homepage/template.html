@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Templates - LaunchAxis</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #0d0d0d;
+      color: #f0f0f0;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #111;
+      padding: 2rem 1rem;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 1rem;
+    }
+
+    .logo-area img {
+      width: 100px;
+      height: auto;
+    }
+
+    .logo-area h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      color: #7b61ff;
+    }
+
+    .search-bar {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .dropdown {
+      background-color: #1e1e1e;
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+    }
+
+    .search-bar input[type="text"] {
+      flex: 1;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      border: none;
+      background-color: #1e1e1e;
+      color: #fff;
+      font-size: 1rem;
+      min-width: 300px;
+    }
+
+    .search-bar button {
+      padding: 0.6rem 1.2rem;
+      border: none;
+      background-color: #7b61ff;
+      color: #fff;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .category {
+      margin: 3rem 2rem;
+    }
+
+    .category h2 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid #7b61ff;
+      padding-left: 1rem;
+    }
+
+    .templates-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .template-card {
+      background-color: #1a1a1a;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(123, 97, 255, 0.2);
+      transition: transform 0.3s;
+    }
+
+    .template-card:hover {
+      transform: scale(1.03);
+    }
+
+    .template-card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .template-card p {
+      padding: 0.7rem;
+      text-align: center;
+      font-size: 0.95rem;
+      color: #ccc;
+    }
+
+    #aiTemplatesSection {
+      display: none;
+    }
+
+    .footer {
+      background-color: #1a1c22;
+      color: #ccc;
+      padding: 60px 20px 30px;
+      font-size: 0.95rem;
+    }
+
+    .footer-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 40px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .footer-column h3, .footer-column h4 {
+      color: #9fcbfa;
+      margin-bottom: 15px;
+    }
+
+    .footer-column ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .footer-column ul li {
+      margin-bottom: 10px;
+    }
+
+    .footer-column ul li a {
+      color: #ccc;
+      text-decoration: none;
+    }
+
+    .footer-column ul li a:hover {
+      color: #9fcbfa;
+    }
+
+    .social-icons a {
+      margin-right: 10px;
+      display: inline-block;
+    }
+
+    .social-icons img {
+      width: 24px;
+      height: 24px;
+      filter: brightness(0) invert(1);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      margin-top: 30px;
+      border-top: 1px solid #333;
+      padding-top: 15px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-area">
+      <img src="images/mainlogo.png" alt="LaunchAxis Logo" />
+      <h1>LaunchAxis</h1>
+    </div>
+    <div class="search-bar">
+      <select class="dropdown">
+        <option disabled selected>Select Type</option>
+        <option value="business-card">Business Card</option>
+        <option value="logo">Logo</option>
+        <option value="post">Social Post</option>
+        <option value="banner">Banner</option>
+      </select>
+      <input type="text" placeholder="Business name, colors, phone number, address..." />
+      <button onclick="document.getElementById('aiTemplatesSection').style.display = 'block';">Create with AI</button>
+    </div>
+  </header>
+
+  <!-- AI Generated Templates -->
+  <section class="category" id="aiTemplatesSection">
+    <h2>AI Generated Templates</h2>
+    <div class="templates-grid" id="aiTemplates">
+      <div class="template-card">
+        <img src="images/placeholder-ai-template.jpg" alt="AI Template">
+        <p>Generated Template Preview</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Templates start -->
+  <section class="category">
+    <h2>Business Cards</h2>
+    <div class="templates-grid">
+      <a href="#" class="template-card">
+        <img src="images/business-card-1.jpg" alt="Card 1">
+        <p>Modern Business Card</p>
+      </a>
+      <a href="#" class="template-card">
+        <img src="images/business-card-2.jpg" alt="Card 2">
+        <p>Minimalist Design</p>
+      </a>
+    </div>
+  </section>
+
+  <section class="category">
+    <h2>Business Logos</h2>
+    <div class="templates-grid">
+      <a href="#" class="template-card">
+        <img src="images/logo-1.jpg" alt="Logo 1">
+        <p>Tech Startup Logo</p>
+      </a>
+      <a href="#" class="template-card">
+        <img src="images/logo-2.jpg" alt="Logo 2">
+        <p>Creative Logo</p>
+      </a>
+    </div>
+  </section>
+
+  <section class="category">
+    <h2>Social Media Banners</h2>
+    <div class="templates-grid">
+      <a href="#" class="template-card">
+        <img src="images/banner1.png" alt="Banner 1">
+        <p>Flower Shop Banner</p>
+      </a>
+      <a href="#" class="template-card">
+        <img src="images/banner2.png" alt="Banner 2">
+        <p>Business Banner</p>
+      </a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-column">
+        <h3>LaunchAxis</h3>
+        <p>Empowering startups with AI-driven business setup solutions.</p>
+      </div>
+      <div class="footer-column">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="#services">Services</a></li>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h4>Contact</h4>
+        <p>Email: support@launchaxis.ai</p>
+        <p>Phone: +123 456 7890</p>
+      </div>
+      <div class="footer-column">
+        <h4>Follow Us</h4>
+        <div class="social-icons">
+          <a href="#"><img src="icons/facebook.svg" alt="Facebook" /></a>
+          <a href="#"><img src="icons/twitter.svg" alt="Twitter" /></a>
+          <a href="#"><img src="icons/linkedin.svg" alt="LinkedIn" /></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 LaunchAxis. All rights reserved.</p>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LaunchAxis | AI Business Dashboard</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<style>
+    :root {
+        /* DARK THEME (Default) */
+        --bg-body: #020617;       /* Very dark slate */
+        --bg-sidebar: #0f172a;    /* Dark sidebar */
+        --bg-card: #1e293b;       /* Card background */
+        --bg-input: #0f172a;      /* Input background */
+        --text-main: #f8fafc;     /* White text */
+        --text-muted: #94a3b8;    /* Gray text */
+        --border: #334155;        /* Border color */
+        
+        /* NEON BRAND COLORS */
+        --primary: #2dd4bf;       /* Neon Teal */
+        --primary-glow: rgba(45, 212, 191, 0.4);
+        --accent-purple: #a855f7;
+        
+        /* STATUS COLORS */
+        --success: #10b981;
+        --danger: #ef4444;
+
+        --radius: 12px;
+        --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    }
+
+    /* LIGHT THEME VARIABLES */
+    [data-theme="light"] {
+        --bg-body: #f1f5f9;
+        --bg-sidebar: #ffffff;
+        --bg-card: #ffffff;
+        --bg-input: #f8fafc;
+        --text-main: #0f172a;
+        --text-muted: #64748b;
+        --border: #e2e8f0;
+        --primary: #0d9488;
+        --primary-glow: rgba(13, 148, 136, 0.2);
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    * { box-sizing: border-box; transition: background 0.3s, color 0.3s; }
+    body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+    /* SIDEBAR STYLES */
+    .sidebar { width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px; z-index: 10; }
+    .brand { font-size: 24px; font-weight: 800; color: var(--primary); margin-bottom: 40px; display: flex; align-items: center; gap: 10px; text-shadow: 0 0 15px var(--primary-glow); }
+    .brand img { width: 32px; height: 32px; object-fit: contain; display:none; } /* Hidden by default until set */
+    
+    .nav-item { padding: 12px 15px; margin-bottom: 5px; border-radius: var(--radius); color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 12px; font-weight: 500; }
+    .nav-item:hover { background: rgba(45, 212, 191, 0.1); color: var(--primary); }
+    .nav-item.active { background: linear-gradient(90deg, rgba(45,212,191,0.15), transparent); color: var(--primary); border-left: 3px solid var(--primary); }
+    
+    .theme-toggle { margin-top: auto; padding: 15px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; color: var(--text-muted); font-size: 14px; }
+    
+    /* SWITCH TOGGLE UI */
+    .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border); transition: .4s; border-radius: 20px; }
+    .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--primary); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    /* MAIN CONTENT AREA */
+    .main { flex: 1; overflow-y: auto; padding: 30px; position: relative; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .header h1 { margin: 0; font-size: 28px; }
+    
+    /* CONTENT SECTIONS */
+    .section { display: none; animation: fadeIn 0.3s ease; }
+    .section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* CARDS & GRIDS */
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); margin-bottom: 20px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+
+    /* NEON FINANCE TILES */
+    .finance-tile {
+        position: relative; overflow: hidden; padding: 25px; border-radius: 16px;
+        background: linear-gradient(145deg, var(--bg-card), #101623);
+        border: 1px solid var(--border);
+    }
+    .finance-tile::before { content:''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: var(--primary); box-shadow: 0 0 15px var(--primary); }
+    .finance-tile h3 { margin: 0 0 10px 0; color: var(--text-muted); font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+    .finance-tile .amount { font-size: 28px; font-weight: 800; color: var(--text-main); margin-bottom: 5px; }
+    .finance-tile .trend { font-size: 12px; color: var(--success); }
+    
+    /* INPUTS & BUTTONS */
+    label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 14px; }
+    input, select, textarea { width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); border-radius: 8px; margin-bottom: 15px; outline: none; }
+    input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.2); }
+    
+    .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-primary { background: var(--primary); color: #020617; }
+    .btn-primary:hover { box-shadow: 0 0 15px var(--primary-glow); }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+
+    /* TABLES */
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 12px; color: var(--text-muted); border-bottom: 1px solid var(--border); font-size: 13px; }
+    td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+
+    /* WEBSITE PREVIEW BOX */
+    .preview-browser { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; height: 300px; position: relative; background: #fff; }
+    .preview-bar { background: #e2e8f0; padding: 8px; display: flex; gap: 5px; }
+    .preview-dot { width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; }
+    .preview-content { height: 100%; width: 100%; padding: 20px; color: #333; overflow-y: auto; display:flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+
+    /* MODALS */
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(5px); }
+    .modal.open { display: flex; }
+    .modal-content { background: var(--bg-card); padding: 30px; border-radius: 16px; width: 400px; border: 1px solid var(--border); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); max-height: 90vh; overflow-y: auto;}
+</style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand" id="sidebarBrand">
+            <img src="" alt="logo" id="sidebarLogoImg">
+            <span id="sidebarBrandText">LaunchAxis</span>
+        </div>
+        <nav>
+            <div class="nav-item active" id="nav-dashboard" onclick="showSection('dashboard')">
+                <i class="fa-solid fa-chart-pie"></i> Dashboard
+            </div>
+            <div class="nav-item" id="nav-finance" onclick="showSection('finance')">
+                <i class="fa-solid fa-wallet"></i> Finance
+            </div>
+            <div class="nav-item" id="nav-branding" onclick="showSection('branding')">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Branding (AI)
+            </div>
+            <div class="nav-item" id="nav-website" onclick="showSection('website')">
+                <i class="fa-solid fa-globe"></i> Website
+            </div>
+            <div class="nav-item" id="nav-products" onclick="showSection('products')">
+                <i class="fa-solid fa-box-open"></i> Products
+            </div>
+            <div class="nav-item" id="nav-orders" onclick="showSection('orders')">
+                <i class="fa-solid fa-cart-shopping"></i> Orders
+            </div>
+        </nav>
+
+        <div class="theme-toggle">
+            <span>Light Mode</span>
+            <label class="switch">
+                <input type="checkbox" id="themeSwitch">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </aside>
+
+    <main class="main">
+        
+        <section id="dashboard" class="section active">
+            <div class="header">
+                <div>
+                    <h1 id="dashWelcome">Welcome back, CEO</h1>
+                    <p style="color:var(--text-muted)">Here's what's happening with <span id="dashBrandName">your business</span> today.</p>
+                </div>
+                <button class="btn btn-primary" onclick="showSection('products')"><i class="fa-solid fa-plus"></i> Add Product</button>
+            </div>
+
+            <div class="grid-4">
+                <div class="finance-tile">
+                    <h3>Total Sales</h3>
+                    <div class="amount" id="dashSales">PKR 0</div>
+                    <div class="trend"><i class="fa-solid fa-arrow-trend-up"></i> Updated just now</div>
+                </div>
+                <div class="finance-tile" style="border-top-color: var(--accent-purple);">
+                    <h3>Active Products</h3>
+                    <div class="amount" id="dashProducts">0</div>
+                    <div class="trend">Live on website</div>
+                </div>
+                <div class="finance-tile" style="border-top-color: var(--danger);">
+                    <h3>Pending Orders</h3>
+                    <div class="amount">0</div>
+                    <div class="trend">Needs attention</div>
+                </div>
+                <div class="finance-tile" style="border-top-color: #f59e0b;">
+                    <h3>Website Visits</h3>
+                    <div class="amount">124</div>
+                    <div class="trend">+12% this week</div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <h3><i class="fa-solid fa-bolt" style="color:var(--primary)"></i> AI Business Insights</h3>
+                <p style="color:var(--text-muted)">Your finance data suggests you should increase marketing for your top product.</p>
+            </div>
+        </section>
+
+        <section id="branding" class="section">
+            <div class="header">
+                <h1>Brand Identity</h1>
+                <button class="btn btn-primary" onclick="saveBranding()">Save Changes</button>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Identity Settings</h3>
+                    
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; background:var(--bg-input); padding:10px; border-radius:8px; border:1px solid var(--border);">
+                        <span style="font-size:14px; font-weight:600;">AI Auto-Generate</span>
+                        <label class="switch" style="margin-bottom:0">
+                            <input type="checkbox" id="aiModeToggle" onchange="toggleAiMode()">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <label>Business Name</label>
+                    <input type="text" id="brandName" placeholder="e.g. LaunchAxis" oninput="updateBrandPreview()">
+                    
+                    <label>Slogan / Tagline</label>
+                    <input type="text" id="brandSlogan" placeholder="e.g. The Future of Business" oninput="updateBrandPreview()">
+                    
+                    <label>Logo URL</label>
+                    <input type="text" id="brandLogo" placeholder="https://..." oninput="updateBrandPreview()">
+                </div>
+
+                <div class="card" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; min-height:300px;">
+                    <h3 style="align-self:flex-start; margin-top:0;">Preview</h3>
+                    
+                    <div style="margin-top:20px;">
+                        <img id="previewLogo" src="" alt="Logo" style="width:80px; height:80px; object-fit:contain; margin-bottom:15px; display:none;">
+                        <div id="previewLogoPlaceholder" style="width:80px; height:80px; background:var(--bg-input); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px;">
+                            <i class="fa-solid fa-rocket fa-2x" style="color:var(--text-muted)"></i>
+                        </div>
+                        
+                        <h2 id="previewName" style="margin:0; font-size:32px; color:var(--primary);">LaunchAxis</h2>
+                        <p id="previewSlogan" style="color:var(--text-muted); margin-top:5px;">The Future of Business</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <section id="finance" class="section">
+            <div class="header">
+                <h1>Financial Hub</h1>
+                <div>
+                    <button class="btn btn-primary" onclick="openTxModal('income')"><i class="fa-solid fa-plus"></i> Add Sale</button>
+                    <button class="btn btn-danger" onclick="openTxModal('expense')"><i class="fa-solid fa-minus"></i> Add Expense</button>
+                </div>
+            </div>
+
+            <div class="grid-4">
+                <div class="card" style="text-align: center;">
+                    <span style="color:var(--text-muted); font-size:12px;">INCOME</span>
+                    <div style="font-size:24px; color:var(--success); font-weight:bold;" id="finIncome">PKR 0</div>
+                </div>
+                <div class="card" style="text-align: center;">
+                    <span style="color:var(--text-muted); font-size:12px;">EXPENSES</span>
+                    <div style="font-size:24px; color:var(--danger); font-weight:bold;" id="finExpense">PKR 0</div>
+                </div>
+                <div class="card" style="text-align: center;">
+                    <span style="color:var(--text-muted); font-size:12px;">NET PROFIT</span>
+                    <div style="font-size:24px; color:var(--primary); font-weight:bold;" id="finProfit">PKR 0</div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:20px;">
+                <h3>Transaction Ledger</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Type</th>
+                            <th style="text-align:right">Amount</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ledgerTable">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="website" class="section">
+            <div class="header">
+                <h1>Website Customization</h1>
+                <button class="btn btn-primary" onclick="saveSiteConfig()">Save Changes</button>
+            </div>
+
+            <div class="grid-2">
+                <div>
+                    <div class="card">
+                        <h3>Theme Settings</h3>
+                        <label>Accent Color</label>
+                        <input type="color" id="siteColor" value="#2dd4bf" oninput="updateWebPreview()" style="height:50px; cursor:pointer;">
+                        <p style="font-size:12px; color:var(--text-muted)">Note: Business Name and Slogan are now managed in the <strong>Branding</strong> section.</p>
+                    </div>
+                </div>
+
+                <div>
+                    <label>Live Preview</label>
+                    <div class="preview-browser">
+                        <div class="preview-bar">
+                            <div class="preview-dot" style="background:#ef4444"></div>
+                            <div class="preview-dot" style="background:#f59e0b"></div>
+                            <div class="preview-dot" style="background:#10b981"></div>
+                        </div>
+                        <div class="preview-content" id="previewCanvas">
+                            <h2 id="webPrevTitle" style="font-size:32px; margin-bottom:5px;">My Brand</h2>
+                            <p id="webPrevTag" style="font-size:16px; opacity:0.8;">My Slogan</p>
+                            <button id="webPrevBtn" style="margin-top:20px; padding:10px 20px; border:none; border-radius:5px; background:#2dd4bf; color:#000; font-weight:bold;">Shop Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="products" class="section">
+            <div class="header">
+                <h1>Product Inventory</h1>
+                <button class="btn btn-primary" onclick="openProductModal()"><i class="fa-solid fa-plus"></i> Add New</button>
+            </div>
+            
+            <div class="grid-4" id="productsGrid">
+                </div>
+        </section>
+
+        <section id="orders" class="section">
+            <div class="header">
+                <h1>Order Management</h1>
+            </div>
+            <div class="card">
+                <div style="text-align:center; padding:40px; color:var(--text-muted);">
+                    <i class="fa-solid fa-box-open" style="font-size:40px; margin-bottom:15px;"></i>
+                    <p>No orders yet. Connect your website backend to receive live orders.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="txModal" class="modal">
+        <div class="modal-content">
+            <h3 id="txTitle">Add Transaction</h3>
+            <label>Description</label>
+            <input type="text" id="txDesc" placeholder="e.g. Sold 5 shirts">
+            <label>Amount (PKR)</label>
+            <input type="number" id="txAmount" placeholder="0">
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button class="btn btn-primary" style="flex:1" onclick="saveTransaction()">Save</button>
+                <button class="btn btn-outline" style="flex:1" onclick="closeModals()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="prodModal" class="modal">
+        <div class="modal-content">
+            <h3>Add Product</h3>
+            
+            <label>Product Name</label>
+            <input type="text" id="pName" placeholder="e.g. Neon Jacket">
+            
+            <label>Detailed Description</label>
+            <textarea id="pDesc" rows="3" placeholder="Describe the product features..."></textarea>
+            
+            <label>Price (PKR)</label>
+            <input type="number" id="pPrice" placeholder="2500">
+            
+            <div style="background:var(--bg-input); padding:10px; border-radius:8px; border:1px solid var(--border); margin-bottom:15px;">
+                <label style="margin-bottom:5px;">Product Images</label>
+                <input type="text" id="pImg1" placeholder="Main Image URL" style="margin-bottom:8px;">
+                <input type="text" id="pImg2" placeholder="Secondary Image URL (Optional)">
+            </div>
+            
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button class="btn btn-primary" style="flex:1" onclick="saveProduct()">Add to Site</button>
+                <button class="btn btn-outline" style="flex:1" onclick="closeModals()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    /**
+     * LAUNCHAXIS DASHBOARD SCRIPT
+     * Updated: With Branding, Multiple Images, Descriptions
+     */
+
+    // 1. INITIALIZE STATE
+    let state = JSON.parse(localStorage.getItem('launchAxisState')) || {
+        transactions: [],
+        products: [],
+        siteConfig: { color: '#2dd4bf' },
+        branding: {
+            name: 'LaunchAxis',
+            slogan: 'AI Business Builder',
+            logo: '',
+            aiMode: false
+        }
+    };
+
+    let currentTxType = 'income';
+
+    // 2. SAVE & REFRESH DATA
+    function saveState() {
+        localStorage.setItem('launchAxisState', JSON.stringify(state));
+        renderFinance();
+        renderProducts();
+        updateDashboardStats();
+        updateGlobalBranding(); // Update Sidebar/Header immediately
+    }
+
+    // 3. NAVIGATION LOGIC
+    function showSection(sectionId) {
+        document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+        const target = document.getElementById(sectionId);
+        if(target) target.classList.add('active');
+
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        const navId = 'nav-' + sectionId;
+        const navEl = document.getElementById(navId);
+        if(navEl) navEl.classList.add('active');
+    }
+
+    // 4. BRANDING LOGIC
+    function toggleAiMode() {
+        const isAi = document.getElementById('aiModeToggle').checked;
+        state.branding.aiMode = isAi;
+        
+        const inputs = ['brandName', 'brandSlogan', 'brandLogo'];
+        
+        if(isAi) {
+            // Simulate AI filling data
+            document.getElementById('brandName').value = "Aurex AI";
+            document.getElementById('brandSlogan').value = "Future in Motion";
+            // Disable inputs
+            inputs.forEach(id => document.getElementById(id).disabled = true);
+        } else {
+            // Enable inputs
+            inputs.forEach(id => document.getElementById(id).disabled = false);
+            // Restore saved values
+            document.getElementById('brandName').value = state.branding.name;
+            document.getElementById('brandSlogan').value = state.branding.slogan;
+            document.getElementById('brandLogo').value = state.branding.logo;
+        }
+        updateBrandPreview();
+    }
+
+    function updateBrandPreview() {
+        const name = document.getElementById('brandName').value;
+        const slogan = document.getElementById('brandSlogan').value;
+        const logo = document.getElementById('brandLogo').value;
+
+        // Update local preview
+        document.getElementById('previewName').innerText = name || 'Business Name';
+        document.getElementById('previewSlogan').innerText = slogan || 'Slogan goes here';
+        
+        const imgEl = document.getElementById('previewLogo');
+        const placeEl = document.getElementById('previewLogoPlaceholder');
+
+        if(logo) {
+            imgEl.src = logo;
+            imgEl.style.display = 'block';
+            placeEl.style.display = 'none';
+        } else {
+            imgEl.style.display = 'none';
+            placeEl.style.display = 'flex';
+        }
+    }
+
+    function saveBranding() {
+        state.branding.name = document.getElementById('brandName').value;
+        state.branding.slogan = document.getElementById('brandSlogan').value;
+        state.branding.logo = document.getElementById('brandLogo').value;
+        state.branding.aiMode = document.getElementById('aiModeToggle').checked;
+        saveState();
+        alert("Branding Updated!");
+    }
+
+    function updateGlobalBranding() {
+        // Updates Sidebar and Headers based on state
+        const b = state.branding;
+        
+        // Sidebar
+        document.getElementById('sidebarBrandText').innerText = b.name;
+        const sbLogo = document.getElementById('sidebarLogoImg');
+        if(b.logo) {
+            sbLogo.src = b.logo;
+            sbLogo.style.display = 'block';
+        } else {
+            sbLogo.style.display = 'none';
+        }
+
+        // Dashboard Header
+        document.getElementById('dashBrandName').innerText = b.name;
+
+        // Website Preview (in Website Section)
+        const webTitle = document.getElementById('webPrevTitle');
+        if(webTitle) webTitle.innerText = b.name;
+        const webTag = document.getElementById('webPrevTag');
+        if(webTag) webTag.innerText = b.slogan;
+    }
+
+    // 5. FINANCE LOGIC
+    function openTxModal(type) {
+        currentTxType = type;
+        document.getElementById('txTitle').innerText = type === 'income' ? 'Add Sale' : 'Add Expense';
+        document.getElementById('txModal').classList.add('open');
+    }
+
+    function saveTransaction() {
+        const desc = document.getElementById('txDesc').value;
+        const amount = parseFloat(document.getElementById('txAmount').value);
+
+        if(!desc || !amount) return alert("Please fill fields");
+
+        state.transactions.push({
+            id: Date.now(),
+            date: new Date().toLocaleDateString(),
+            desc, amount, type: currentTxType
+        });
+
+        document.getElementById('txDesc').value = '';
+        document.getElementById('txAmount').value = '';
+        closeModals();
+        saveState();
+    }
+
+    function renderFinance() {
+        const tbody = document.getElementById('ledgerTable');
+        if(!tbody) return;
+        tbody.innerHTML = '';
+        
+        let income = 0; let expense = 0;
+
+        state.transactions.forEach(tx => {
+            if(tx.type === 'income') income += tx.amount;
+            else expense += tx.amount;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${tx.date}</td>
+                <td>${tx.desc}</td>
+                <td><span style="color:${tx.type === 'income' ? 'var(--success)' : 'var(--danger)'}">${tx.type.toUpperCase()}</span></td>
+                <td style="text-align:right">PKR ${tx.amount.toLocaleString()}</td>
+                <td><button onclick="deleteTx(${tx.id})" style="color:var(--danger); background:none; border:none; cursor:pointer;"><i class="fa-solid fa-trash"></i></button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('finIncome').innerText = `PKR ${income.toLocaleString()}`;
+        document.getElementById('finExpense').innerText = `PKR ${expense.toLocaleString()}`;
+        document.getElementById('finProfit').innerText = `PKR ${(income - expense).toLocaleString()}`;
+    }
+
+    function deleteTx(id) {
+        if(confirm("Delete this transaction?")) {
+            state.transactions = state.transactions.filter(t => t.id !== id);
+            saveState();
+        }
+    }
+
+    // 6. PRODUCT LOGIC (UPDATED)
+    function openProductModal() {
+        document.getElementById('prodModal').classList.add('open');
+    }
+
+    function saveProduct() {
+        const name = document.getElementById('pName').value;
+        const desc = document.getElementById('pDesc').value;
+        const price = parseFloat(document.getElementById('pPrice').value);
+        const img1 = document.getElementById('pImg1').value;
+        const img2 = document.getElementById('pImg2').value;
+
+        if(!name || !price) return alert("Name and Price required");
+
+        const newProd = {
+            id: Date.now(),
+            name, desc, price,
+            images: [img1, img2].filter(url => url !== "") // Store as array
+        };
+
+        state.products.push(newProd);
+
+        // Reset
+        document.getElementById('pName').value = '';
+        document.getElementById('pDesc').value = '';
+        document.getElementById('pPrice').value = '';
+        document.getElementById('pImg1').value = '';
+        document.getElementById('pImg2').value = '';
+
+        closeModals();
+        saveState();
+    }
+
+    function renderProducts() {
+        const grid = document.getElementById('productsGrid');
+        if(!grid) return;
+        grid.innerHTML = '';
+
+        if(state.products.length === 0) {
+            grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted);">No products yet.</div>';
+            return;
+        }
+
+        state.products.forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'card';
+            
+            const mainImg = (p.images && p.images[0]) ? p.images[0] : '';
+            let imgHtml = mainImg ? `<img src="${mainImg}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">` : '<i class="fa-solid fa-image fa-2x"></i>';
+            
+            // Show image count badge if > 1
+            let badgeHtml = (p.images && p.images.length > 1) 
+                ? `<div style="position:absolute; top:5px; right:5px; background:rgba(0,0,0,0.7); padding:2px 6px; border-radius:4px; font-size:11px;">+${p.images.length-1}</div>` 
+                : '';
+
+            div.innerHTML = `
+                <div style="height:140px; background:#0f172a; border-radius:8px; margin-bottom:10px; display:flex; align-items:center; justify-content:center; color:var(--text-muted); position:relative; overflow:hidden;">
+                    ${imgHtml}
+                    ${badgeHtml}
+                </div>
+                <h3 style="margin:0; font-size:16px;">${p.name}</h3>
+                <p style="font-size:12px; color:var(--text-muted); margin:5px 0; height:32px; overflow:hidden;">${p.desc || 'No description'}</p>
+                <p style="color:var(--primary); font-weight:bold;">PKR ${p.price.toLocaleString()}</p>
+                <button class="btn btn-danger" style="width:100%; margin-top:5px; justify-content:center;" onclick="deleteProduct(${p.id})">Remove</button>
+            `;
+            grid.appendChild(div);
+        });
+    }
+
+    function deleteProduct(id) {
+        if(confirm("Remove product?")) {
+            state.products = state.products.filter(p => p.id !== id);
+            saveState();
+        }
+    }
+
+    // 7. WEBSITE CONFIG
+    function updateWebPreview() {
+        const color = document.getElementById('siteColor').value;
+        const btn = document.getElementById('webPrevBtn');
+        if(btn) btn.style.background = color;
+        state.siteConfig.color = color;
+    }
+
+    function saveSiteConfig() {
+        saveState();
+        alert("Website Theme Saved!");
+    }
+
+    // 8. UTILS
+    function closeModals() {
+        document.querySelectorAll('.modal').forEach(m => m.classList.remove('open'));
+    }
+
+    function updateDashboardStats() {
+        const dashSales = document.getElementById('dashSales');
+        if(dashSales) {
+            let totalSales = state.transactions
+                .filter(t => t.type === 'income')
+                .reduce((sum, t) => sum + t.amount, 0);
+            dashSales.innerText = `PKR ${totalSales.toLocaleString()}`;
+        }
+        document.getElementById('dashProducts').innerText = state.products.length;
+    }
+
+    // 9. INIT
+    window.addEventListener('DOMContentLoaded', () => {
+        // Load Branding Inputs
+        document.getElementById('brandName').value = state.branding.name;
+        document.getElementById('brandSlogan').value = state.branding.slogan;
+        document.getElementById('brandLogo').value = state.branding.logo;
+        document.getElementById('aiModeToggle').checked = state.branding.aiMode;
+
+        // Load Site Config
+        if(state.siteConfig && state.siteConfig.color) {
+            document.getElementById('siteColor').value = state.siteConfig.color;
+        }
+
+        renderFinance();
+        renderProducts();
+        updateDashboardStats();
+        updateGlobalBranding();
+        updateBrandPreview();
+        updateWebPreview();
+
+        // Theme Toggle
+        const themeSwitch = document.getElementById('themeSwitch');
+        if(themeSwitch) {
+            themeSwitch.addEventListener('change', (e) => {
+                document.documentElement.setAttribute('data-theme', e.target.checked ? 'light' : 'dark');
+            });
+        }
+    });
+
+</script>
+</body>
+</html>
