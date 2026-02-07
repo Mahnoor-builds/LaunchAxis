@@ -13,6 +13,7 @@ import Orders from './components/Orders';
 // SHOP COMPONENTS
 import ShopHome from './components/shop/ShopHome';
 import ShopCheckout from './components/shop/ShopCheckout';
+import ShopCartDrawer from './components/shop/ShopCartDrawer'; // <--- NEW IMPORT
 import './App.css'; // Global Styles
 
 // =========================================
@@ -24,7 +25,7 @@ const AdminPanel = ({
   orders, updateOrderStatus,
   transactions, addTransaction, accounts, addAccount,
   activeSection, setActiveSection,
-  siteConfig, setSiteConfig // <--- NEW PROP
+  siteConfig, setSiteConfig
 }) => {
   return (
     <div className="app-container">
@@ -57,15 +58,13 @@ function App() {
     logo: '', owners: [{ name: 'Ali Khan', role: 'Founder' }]
   });
 
-  // --- WEBSITE CONFIGURATION (Moved to Brain) ---
+  // --- WEBSITE CONFIGURATION ---
   const [siteConfig, setSiteConfig] = useState({
     themeColor: '#2dd4bf', 
     showHero: true,
     notificationEmail: 'orders@launchaxis.com',
     supportEmail: 'help@launchaxis.com',
     socials: { facebook: '', instagram: '' },
-    
-    // NEW: DYNAMIC MENU BUILDER
     menuItems: [
         { id: 1, label: 'Home', link: '/' },
         { id: 2, label: 'Catalog', link: '#products' },
@@ -79,9 +78,43 @@ function App() {
     { id: 2, name: 'Neon Hoodie', price: 2500, description: 'Cotton fleece with LED strip.', status: 'active', images: [] }
   ]);
 
+  // --- SMART CART LOGIC (UPDATED) ---
+  const [cart, setCart] = useState([]);
+  const [isCartOpen, setIsCartOpen] = useState(false); // Controls Sidebar Visibility
+
+  // Add Item (Handles Quantity + Auto Open)
+  const addToCart = (product) => {
+    setCart(prevCart => {
+      const existing = prevCart.find(item => item.id === product.id);
+      if (existing) {
+        return prevCart.map(item => 
+          item.id === product.id ? { ...item, qty: item.qty + 1 } : item
+        );
+      } else {
+        return [...prevCart, { ...product, qty: 1 }];
+      }
+    });
+    setIsCartOpen(true); // Open drawer automatically
+  };
+
+  // Remove Item
+  const removeFromCart = (id) => {
+    setCart(prevCart => prevCart.filter(item => item.id !== id));
+  };
+
+  // Update Quantity (+ or -)
+  const updateQty = (id, change) => {
+    setCart(prevCart => prevCart.map(item => {
+        if (item.id === id) {
+            const newQty = item.qty + change;
+            return newQty > 0 ? { ...item, qty: newQty } : item;
+        }
+        return item;
+    }));
+  };
+
   // --- ORDERS & FINANCE STATE ---
   const [orders, setOrders] = useState([]);
-  const [cart, setCart] = useState([]);
   const [accounts, setAccounts] = useState([{ id: 1, name: 'Cash Register', type: 'asset', category: 'Cash' }]);
   const [transactions, setTransactions] = useState([{ id: 1, date: '1/26/2026', desc: 'Initial Capital', amount: 100000, type: 'income', category: 'Capital', accountId: 99 }]);
 
@@ -89,12 +122,6 @@ function App() {
   const [activeSection, setActiveSection] = useState('dashboard');
 
   // --- HELPERS ---
-  const addToCart = (product) => {
-    setCart([...cart, product]);
-    // We will replace this alert with the Drawer later today!
-    alert(`${product.name} added to cart!`); 
-  };
-
   const updateOrderStatus = (id, status, trackId) => {
     const updated = orders.map(o => o.id === id ? { ...o, status, trackingId: trackId } : o);
     setOrders(updated);
@@ -120,7 +147,8 @@ function App() {
         trackingId: ''
     };
     setOrders([newOrder, ...orders]);
-    setCart([]);
+    setCart([]); // Clear Cart
+    setIsCartOpen(false); // Close Drawer
     alert("Order Placed Successfully!");
   };
 
@@ -145,15 +173,29 @@ function App() {
           <ShopCheckout cart={cart} branding={branding} onPlaceOrder={placeOrder} />
         } />
 
-        {/* ROUTE 3: CUSTOMER STOREFRONT */}
+        {/* ROUTE 3: CUSTOMER STOREFRONT (Wrapped with Drawer) */}
         <Route path="/" element={
-          <ShopHome 
-            branding={branding} 
-            products={products} 
-            cartCount={cart.length} 
-            addToCart={addToCart}
-            siteConfig={siteConfig} // <--- PASSING THE CONFIG HERE
-          />
+          <>
+            {/* The Hidden Drawer Component */}
+            <ShopCartDrawer 
+                isOpen={isCartOpen} 
+                onClose={() => setIsCartOpen(false)} 
+                cart={cart}
+                updateQty={updateQty}
+                removeFromCart={removeFromCart}
+            />
+            
+            {/* The Main Shop Page */}
+            <ShopHome 
+              branding={branding} 
+              products={products} 
+              // Calculate TOTAL items (not just array length)
+              cartCount={cart.reduce((sum, item) => sum + item.qty, 0)} 
+              addToCart={addToCart}
+              siteConfig={siteConfig}
+              openCart={() => setIsCartOpen(true)} // Pass this to Navbar
+            />
+          </>
         } />
       </Routes>
     </Router>
