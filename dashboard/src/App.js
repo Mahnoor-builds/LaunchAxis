@@ -13,8 +13,8 @@ import Orders from './components/Orders';
 // SHOP COMPONENTS
 import ShopHome from './components/shop/ShopHome';
 import ShopCheckout from './components/shop/ShopCheckout';
-import ShopCartDrawer from './components/shop/ShopCartDrawer'; // <--- NEW IMPORT
-import './App.css'; // Global Styles
+import ShopCartDrawer from './components/shop/ShopCartDrawer';
+import './App.css'; 
 
 // =========================================
 // 1. THE ADMIN PANEL
@@ -37,10 +37,7 @@ const AdminPanel = ({
         {activeSection === 'dashboard' && <Dashboard products={products} transactions={transactions} branding={branding} setActiveSection={setActiveSection} orders={orders} />}
         {activeSection === 'finance' && <FinancePro transactions={transactions} accounts={accounts} addAccount={addAccount} branding={branding} addTransaction={addTransaction} />}
         {activeSection === 'branding' && <Branding branding={branding} setBranding={setBranding} />}
-        
-        {/* WE PASS siteConfig HERE SO YOU CAN EDIT IT */}
         {activeSection === 'website' && <WebsiteEditor branding={branding} products={products} siteConfig={siteConfig} setSiteConfig={setSiteConfig} />}
-        
         {activeSection === 'products' && <Products products={products} setProducts={setProducts} />}
         {activeSection === 'orders' && <Orders orders={orders} updateOrderStatus={updateOrderStatus} />}
       </main>
@@ -58,7 +55,7 @@ function App() {
     logo: '', owners: [{ name: 'Ali Khan', role: 'Founder' }]
   });
 
-  // --- WEBSITE CONFIGURATION ---
+  // --- WEBSITE CONFIGURATION (FIXED LINKS HERE) ---
   const [siteConfig, setSiteConfig] = useState({
     themeColor: '#2dd4bf', 
     showHero: true,
@@ -66,9 +63,9 @@ function App() {
     supportEmail: 'help@launchaxis.com',
     socials: { facebook: '', instagram: '' },
     menuItems: [
-        { id: 1, label: 'Home', link: '/' },
-        { id: 2, label: 'Catalog', link: '#products' },
-        { id: 3, label: 'Sale', link: '#sale' }
+        { id: 1, label: 'Home', link: '#home' },
+        { id: 2, label: 'Catalog', link: '#catalog' },
+        { id: 3, label: 'About', link: '#about' }
     ]
   });
 
@@ -78,11 +75,11 @@ function App() {
     { id: 2, name: 'Neon Hoodie', price: 2500, description: 'Cotton fleece with LED strip.', status: 'active', images: [] }
   ]);
 
-  // --- SMART CART LOGIC (UPDATED) ---
+  // --- SMART CART LOGIC ---
   const [cart, setCart] = useState([]);
-  const [isCartOpen, setIsCartOpen] = useState(false); // Controls Sidebar Visibility
+  const [isCartOpen, setIsCartOpen] = useState(false); 
 
-  // Add Item (Handles Quantity + Auto Open)
+  // Add Item
   const addToCart = (product) => {
     setCart(prevCart => {
       const existing = prevCart.find(item => item.id === product.id);
@@ -94,7 +91,7 @@ function App() {
         return [...prevCart, { ...product, qty: 1 }];
       }
     });
-    setIsCartOpen(true); // Open drawer automatically
+    setIsCartOpen(true); 
   };
 
   // Remove Item
@@ -102,7 +99,7 @@ function App() {
     setCart(prevCart => prevCart.filter(item => item.id !== id));
   };
 
-  // Update Quantity (+ or -)
+  // Update Quantity
   const updateQty = (id, change) => {
     setCart(prevCart => prevCart.map(item => {
         if (item.id === id) {
@@ -147,15 +144,14 @@ function App() {
         trackingId: ''
     };
     setOrders([newOrder, ...orders]);
-    setCart([]); // Clear Cart
-    setIsCartOpen(false); // Close Drawer
+    setCart([]); 
+    setIsCartOpen(false); 
     alert("Order Placed Successfully!");
   };
 
   return (
     <Router>
       <Routes>
-        {/* ROUTE 1: ADMIN DASHBOARD */}
         <Route path="/admin" element={
           <AdminPanel 
             branding={branding} setBranding={setBranding}
@@ -168,15 +164,12 @@ function App() {
           />
         } />
 
-        {/* ROUTE 2: CHECKOUT */}
         <Route path="/checkout" element={
           <ShopCheckout cart={cart} branding={branding} onPlaceOrder={placeOrder} />
         } />
 
-        {/* ROUTE 3: CUSTOMER STOREFRONT (Wrapped with Drawer) */}
         <Route path="/" element={
           <>
-            {/* The Hidden Drawer Component */}
             <ShopCartDrawer 
                 isOpen={isCartOpen} 
                 onClose={() => setIsCartOpen(false)} 
@@ -185,15 +178,13 @@ function App() {
                 removeFromCart={removeFromCart}
             />
             
-            {/* The Main Shop Page */}
             <ShopHome 
               branding={branding} 
               products={products} 
-              // Calculate TOTAL items (not just array length)
               cartCount={cart.reduce((sum, item) => sum + item.qty, 0)} 
               addToCart={addToCart}
               siteConfig={siteConfig}
-              openCart={() => setIsCartOpen(true)} // Pass this to Navbar
+              openCart={() => setIsCartOpen(true)}
             />
           </>
         } />
