@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+// IMPORT YOUR NEW AI ENGINE HERE
+import { generateBusinessSetup } from './components/AiEngine'; 
 
 // ADMIN COMPONENTS
 import Sidebar from './components/Sidebar';
@@ -25,19 +28,21 @@ const AdminPanel = ({
   orders, updateOrderStatus,
   transactions, addTransaction, accounts, addAccount,
   activeSection, setActiveSection,
-  siteConfig, setSiteConfig
+  siteConfig, setSiteConfig,
+  features // Added to hide/show tabs based on AI preferences
 }) => {
   return (
-    <div className="app-container">
+    <div className="app-container" style={{ '--brand-color': siteConfig.themeColor }}>
       <Sidebar 
         activeSection={activeSection} setActiveSection={setActiveSection}
         branding={branding}
+        features={features} // Pass features to Sidebar so it knows what to hide
       />
       <main className="main">
         {activeSection === 'dashboard' && <Dashboard products={products} transactions={transactions} branding={branding} setActiveSection={setActiveSection} orders={orders} />}
-        {activeSection === 'finance' && <FinancePro transactions={transactions} accounts={accounts} addAccount={addAccount} branding={branding} addTransaction={addTransaction} />}
-        {activeSection === 'branding' && <Branding branding={branding} setBranding={setBranding} />}
-        {activeSection === 'website' && <WebsiteEditor branding={branding} products={products} siteConfig={siteConfig} setSiteConfig={setSiteConfig} />}
+        {activeSection === 'finance' && features?.wantsAccounting && <FinancePro transactions={transactions} accounts={accounts} addAccount={addAccount} branding={branding} addTransaction={addTransaction} />}
+        {activeSection === 'branding' && features?.wantsBranding && <Branding branding={branding} setBranding={setBranding} />}
+        {activeSection === 'website' && features?.wantsWebsite && <WebsiteEditor branding={branding} products={products} siteConfig={siteConfig} setSiteConfig={setSiteConfig} />}
         {activeSection === 'products' && <Products products={products} setProducts={setProducts} />}
         {activeSection === 'orders' && <Orders orders={orders} updateOrderStatus={updateOrderStatus} />}
       </main>
@@ -49,13 +54,17 @@ const AdminPanel = ({
 // 2. THE MAIN APP (The Brain)
 // =========================================
 function App() {
+  // --- AI LOADING STATE ---
+  const [isAiLoading, setIsAiLoading] = useState(true);
+  const [userFeatures, setUserFeatures] = useState(null);
+
   // --- BRANDING STATE ---
   const [branding, setBranding] = useState({
-    name: 'Neon Startups', slogan: 'Future of Retail', industry: 'Fashion',
-    logo: '', owners: [{ name: 'Ali Khan', role: 'Founder' }]
+    name: 'Loading...', slogan: '', industry: '',
+    logo: '', owners: [{ name: 'Admin', role: 'Founder' }]
   });
 
-  // --- WEBSITE CONFIGURATION (FIXED LINKS HERE) ---
+  // --- WEBSITE CONFIGURATION ---
   const [siteConfig, setSiteConfig] = useState({
     themeColor: '#2dd4bf', 
     showHero: true,
@@ -70,10 +79,7 @@ function App() {
   });
 
   // --- PRODUCTS STATE ---
-  const [products, setProducts] = useState([
-    { id: 1, name: 'Cyber Sneakers', price: 4500, description: 'High-top glowing sneakers.', status: 'active', images: [] },
-    { id: 2, name: 'Neon Hoodie', price: 2500, description: 'Cotton fleece with LED strip.', status: 'active', images: [] }
-  ]);
+  const [products, setProducts] = useState([]);
 
   // --- SMART CART LOGIC ---
   const [cart, setCart] = useState([]);
@@ -113,10 +119,41 @@ function App() {
   // --- ORDERS & FINANCE STATE ---
   const [orders, setOrders] = useState([]);
   const [accounts, setAccounts] = useState([{ id: 1, name: 'Cash Register', type: 'asset', category: 'Cash' }]);
-  const [transactions, setTransactions] = useState([{ id: 1, date: '1/26/2026', desc: 'Initial Capital', amount: 100000, type: 'income', category: 'Capital', accountId: 99 }]);
+  const [transactions, setTransactions] = useState([{ id: 1, date: new Date().toLocaleDateString(), desc: 'Initial Capital', amount: 100000, type: 'income', category: 'Capital', accountId: 99 }]);
 
   // --- ACTIVE SECTION ---
   const [activeSection, setActiveSection] = useState('dashboard');
+
+  // =========================================
+  // 3. THE AI ENGINE CONNECTION
+  // =========================================
+  useEffect(() => {
+    const fireUpAiEngine = async () => {
+      // Mock data for testing. Later, this will pull directly from Firestore!
+      const mockUserForm = {
+        businessName: "Cyber Nexus",
+        businessType: "Products",
+        businessDesc: "High-end futuristic tech accessories.",
+        email: "ceo@launchaxis.com",
+        preferences: ["Business Website", "Accounting Setup", "Logo & Branding Kit"]
+      };
+
+      console.log("Sending user data to AI Engine...");
+      const aiResult = await generateBusinessSetup(mockUserForm);
+      
+      if (aiResult) {
+        // Automatically overwrite the default states with the AI generated data!
+        setBranding(aiResult.branding);
+        setProducts(aiResult.products);
+        setUserFeatures(aiResult.features);
+        setSiteConfig(prev => ({ ...prev, themeColor: aiResult.themeColor }));
+      }
+      
+      setIsAiLoading(false);
+    };
+
+    fireUpAiEngine();
+  }, []);
 
   // --- HELPERS ---
   const updateOrderStatus = (id, status, trackId) => {
@@ -149,6 +186,15 @@ function App() {
     alert("Order Placed Successfully!");
   };
 
+  // --- LOADING SCREEN ---
+  if (isAiLoading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: '#111', color: '#2dd4bf', fontSize: '24px', fontWeight: 'bold' }}>
+        INITIALIZING LAUNCHAXIS AI KERNEL...
+      </div>
+    );
+  }
+
   return (
     <Router>
       <Routes>
@@ -161,6 +207,7 @@ function App() {
             accounts={accounts} addAccount={addAccount}
             activeSection={activeSection} setActiveSection={setActiveSection}
             siteConfig={siteConfig} setSiteConfig={setSiteConfig}
+            features={userFeatures}
           />
         } />
 
