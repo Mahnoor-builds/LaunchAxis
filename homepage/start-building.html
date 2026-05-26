@@ -3,135 +3,216 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Start Building – LaunchAxis.ai</title>
+  <title>Start Building – LaunchAxis</title>
   <style>
+    :root {
+      --bg-dark: #09090b;
+      --card-bg: #18181b;
+      --border-color: #27272a;
+      --neon-teal: #2dd4bf;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #0f172a;
-      color: #f1f5f9;
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
       padding: 2rem;
     }
+
     .form-container {
-      background-color: #1e293b;
-      padding: 2rem;
+      background-color: var(--card-bg);
+      padding: 3rem;
       border-radius: 16px;
-      box-shadow: 0 0 25px rgba(0,0,0,0.4);
-      max-width: 600px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      max-width: 900px;
       width: 100%;
     }
-    h2 {
+
+    .header-text {
       text-align: center;
-      color: #38bdf8;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2.5rem;
     }
-    .form-step {
-      display: none;
+
+    .header-text h2 {
+      color: var(--text-main);
+      font-size: 2rem;
+      font-weight: 800;
+      margin: 0 0 10px 0;
+      letter-spacing: -1px;
     }
-    .form-step.active {
-      display: block;
-    }
-    label {
+
+    .header-text p {
+      color: var(--neon-teal);
+      margin: 0;
       font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-size: 0.9rem;
     }
-    input[type="text"], input[type="email"], textarea, select {
+
+    /* Grid Layout for Single Page */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr; /* Stacks on mobile */
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    input[type="text"], input[type="email"], textarea {
       width: 100%;
-      padding: 0.6rem;
-      margin-top: 0.5rem;
-      margin-bottom: 1.2rem;
+      padding: 0.8rem 1rem;
       border-radius: 8px;
-      border: none;
-      background-color: #334155;
-      color: #f1f5f9;
+      border: 1px solid var(--border-color);
+      background-color: #000;
+      color: var(--text-main);
+      font-size: 1rem;
+      transition: border 0.3s, box-shadow 0.3s;
+      box-sizing: border-box;
     }
-    .checkbox-group, .radio-group {
-      margin-bottom: 1.2rem;
+
+    input[type="text"]:focus, input[type="email"]:focus, textarea:focus {
+      outline: none;
+      border-color: var(--neon-teal);
+      box-shadow: 0 0 10px rgba(45, 212, 191, 0.2);
     }
-    .checkbox-group label,
-    .radio-group label {
+
+    .selection-group {
+      background: #000;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .selection-group label {
       display: flex;
       align-items: center;
-      margin-bottom: 0.6rem;
-      gap: 0.6rem;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      cursor: pointer;
+      margin-bottom: 0.8rem;
     }
+
+    .selection-group label:last-child {
+      margin-bottom: 0;
+    }
+
     input[type="checkbox"], input[type="radio"] {
-      accent-color: #38bdf8;
-      transform: scale(1.2);
+      accent-color: var(--neon-teal);
+      width: 18px;
+      height: 18px;
+      margin-right: 10px;
+      cursor: pointer;
     }
-    button {
-      background-color: #38bdf8;
-      color: #0f172a;
-      font-weight: bold;
+
+    .submit-btn {
+      background-color: var(--neon-teal);
+      color: #000;
+      font-weight: 800;
+      font-size: 1.1rem;
       border: none;
-      padding: 0.6rem 1.2rem;
+      padding: 1rem;
       border-radius: 8px;
       cursor: pointer;
-      margin-top: 1rem;
-      transition: background-color 0.3s ease;
+      margin-top: 1.5rem;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 15px rgba(45, 212, 191, 0.3);
     }
-    button:hover {
-      background-color: #0ea5e9;
-    }
-    .step-title {
-      margin-bottom: 1rem;
-      font-size: 1.1rem;
-      color: #e2e8f0;
+
+    .submit-btn:hover {
+      background-color: #14b8a6;
+      box-shadow: 0 6px 20px rgba(45, 212, 191, 0.5);
+      transform: translateY(-2px);
     }
   </style>
 </head>
 <body>
   <div class="form-container">
-    <h2>Start Building Your Business</h2>
+    <div class="header-text">
+      <h2>Initialize Your Business</h2>
+      <p>System Setup & Architecture</p>
+    </div>
+
     <form id="multiStepForm">
-      
-      <!-- Step 1 -->
-      <div class="form-step active">
-        <label for="businessName">What is your business name or idea?</label>
-        <input type="text" id="businessName" name="businessName" required placeholder="e.g. SweetBites Bakery" />
-
-        <label for="businessDesc">Briefly describe your business</label>
-        <textarea id="businessDesc" name="businessDesc" rows="3" placeholder="e.g. A home-based bakery selling cakes to busy professionals"></textarea>
-
-        <label for="businessType">What are you selling?</label>
-      <div class="radio-group">
-        <label><input type="radio" name="businessType" value="Products" required /> Products</label>
-        <label><input type="radio" name="businessType" value="Services" /> Services</label>
-      </div>
-
-        <button type="button" class="next-btn">Next</button>
-      </div>
-
-      <!-- Step 2 -->
-      <div class="form-step">
-        <p class="step-title">What would you like us to generate for you?</p>
-        <div class="checkbox-group">
-          <label><input type="checkbox" name="needs" value="Logo & Branding Kit" /> Logo & Branding Kit</label>
-          <label><input type="checkbox" name="needs" value="Business Website" /> Business Website</label>
-          <label><input type="checkbox" name="needs" value="Accounting Setup" /> Accounting Setup</label>
-        </div>
-        <button type="button" class="next-btn">Next</button>
-      </div>
-
-      <!-- Step 3 -->
-      <div class="form-step">
-        <p class="step-title">Tell us more about you:</p>
-        <div class="radio-group">
-          <label><input type="radio" name="userType" value="Student with Startup Idea" required /> Student with Startup Idea</label>
-          <label><input type="radio" name="userType" value="Freelancer" /> Freelancer</label>
-          <label><input type="radio" name="userType" value="Existing Business Owner" /> Existing Business Owner</label>
+      <div class="form-grid">
+        
+        <div class="form-group">
+          <label for="businessName">Business Name</label>
+          <input type="text" id="businessName" name="businessName" required placeholder="e.g. Neon Studios" />
         </div>
 
-        <label for="details">Any extra notes or preferences?</label>
-        <textarea id="details" name="details" rows="4" placeholder="Optional: Anything else you'd like us to consider..."></textarea>
+        <div class="form-group">
+          <label for="email">Admin Email Address</label>
+          <input type="email" id="email" name="email" required placeholder="admin@example.com" />
+        </div>
 
-        <label for="email">Your Email (to send your setup)</label>
-        <input type="email" id="email" name="email" required placeholder="you@example.com" />
+        <div class="form-group full-width">
+          <label for="businessDesc">Core Business Description</label>
+          <textarea id="businessDesc" name="businessDesc" rows="2" placeholder="Briefly describe your products, services, and target audience..."></textarea>
+        </div>
 
-        <button type="submit">Submit</button>
+        <div class="form-group">
+          <label>Primary Offering</label>
+          <div class="selection-group">
+            <label><input type="radio" name="businessType" value="Products" required /> Digital / Physical Products</label>
+            <label><input type="radio" name="businessType" value="Services" /> Service Based</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Your Current Status</label>
+          <div class="selection-group">
+            <label><input type="radio" name="userType" value="Student with Startup Idea" required /> Student Startup</label>
+            <label><input type="radio" name="userType" value="Freelancer" /> Freelancer</label>
+            <label><input type="radio" name="userType" value="Existing Business Owner" /> Established Business</label>
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label>AI Generation Requirements</label>
+          <div class="selection-group" style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <label><input type="checkbox" name="needs" value="Logo & Branding Kit" /> Brand Identity Kit</label>
+            <label><input type="checkbox" name="needs" value="Business Website" /> E-Commerce Storefront</label>
+            <label><input type="checkbox" name="needs" value="Accounting Setup" /> Finance & Accounting Dashboard</label>
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="details">Additional Directives (Optional)</label>
+          <textarea id="details" name="details" rows="2" placeholder="Specify color preferences, specific features, or target demographics..."></textarea>
+        </div>
+
+        <button type="submit" class="submit-btn full-width">Initialize Setup</button>
       </div>
     </form>
   </div>
@@ -141,6 +222,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
   import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
   import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  
   // Your Firebase Config
   const firebaseConfig = {
     apiKey: "AIzaSyCgW3AW6wuebd8nde-Udenu-3X6hPbLkhY",
@@ -156,67 +238,50 @@
   const db = getFirestore(app);
   const realtimeDB = getDatabase(app);
 
-  // Step Navigation Logic
-  const steps = document.querySelectorAll(".form-step");
-  const nextBtns = document.querySelectorAll(".next-btn");
-  let currentStep = 0;
-
-  nextBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      if (currentStep < steps.length - 1) {
-        steps[currentStep].classList.remove("active");
-        currentStep++;
-        steps[currentStep].classList.add("active");
-      }
-    });
-  });
-
   // Handle Form Submission
   document.getElementById("multiStepForm").addEventListener("submit", async function (e) {
-  e.preventDefault();
+      e.preventDefault();
 
-  const businessName = document.getElementById("businessName").value.trim();
-  const businessDesc = document.getElementById("businessDesc").value.trim();
-  const businessType = document.querySelector("input[name='businessType']:checked")?.value || "";
-  const needs = [...document.querySelectorAll("input[name='needs']:checked")].map(cb => cb.value);
-  const userType = document.querySelector("input[name='userType']:checked")?.value || "";
-  const details = document.getElementById("details").value.trim();
-  const email = document.getElementById("email").value.trim();
+      const businessName = document.getElementById("businessName").value.trim();
+      const businessDesc = document.getElementById("businessDesc").value.trim();
+      const businessType = document.querySelector("input[name='businessType']:checked")?.value || "";
+      const needs = [...document.querySelectorAll("input[name='needs']:checked")].map(cb => cb.value);
+      const userType = document.querySelector("input[name='userType']:checked")?.value || "";
+      const details = document.getElementById("details").value.trim();
+      const email = document.getElementById("email").value.trim();
 
-  // Validate
-  if (!businessName || !email || !businessType) {
-    alert("Please fill all required fields.");
-    return;
-  }
+      // Validate
+      if (!businessName || !email || !businessType) {
+        alert("Please fill all required fields.");
+        return;
+      }
 
-  const userData = {
-    businessName,
-    businessDesc,
-    businessType,
-    preferences: needs,
-    userType,
-    extraDetails: details,
-    email,
-    timestamp: serverTimestamp()
-  };
+      const userData = {
+        businessName,
+        businessDesc,
+        businessType,
+        preferences: needs,
+        userType,
+        extraDetails: details,
+        email,
+        timestamp: serverTimestamp()
+      };
 
-  try {
-  // ✅ Store user setup data in Firestore
-  await addDoc(collection(db, "users"), userData);
+      try {
+          // Store user setup data in Firestore
+          await addDoc(collection(db, "users"), userData);
 
-  // ✅ Store setup status in Realtime Database using safe key
-  const userKey = userData.email.replace(/[.#$[\]]/g, "_"); // Avoid special characters
-  await set(ref(realtimeDB, `setupStatus/${userKey}`), "generating");
+          // Store setup status in Realtime Database using safe key
+          const userKey = userData.email.replace(/[.#$[\]]/g, "_"); 
+          await set(ref(realtimeDB, `setupStatus/${userKey}`), "generating");
 
-  alert("Thank you! Your business setup is being processed.");
-  window.location.href = "loading.html";
-} catch (error) {
-  alert("Submission failed: " + error.message);
-  console.error("Firestore error:", error);
-}
-
-});
-
-</script>
+          alert("Initialization initialized. Your business architecture is being generated.");
+          window.location.href = "loading.html"; // Make sure loading.html looks just as futuristic!
+      } catch (error) {
+          alert("Submission failed: " + error.message);
+          console.error("Firestore error:", error);
+      }
+  });
+  </script>
 </body>
-  </html>
+</html>
