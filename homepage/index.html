@@ -3,263 +3,389 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LaunchAxis.ai</title>
+    <title>LaunchAxis | AI Business Setup</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body>
+    
+    <!-- Glass Navbar -->
     <header>
         <nav class="navbar">
-          <div class="logo">
-            <img src="images/mainlogo.png" alt="LaunchAxis Logo" class="logo-img" />
-        <span class="logo-text">LaunchAxis</span>
-        </div>
-
-
-          <ul class="nav-links">
-            <li><a href="#services">Services</a></li>
-            <li><a href="#features">Features</a></li>
-            <li><a href="#pricing">Pricing</a></li>
-            <li><a href="template.html">Templates</a></li>
-            <li><a href="auth.html" class="auth-link">Sign Up</a></li>
-            <li><a href="login.html" class="auth-link">Login</a></li>
-
-            <li><a href="start-building.html">Start Building</a></li>
-          </ul>
-        </nav>
-        <section class="hero">
-          <div class="hero-content">
-            <h1>Launch a Business with Just an Idea</h1>
-            <p>AI-powered platform to turn your idea into a complete business setup in minutes.</p>
-          </div>
-          <div class="hero">
-            <div class="hero-img-container">
-              <img src="images/Analytics.png" alt="Hero Image" class="hero-img">
+            <div class="logo">
+                <img src="images/mainlogo.png" alt="LaunchAxis Logo" class="logo-img" onerror="this.style.display='none'" />
+                <span class="logo-text">LaunchAxis</span>
             </div>
-            <div class="cta-button-container">
-              <a href="start-building.html" class="cta-button">Start Building</a>
-            </div>
-            <a id="dashboardBtn" href="dashboard.html" class="btn" style="display: none;">Go to Dashboard</a>
-          </div>
-
-        </section>
-      </header>
-        <!-- this is service section -->
-      <section class="services-section" id="services">
-        <div class="container">
-          <h2 class="section-title">Our Services</h2>
-          <div class="services-grid">
-            <div class="service-card">
-              <h3>AI Business Setup</h3>
-              <p>Turn your idea into a full business with AI-driven automation and setup.</p>
-            </div>
-            <div class="service-card">
-              <h3>Domain & Hosting</h3>
-              <p>Get a custom domain and reliable hosting in minutes, without the hassle.</p>
-            </div>
-            <div class="service-card">
-              <h3>Logo & Branding</h3>
-              <p>Generate logos, brand colors, and a complete identity package for your startup.</p>
-            </div>
-            <div class="service-card">
-              <h3>Ready-to-Use Website</h3>
-              <p>Launch your professional website instantly with built-in templates and pages.</p>
-            </div>
-            <div class="service-card">
-              <h3>Business Name Generator</h3>
-              <p>AI-powered name suggestions that are brandable, unique, and available to register.</p>
-            </div>
-            <div class="service-card">
-              <h3>Legal & Compliance Guide</h3>
-              <p>Receive basic startup legal guidance and documentation checklists for your region.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-      <!-- this is feature section -->
-      <section class="feature-section" id="features">
-        <div class="container">
-          <h2>Features of <span>LaunchNext.ai</span></h2>
-          <div class="features-grid">
-            <div class="feature-card">
-              <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" alt="AI Efficiency Icon" class="feature-icon" />
-              <h3>AI-Driven Efficiency</h3>
-              <p>Get instant setup, smart suggestions, and business tools powered by AI automation.</p>
-            </div>
-            <div class="feature-card">
-              <img src="https://cdn-icons-png.flaticon.com/512/1828/1828884.png" alt="No Tech Skills Icon" class="feature-icon" />
-              <h3>Zero Tech Skills Needed</h3>
-              <p>No coding, no hassle. Just choose what you want and launch — it's that simple.</p>
-            </div>
-            <div class="feature-card">
-              <img src="https://cdn-icons-png.flaticon.com/512/906/906175.png" alt="All-in-One Icon" class="feature-icon" />
-              <h3>Everything in One Place</h3>
-              <p>Get domains, design, branding, and automation all from one clean and powerful dashboard.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Pricing Section -->
-<section id="pricing" class="pricing-section">
-  <div class="container">
-    <h2 class="section-title">Our Plans</h2>
-    <div class="pricing-grid">
-      
-      <!-- Free Plan -->
-      <div class="plan-card">
-        <h3>Starter</h3>
-        <p class="plan-price">Free</p>
-        <ul>
-          <li>AI Business Consultation</li>
-          <li>Basic Logo & Name Generation</li>
-          <li>Access Canva Templates</li>
-          <li>Instant Business Summary</li>
-        </ul>
-        <a href="start-building.html"><button>Start Free</button></a>
-      </div>
-
-      <!-- Pro Plan -->
-      <div class="plan-card coming-soon">
-        <h3>Pro</h3>
-        <p class="plan-price">Coming Soon</p>
-        <ul>
-          <li>Advanced AI Setup Tools</li>
-          <li>Custom Branding Kit</li>
-          <li>Domain + Hosting Assistant</li>
-          <li>Premium Template Access</li>
-        </ul>
-        <button disabled>Coming Soon</button>
-      </div>
-
-      <!-- Enterprise Plan -->
-      <div class="plan-card coming-soon">
-        <h3>Enterprise</h3>
-        <p class="plan-price">Coming Soon</p>
-        <ul>
-          <li>Dedicated AI Assistant</li>
-          <li>Full Legal/Finance Kit</li>
-          <li>CRM Integration</li>
-          <li>White-label Setup</li>
-        </ul>
-        <button disabled>Coming Soon</button>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-      <!-- this is how it works section  -->
-      
-      <section class="how-it-works-section">
-        <div class="container">
-          <h2>How <span>LaunchNext.ai</span> Works</h2>
-          <div class="steps-grid">
-            <div class="step-card">
-              <img src="https://cdn-icons-png.flaticon.com/512/992/992651.png" alt="Step 1 Icon" />
-              <h3>1. Choose Your Plan</h3>
-              <p>Select a business package that suits your goals and budget.</p>
-            </div>
-            <div class="step-card">
-              <img src="https://cdn-icons-png.flaticon.com/512/1828/1828919.png" alt="Step 2 Icon" />
-              <h3>2. Customize Your Brand</h3>
-              <p>Tell us your brand name and style — we handle the rest with AI.</p>
-            </div>
-            <div class="step-card">
-              <img src="https://cdn-icons-png.flaticon.com/512/1159/1159633.png" alt="Step 3 Icon" />
-              <h3>3. Get Instant Setup</h3>
-              <p>Your website, branding, and tools will be ready within minutes.</p>
-            </div>
-            <div class="step-card">
-              <img src="https://cdn-icons-png.flaticon.com/512/942/942751.png" alt="Step 4 Icon" />
-              <h3>4. Launch & Grow</h3>
-              <p>Go live and start attracting customers with your AI-powered business.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-      <!-- this is testimonial section -->
-
-      <section id="testimonials" class="testimonials-section">
-        <h2>What Our Users Say</h2>
-        <div class="testimonials-container">
-          <div class="testimonial-box">
-            <p>"LaunchNext.ai made it super easy to set up my business online. Highly recommend!"</p>
-            <h4>- Wajiha, Small Business Owner</h4>
-          </div>
-          <div class="testimonial-box">
-            <p>"Impressed by the quick setup and professional interface. It saved me so much time."</p>
-            <h4>- Hadi, Startup Founder</h4>
-          </div>
-          <div class="testimonial-box">
-            <p>"I had zero tech skills, but LaunchNext.ai made everything simple and clear."</p>
-            <h4>- Mahnoor, Freelancer</h4>
-          </div>
-        </div>
-      </section>
-      <!-- this is FAQ section -->
-      <section id="faq" class="faq-section">
-        <h2>Frequently Asked Questions</h2>
-        <div class="faq-container">
-          <div class="faq-item">
-            <h3>What is LaunchNext.ai?</h3>
-            <p>LaunchNext.ai helps you set up your online business in minutes using AI-guided steps—no tech skills needed.</p>
-          </div>
-          <div class="faq-item">
-            <h3>Is it free to use?</h3>
-            <p>Yes, you can test your idea for free with our MVP. We only charge when you’re ready to scale your setup.</p>
-          </div>
-          <div class="faq-item">
-            <h3>Do I need coding knowledge?</h3>
-            <p>Not at all! Our platform is designed for beginners and entrepreneurs with zero tech experience.</p>
-          </div>
-        </div>
-      </section>
-      <!-- this is footer section -->
-      <footer class="footer">
-        <div class="footer-container">
-          <div class="footer-column">
-            <h3>LaunchAxis.ai</h3>
-            <p>Empowering startups with AI-driven business setup solutions.</p>
-          </div>
-          <div class="footer-column">
-            <h4>Quick Links</h4>
-            <ul>
-              <li><a href="#services">Services</a></li>
-              <li><a href="#features">Features</a></li>
-              <li><a href="#faq">FAQ</a></li>
+            <ul class="nav-links">
+                <li><a href="#services">Services</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+                <li><a href="login.html" class="auth-link">Login</a></li>
+                <li><a href="start-building.html" class="cta-nav-button">Start Building</a></li>
             </ul>
-          </div>
-          <div class="footer-column">
-            <h4>Contact</h4>
-            <p>Email: support@launchnext.ai</p>
-            <p>Phone: +123 456 7890</p>
-          </div>
-          <div class="footer-column">
-            <h4>Follow Us</h4>
-            <div class="social-icons">
-              <a href="#"><img src="icons/facebook.svg" alt="Facebook" /></a>
-              <a href="#"><img src="icons/twitter.svg" alt="Twitter" /></a>
-              <a href="#"><img src="icons/linkedin.svg" alt="LinkedIn" /></a>
+        </nav>
+    </header>
+
+    <!-- Interactive Hero Section -->
+    <section class="hero" id="home">
+        <!-- Interactive Particle Canvas Background -->
+        <canvas id="particle-canvas"></canvas>
+        
+        <div class="hero-content">
+            <div class="badge">LaunchAxis AI Kernel 2.0 Live</div>
+            <h1>Launch a Business<br>With Just an Idea.</h1>
+            <p>The elite AI-powered infrastructure to architect, design, and scale your startup in minutes. No coding required.</p>
+            <div class="hero-actions">
+                <a href="start-building.html" class="btn-primary">Start Building Free</a>
+                <a href="#services" class="btn-secondary">Explore Platform</a>
             </div>
-          </div>
         </div>
-        <div class="footer-bottom">
-          <p>&copy; 2025 LaunchNext.ai. All rights reserved.</p>
+    </section>
+
+    <!-- Services Section (Kept as you requested, enhanced by global CSS) -->
+    <section class="services-section" id="services">
+        <div class="container">
+            <h2 class="section-title">Platform <span>Capabilities</span></h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="card-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=600&auto=format&fit=crop" alt="AI Interface">
+                    </div>
+                    <div class="card-content">
+                        <h3>AI Business Setup</h3>
+                        <p>Turn your idea into a full business with AI-driven automation and setup.</p>
+                    </div>
+                </div>
+                <div class="service-card">
+                    <div class="card-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=600&auto=format&fit=crop" alt="Global Network">
+                    </div>
+                    <div class="card-content">
+                        <h3>Domain & Hosting</h3>
+                        <p>Get a custom domain and reliable hosting in minutes, without the hassle.</p>
+                    </div>
+                </div>
+                <div class="service-card">
+                    <div class="card-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1561070791-2526d30994b5?q=80&w=600&auto=format&fit=crop" alt="Branding Concept">
+                    </div>
+                    <div class="card-content">
+                        <h3>Logo & Branding</h3>
+                        <p>Generate logos, brand colors, and a complete identity package for your startup.</p>
+                    </div>
+                </div>
+                <div class="service-card">
+                    <div class="card-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=600&auto=format&fit=crop" alt="Website Code">
+                    </div>
+                    <div class="card-content">
+                        <h3>Ready-to-Use Website</h3>
+                        <p>Launch your professional website instantly with built-in templates and pages.</p>
+                    </div>
+                </div>
+                <div class="service-card">
+                    <div class="card-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=600&auto=format&fit=crop" alt="Data Analytics">
+                    </div>
+                    <div class="card-content">
+                        <h3>Business Name Generator</h3>
+                        <p>AI-powered name suggestions that are brandable, unique, and available to register.</p>
+                    </div>
+                </div>
+                <div class="service-card">
+                    <div class="card-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=600&auto=format&fit=crop" alt="Legal Documents">
+                    </div>
+                    <div class="card-content">
+                        <h3>Legal & Compliance Guide</h3>
+                        <p>Receive basic startup legal guidance and documentation checklists for your region.</p>
+                    </div>
+                </div>
+            </div>
         </div>
-      </footer>
-      
-      
-      <!-- this is chatbot -->
-       <a href="chatbot.html">
-       <div class="chatbot-icon" onclick="toggleChat()">
-        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="AI Chatbot" />
-       </div>
-       </a>
+    </section>
 
+  <section class="premium-section" id="features">
+        <div class="container">
+            <h2 class="section-title">Core <span>Features</span></h2>
+            <div class="grid-3">
+                <div class="glass-card">
+                    <i class="fa-solid fa-microchip feature-icon"></i>
+                    <h3>AI-Driven Efficiency</h3>
+                    <p>Get instant setup, smart suggestions, and business tools powered by advanced AI automation.</p>
+                </div>
+                <div class="glass-card">
+                    <i class="fa-solid fa-code feature-icon"></i>
+                    <h3>Zero Tech Skills Needed</h3>
+                    <p>No coding, no hassle. Just choose what you want and launch — it's that simple.</p>
+                </div>
+                <div class="glass-card">
+                    <i class="fa-solid fa-layer-group feature-icon"></i>
+                    <h3>Everything in One Place</h3>
+                    <p>Get domains, design, branding, and automation all from one clean and powerful dashboard.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
+    <section class="premium-section bg-alternate" id="how-it-works">
+        <div class="container">
+            <h2 class="section-title">How <span>It Works</span></h2>
+            <div class="grid-4 steps-grid">
+                <div class="step-card">
+                    <div class="step-number">01</div>
+                    <h3>Choose Plan</h3>
+                    <p>Select a business package that suits your scaling goals.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">02</div>
+                    <h3>Input Brand</h3>
+                    <p>Tell us your vision — our AI handles the architecture.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">03</div>
+                    <h3>Instant Setup</h3>
+                    <p>Your website, branding, and tools deploy in minutes.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">04</div>
+                    <h3>Launch & Grow</h3>
+                    <p>Go live immediately and start dominating your market.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-      <script type="module" src="script.js"></script>
+    <section class="premium-section" id="pricing">
+        <div class="container">
+            <h2 class="section-title">Transparent <span>Pricing</span></h2>
+            <div class="grid-3 pricing-grid">
+                
+                <div class="glass-card pricing-card">
+                    <h3>Starter</h3>
+                    <div class="price">Free</div>
+                    <ul class="pricing-features">
+                        <li><i class="fa-solid fa-check"></i> AI Business Consultation</li>
+                        <li><i class="fa-solid fa-check"></i> Basic Logo Generation</li>
+                        <li><i class="fa-solid fa-check"></i> Access Templates</li>
+                        <li><i class="fa-solid fa-check"></i> Instant Business Summary</li>
+                    </ul>
+                    <a href="start-building.html" class="btn-secondary w-100">Deploy Free</a>
+                </div>
 
+                <div class="glass-card pricing-card featured-plan">
+                    <div class="plan-badge">Most Popular</div>
+                    <h3>Pro</h3>
+                    <div class="price">Coming Soon</div>
+                    <ul class="pricing-features">
+                        <li><i class="fa-solid fa-check"></i> Advanced AI Setup Tools</li>
+                        <li><i class="fa-solid fa-check"></i> Custom Branding Kit</li>
+                        <li><i class="fa-solid fa-check"></i> Domain + Hosting Assistant</li>
+                        <li><i class="fa-solid fa-check"></i> Premium Template Access</li>
+                    </ul>
+                    <button class="btn-primary w-100 disabled" disabled>Join Waitlist</button>
+                </div>
+
+                <div class="glass-card pricing-card">
+                    <h3>Enterprise</h3>
+                    <div class="price">Coming Soon</div>
+                    <ul class="pricing-features">
+                        <li><i class="fa-solid fa-check"></i> Dedicated AI Assistant</li>
+                        <li><i class="fa-solid fa-check"></i> Full Legal/Finance Kit</li>
+                        <li><i class="fa-solid fa-check"></i> CRM Integration</li>
+                        <li><i class="fa-solid fa-check"></i> White-label Setup</li>
+                    </ul>
+                    <button class="btn-secondary w-100 disabled" disabled>Contact Sales</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="premium-section bg-alternate" id="about">
+        <div class="container">
+            <div class="split-layout">
+                
+                <div class="testimonials-half">
+                    <h2 class="section-title text-left">Trusted By <span>Founders</span></h2>
+                    <div class="glass-card testimonial-card">
+                        <p>"LaunchAxis made it super easy to set up my business online. Highly recommend the AI integration!"</p>
+                        <h4>— Wajiha, Small Business Owner</h4>
+                    </div>
+                    <div class="glass-card testimonial-card">
+                        <p>"I had zero tech skills, but the dashboard made everything simple, clean, and instant."</p>
+                        <h4>— Mahnoor, Freelancer</h4>
+                    </div>
+                </div>
+
+                <div class="faq-half">
+                    <h2 class="section-title text-left">System <span>FAQ</span></h2>
+                    <div class="faq-item border-bottom">
+                        <h3>What is LaunchAxis?</h3>
+                        <p>An infrastructure platform that sets up your online business in minutes using AI-guided steps.</p>
+                    </div>
+                    <div class="faq-item border-bottom">
+                        <h3>Is it free to use?</h3>
+                        <p>Yes, you can architect your MVP for free. We only charge when you’re ready to scale.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h3>Do I need coding knowledge?</h3>
+                        <p>Not at all. Our kernel is designed for entrepreneurs with zero technical background.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <footer class="premium-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand-col">
+                    <div class="logo">
+                        <img src="images/mainlogo.png" alt="LaunchAxis Logo" class="logo-img" onerror="this.style.display='none'" />
+                        <span class="logo-text">LaunchAxis</span>
+                    </div>
+                    <p class="footer-desc">The elite AI-powered infrastructure to architect, design, and scale your startup in minutes.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+                        <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fa-brands fa-github"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-links-col">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="template.html">Templates</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-links-col">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#about">Customers</a></li>
+                        <li><a href="#">Careers</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-contact-col">
+                    <h4>System Status</h4>
+                    <p><span class="status-dot"></span> Kernel Online</p>
+                    <p class="contact-email">support@launchaxis.ai</p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2026 LaunchAxis.ai. All rights reserved.</p>
+                <div class="legal-links">
+                    <a href="#">Privacy</a>
+                    <a href="#">Terms</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    
+    <!-- INTERACTIVE ANTIGRAVITY CURSOR SCRIPT -->
+    <script>
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        let particles = [];
+        
+        // Mouse interaction tracker
+        let mouse = { x: null, y: null, radius: 150 };
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+        });
+
+        window.addEventListener('mouseout', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = document.querySelector('.hero').offsetHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Particle Blueprint
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.size = Math.random() * 2 + 1;
+                this.baseY = this.y;
+                // Float gently upwards
+                this.speedY = (Math.random() * 0.5) - 1.5; 
+                this.color = `rgba(139, 92, 246, ${Math.random() * 0.5 + 0.2})`; // Vercel Purple/Violet
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+
+            update() {
+                this.y += this.speedY;
+
+                // Reset particle to bottom when it floats off screen
+                if (this.y < 0) {
+                    this.y = height;
+                    this.x = Math.random() * width;
+                }
+
+                // Antigravity Mouse Collision
+                if (mouse.x != null) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < mouse.radius) {
+                        const forceDirectionX = dx / distance;
+                        const forceDirectionY = dy / distance;
+                        const maxDistance = mouse.radius;
+                        const force = (maxDistance - distance) / maxDistance;
+                        
+                        const directionX = forceDirectionX * force * 5;
+                        const directionY = forceDirectionY * force * 5;
+                        
+                        this.x -= directionX;
+                        this.y -= directionY;
+                    }
+                }
+                this.draw();
+            }
+        }
+
+        function init() {
+            particles = [];
+            let numberOfParticles = (canvas.width * canvas.height) / 9000;
+            for (let i = 0; i < numberOfParticles; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.clearRect(0, 0, width, height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+            }
+        }
+
+        init();
+        animate();
+    </script>
 </body>
 </html>
