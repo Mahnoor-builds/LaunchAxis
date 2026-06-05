@@ -443,3 +443,76 @@ button.disabled { opacity: 0.5; cursor: not-allowed; }
 .footer-bottom p { color: #555; font-size: 0.85rem; }
 .legal-links a { color: #555; font-size: 0.85rem; text-decoration: none; margin-left: 1.5rem; transition: color 0.3s; }
 .legal-links a:hover { color: var(--text-muted); }
+
+
+/* =========================================
+   PREMIUM AI CHATBOT ORB
+   ========================================= */
+
+.chatbot-trigger {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    width: 60px;
+    height: 60px;
+}
+
+/* The actual glass button */
+.chatbot-glass-orb {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: rgba(10, 10, 10, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(164, 143, 214, 0.5); /* Vercel Purple border */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+}
+
+.orb-icon {
+    color: var(--accent-glow, #8B5CF6);
+    font-size: 1.4rem;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+/* The infinite animation ring behind the button */
+.orb-pulse {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: rgba(144, 113, 216, 0.5);
+    z-index: 1;
+    animation: pulseGlow 2.5s infinite ease-out;
+}
+
+/* Hover Interaction */
+.chatbot-trigger:hover .chatbot-glass-orb {
+    transform: scale(1.1);
+    border-color: #00f0ff; /* Shifts to sharp cyan */
+    box-shadow: 0 0 25px rgba(0, 240, 255, 0.25);
+}
+
+.chatbot-trigger:hover .orb-icon {
+    color: #00f0ff;
+    text-shadow: 0 0 12px rgba(0, 240, 255, 0.8);
+}
+
+/* The Animation Logic */
+@keyframes pulseGlow {
+    0% { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(1.7); opacity: 0; }
+}

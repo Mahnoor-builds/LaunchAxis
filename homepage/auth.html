@@ -3,109 +3,142 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sign Up – LaunchAxis</title>
+  <title>Sign Up | LaunchAxis Kernel</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
 
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #0f172a;
-      color: #f1f5f9;
+      background-color: #050505;
+      color: #FFFFFF;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
+      /* Subtle glowing background effect */
+      background-image: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.15), transparent 50%);
     }
 
-    .container {
-      display: flex;
-      background-color: #1e293b;
-      border-radius: 16px;
-      overflow: hidden;
-      max-width: 900px;
+    .auth-wrapper {
       width: 100%;
-      box-shadow: 0 0 25px rgba(0,0,0,0.3);
-    }
-
-    .left-panel {
-      background-color: #0f172a;
+      max-width: 420px;
       padding: 2rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      flex: 1;
     }
 
-    .left-panel img {
-      width: 120px;
-      margin-bottom: 0.1rem;
-    }
-
-    .left-panel h1 {
-      color: #a855f7;
-      font-size: 2rem;
+    /* Premium Glass Card */
+    .glass-card {
+      background: rgba(10, 10, 10, 0.6);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 3rem 2.5rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
       text-align: center;
     }
 
-    .form-panel {
-      background-color: #1e293b;
-      padding: 2rem 3rem;
-      flex: 2;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+    .brand-header img {
+      width: 48px;
+      margin-bottom: 1rem;
     }
 
-    .form-panel h2 {
-      margin-bottom: 1.5rem;
-      color: #38bdf8;
+    .brand-header h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 0.5rem;
+    }
+
+    .brand-header p {
+      color: #888888;
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+    }
+
+    /* Input Fields */
+    .input-group {
+      margin-bottom: 1rem;
+      text-align: left;
     }
 
     input[type="text"],
     input[type="email"],
     input[type="password"] {
       width: 100%;
-      padding: 0.75rem;
-      margin-bottom: 1rem;
-      border: none;
+      padding: 0.85rem 1rem;
+      background-color: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 8px;
-      background-color: #334155;
-      color: #f1f5f9;
+      color: #FFFFFF;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
     }
 
-    button {
-      background-color: #38bdf8;
-      color: #0f172a;
-      font-weight: bold;
+    input::placeholder { color: #555555; }
+
+    input:focus {
+      outline: none;
+      border-color: #8B5CF6; /* Vercel Purple glow */
+      background-color: rgba(139, 92, 246, 0.05);
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+    }
+
+    /* Buttons */
+    .btn-primary {
+      width: 100%;
+      background-color: #FFFFFF;
+      color: #000000;
+      font-weight: 600;
       border: none;
-      padding: 0.75rem;
+      padding: 0.85rem;
       border-radius: 8px;
       cursor: pointer;
-      transition: background-color 0.3s ease;
       margin-top: 0.5rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    button:hover {
-      background-color: #0ea5e9;
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
     }
 
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 1.5rem 0;
+      color: #555555;
+      font-size: 0.85rem;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .divider:not(:empty)::before { margin-right: .5em; }
+    .divider:not(:empty)::after { margin-left: .5em; }
+
+    /* Google Button Upgrade */
     .google-btn {
-      background-color: #ffffff;
-      color: #1f2937;
+      width: 100%;
+      background-color: rgba(255, 255, 255, 0.05);
+      color: #FFFFFF;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 0.6rem;
-      border: none;
-      padding: 0.7rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0.85rem;
       border-radius: 8px;
       font-weight: 500;
-      margin-top: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .google-btn:hover {
+      background-color: rgba(255, 255, 255, 0.1);
     }
 
     .google-btn img {
@@ -113,56 +146,69 @@
       height: 20px;
     }
 
-    @media (max-width: 768px) {
-      .container {
-        flex-direction: column;
-        height: auto;
-        margin: 1rem;
-      }
-      .left-panel {
-        padding: 1rem;
-      }
-      .form-panel {
-        padding: 2rem;
-      }
+    /* Footer Links */
+    .auth-footer {
+      margin-top: 2rem;
+      font-size: 0.9rem;
+      color: #888888;
+    }
+
+    .auth-footer a {
+      color: #38BDF8; /* Cyan accent */
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .auth-footer a:hover {
+      color: #0ea5e9;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Left panel -->
-    <div class="left-panel">
-      <img src="images/mainlogo.png" alt="LaunchAxis Logo" />
-      <h1>LaunchAxis</h1>
-    </div>
 
-    <!-- Form panel -->
-    <div class="form-panel">
-      <h2>Create Your Account</h2>
+  <div class="auth-wrapper">
+    <div class="glass-card">
+      
+      <div class="brand-header">
+        <img src="images/mainlogo.png" alt="LaunchAxis Logo" onerror="this.style.display='none'" />
+        <h1>Create Account</h1>
+        <p>Architect your startup in minutes.</p>
+      </div>
+
       <form id="signupForm">
-        <input type="text" id="fullName" placeholder="Full Name" required />
-        <input type="email" id="email" placeholder="Email Address" required />
-        <input type="password" id="password" placeholder="Password" required />
-        <button type="submit" class="btn-primary">Sign Up</button>
+        <div class="input-group">
+          <input type="text" id="fullName" placeholder="Full Name" required />
+        </div>
+        <div class="input-group">
+          <input type="email" id="email" placeholder="Email Address" required />
+        </div>
+        <div class="input-group">
+          <input type="password" id="password" placeholder="Password" required />
+        </div>
+        <button type="submit" class="btn-primary">Initialize Workspace</button>
       </form>
 
+      <div class="divider">OR</div>
+
       <button class="google-btn" id="googleSignIn">
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google Icon" />
-        Sign Up with Google
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" />
+        Continue with Google
       </button>
+
+      <div class="auth-footer">
+        Already have an account? <a href="login.html">Login here</a>
+      </div>
+
     </div>
   </div>
 
-  <!-- Optional Firebase Integration JS -->
   <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
+    // 1. PASTE YOUR CONFIG HERE (Put your real keys back in!)
+    const firebaseConfig = {
     apiKey: "AIzaSyCgW3AW6wuebd8nde-Udenu-3X6hPbLkhY",
     authDomain: "launchaxis.firebaseapp.com",
     projectId: "launchaxis",
@@ -171,36 +217,31 @@
     appId: "1:986994724231:web:cf895161f7cf6c366a9722"
   };
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
+    // 2. INITIALIZE FIREBASE
+    const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
+    // 3. EMAIL & PASSWORD SIGNUP LOGIC
     document.getElementById("signupForm").addEventListener("submit", function (e) {
       e.preventDefault();
+      
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
 
       createUserWithEmailAndPassword(auth, email, password)
         .then(() => {
-          alert("Signup successful!");
           window.location.href = "index.html";
         })
-        .catch(error => {
-          alert("Signup failed: " + error.message);
-        });
+        .catch(error => alert("Signup failed: " + error.message));
     });
 
+    // 4. GOOGLE SIGNUP LOGIC
     document.getElementById("googleSignIn").addEventListener("click", function () {
       const provider = new GoogleAuthProvider();
       signInWithPopup(auth, provider)
-        .then(() => {
-          alert("Google Sign-In successful!");
-          window.location.href = "index.html";
-        })
-        .catch(error => {
-          alert("Google Sign-In failed: " + error.message);
-        });
+        .then(() => window.location.href = "index.html")
+        .catch(error => alert("Google Sign-In failed: " + error.message));
     });
-</script>
+  </script>
 </body>
 </html>

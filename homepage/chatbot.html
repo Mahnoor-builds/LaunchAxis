@@ -3,92 +3,150 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LaunchNext AI Assistant</title>
+  <title>AI Kernel | LaunchAxis</title>
   <link rel="stylesheet" href="chatbot.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body>
 
-  <!-- Header -->
-  <header class="header">
-    <h1>🚀 LaunchNext AI Assistant</h1>
-    <p>Your smart business setup companion</p>
-  </header>
+  <div class="ambient-glow"></div>
 
-  <!-- Chat Window -->
-  <main class="chat-container">
-    <div class="chat-box" id="chat-box">
-      <div class="bot-message">Hi! I'm LaunchBot 🤖<br>Tell me your business idea and I’ll help you set it up!</div>
+  <div class="chat-wrapper">
+    <header class="chat-header">
+      <div class="header-brand">
+        <i class="fa-solid fa-wand-magic-sparkles brand-icon"></i>
+        <div>
+          <h1>LaunchAxis AI Kernel</h1>
+          <p><span class="status-dot"></span> System Online & Ready</p>
+        </div>
+      </div>
+      <a href="index.html" class="close-btn"><i class="fa-solid fa-xmark"></i></a>
+    </header>
+
+    <main class="chat-box" id="chatBox">
+      <div class="message-row ai-row">
+        <div class="message-icon ai-icon">
+          <i class="fa-solid fa-bolt"></i>
+        </div>
+        <div class="message-bubble ai-message">
+          System Initialized. I am the LaunchAxis Kernel. Tell me about the business you want to build, and I will outline the exact architecture you need.
+        </div>
+      </div>
+    </main>
+
+    <div class="chat-input-area">
+      <form id="chatForm">
+        <input type="text" id="userInput" placeholder="Describe your startup idea..." autocomplete="off" required />
+        <button type="submit" id="sendBtn">
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+      </form>
     </div>
-    <form id="chat-form">
-      <input type="text" id="user-input" placeholder="Type your business idea..." autocomplete="off" required />
-      <button type="submit">Send</button>
-    </form>
-  </main>
+  </div>
 
+  <script>
+    // Fixed IDs to match exactly!
+    const chatForm = document.getElementById("chatForm");
+    const chatBox = document.getElementById("chatBox");
+    const userInput = document.getElementById("userInput");
+    const sendBtn = document.getElementById("sendBtn");
+
+    chatForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const text = userInput.value.trim();
+      if (!text) return;
+
+      // 1. Add User Message
+      appendMessage("User", text);
+      userInput.value = "";
+      
+      // Disable input while thinking
+      userInput.disabled = true;
+      sendBtn.disabled = true;
+
+      // 2. Add "Typing..." Indicator
+      appendMessage("AI", "<span class='typing-dots'>Analyzing business parameters<span>.</span><span>.</span><span>.</span></span>");
+
+      // 3. Call Gemini API
+      const response = await getGeminiResponse(text); 
+      
+      // 4. Update the typing indicator with the real response
+      updateLastMessage(response);
+
+      // Re-enable input
+      userInput.disabled = false;
+      sendBtn.disabled = false;
+      userInput.focus();
+    });
+
+    function appendMessage(sender, message) {
+      const row = document.createElement("div");
+      row.classList.add("message-row");
+      row.classList.add(sender === "AI" ? "ai-row" : "user-row");
+
+      const iconHTML = sender === "AI" 
+        ? `<div class="message-icon ai-icon"><i class="fa-solid fa-bolt"></i></div>` 
+        : ``; // User doesn't need an icon
+
+      const bubbleClass = sender === "AI" ? "ai-message" : "user-message";
+
+      row.innerHTML = `
+        ${iconHTML}
+        <div class="message-bubble ${bubbleClass}">
+          ${message}
+        </div>
+      `;
+      
+      chatBox.appendChild(row);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function updateLastMessage(newText) {
+      const aiMessages = chatBox.querySelectorAll(".ai-message");
+      if (aiMessages.length > 0) {
+        aiMessages[aiMessages.length - 1].innerHTML = newText;
+      }
+    }
+
+    // === GEMINI API INTEGRATION ===
+    async function getGeminiResponse(prompt) {
+      // ADD YOUR GEMINI API KEY HERE BEFORE LAUNCH
+      const apiKey = "YOUR_GEMINI_API_KEY"; 
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+      // Giving the AI a strict persona so it talks like a LaunchAxis Architect
+      const systemPrompt = "You are the LaunchAxis AI Kernel, an elite, professional business architect. You help users refine their startup ideas. Keep responses concise, professional, and highly strategic. Avoid using emojis.";
+
+      const payload = {
+        contents: [{
+          parts: [{ text: `${systemPrompt}\n\nUser: ${prompt}` }]
+        }]
+      };
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        
+        // Extracting the text from Gemini's specific JSON structure
+        if (data.candidates && data.candidates[0].content.parts[0].text) {
+            // We use replace to convert Markdown bolding (**) to HTML bolding (<b>) for the chat UI
+            let cleanText = data.candidates[0].content.parts[0].text;
+            cleanText = cleanText.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>"); 
+            return cleanText;
+        } else {
+            return "Kernel error: Invalid response from neural network.";
+        }
+      } catch (error) {
+        console.error("AI API error:", error);
+        return "Connection to LaunchAxis Kernel lost. Please try again.";
+      }
+    }
+  </script>
 </body>
-   <script>
-  const chatForm = document.getElementById("chatForm");
-  const chatBox = document.getElementById("chatBox");
-
-  chatForm.addEventListener("submit", async function (e) {
-    e.preventDefault();
-
-    const userInput = document.getElementById("userInput").value.trim();
-    if (!userInput) return;
-
-    appendMessage("You", userInput);
-    document.getElementById("userInput").value = "";
-
-    appendMessage("AI", "Typing...");
-
-    // === API PLACEHOLDER ===
-    const response = await getAIResponse(userInput); // Function below
-    updateLastMessage(response);
-  });
-
-  function appendMessage(sender, message) {
-    const messageElement = document.createElement("div");
-    messageElement.classList.add("message");
-    messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
-    chatBox.appendChild(messageElement);
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
-
-  function updateLastMessage(newText) {
-    const messages = chatBox.querySelectorAll(".message");
-    if (messages.length > 0) {
-      messages[messages.length - 1].innerHTML = `<strong>AI:</strong> ${newText}`;
-    }
-  }
-
-  // === Replace with your actual AI API logic ===
-  async function getAIResponse(prompt) {
-    // GPT / Gemini / DeepSeek API call placeholder
-    const apiKey = "YOUR_API_KEY_HERE";
-    const endpoint = "https://api.openai.com/v1/chat/completions"; // Or your chosen provider
-    const payload = {
-      model: "gpt-4", // or your model
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7
-    };
-
-    try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`
-        },
-        body: JSON.stringify(payload)
-      });
-
-      const data = await response.json();
-      return data.choices[0].message.content.trim();
-    } catch (error) {
-      console.error("AI API error:", error);
-      return "Sorry, something went wrong.";
-    }
-  }
-</script>
-
 </html>
