@@ -249,29 +249,49 @@
         const userData = JSON.parse(rawData);
 
         // Your Gemini Setup
-        const geminiApiKey = "AQ.Ab8RN6L7T6tsHQTA6tdWldvN-Tn8tEBizhZcP0QYdp28YbYLbg"; 
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
+        // 1. Ensure your API key is here
+const geminiApiKey = "AQ.Ab8RN6L7T6tsHQTA6tdWldvN-Tn8tEBizhZcP0QYdp28YbYLbg"; 
 
-        const systemPrompt = `
-          You are the backend architect for LaunchAxis. 
-          The user will give you a business idea. 
-          If their businessName is "Auto-Generate", you MUST invent a modern 1-2 word name for them.
-          You MUST respond with ONLY a valid JSON object. Do not use markdown blocks like \`\`\`json.
-          
-          Structure:
-          {
-            "businessName": "Name here",
-            "tagline": "Short punchy slogan",
-            "targetAudience": "Ideal customer profile",
-            "colorPalette": {
-              "primary": "Hex code",
-              "secondary": "Hex code",
-              "accent": "Hex code"
-            },
-            "services": ["Service 1", "Service 2", "Service 3"]
-          }
-        `;
+// 2. Use the exact, updated Google API Endpoint (Make sure https:// is included!)
+const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
 
+try {
+    const response = await fetch(geminiUrl, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            contents: [{
+                parts: [{
+                    text: promptText // This is your master prompt string
+                }]
+            }],
+            generationConfig: {
+                temperature: 0.7,
+                responseMimeType: "application/json" // Forces Gemini to return clean JSON
+            }
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error(`Gemini API rejected the request: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    // 3. Safely extract the data
+    const aiResponseText = data.candidates[0].content.parts[0].text;
+    
+    // 4. Parse the JSON string into an actual JavaScript object
+    const finalBusinessData = JSON.parse(aiResponseText);
+
+    // ... (Your code to save to Firebase goes here) ...
+
+} catch (error) {
+    console.error("Kernel AI Failure:", error);
+    alert("AI Generation failed. Check the console for exact details.");
+}
         const payload = {
           contents: [{
             parts: [{ text: `${systemPrompt}\n\nUser Data: ${JSON.stringify(userData)}` }]

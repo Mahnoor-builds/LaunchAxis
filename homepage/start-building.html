@@ -217,62 +217,49 @@
     </form>
   </div>
 
-  <script type="module">
-  // Firebase Imports
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-  import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-  
-  // Your Firebase Config
-  const firebaseConfig = {
-    apiKey: "AIzaSyCgW3AW6wuebd8nde-Udenu-3X6hPbLkhY",
-    authDomain: "launchaxis.firebaseapp.com",
-    projectId: "launchaxis",
-    storageBucket: "launchaxis.firebasestorage.app",
-    messagingSenderId: "986994724231",
-    appId: "1:986994724231:web:cf895161f7cf6c366a9722"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const realtimeDB = getDatabase(app);
-
-  // Handle Form Submission
+  <script>
   // Handle Form Submission
   document.getElementById("multiStepForm").addEventListener("submit", function (e) {
+      // 1. Stop the page from refreshing instantly
       e.preventDefault();
 
-      const businessName = document.getElementById("businessName").value.trim();
-      const businessDesc = document.getElementById("businessDesc").value.trim();
-      const businessType = document.querySelector("input[name='businessType']:checked")?.value || "";
-      const needs = [...document.querySelectorAll("input[name='needs']:checked")].map(cb => cb.value);
-      const userType = document.querySelector("input[name='userType']:checked")?.value || "";
-      const details = document.getElementById("details").value.trim();
-      const email = document.getElementById("email").value.trim();
+      try {
+          // 2. Gather the form inputs
+          const businessName = document.getElementById("businessName").value.trim();
+          const businessDesc = document.getElementById("businessDesc").value.trim();
+          const businessType = document.querySelector("input[name='businessType']:checked")?.value || "";
+          const needs = [...document.querySelectorAll("input[name='needs']:checked")].map(cb => cb.value);
+          const userType = document.querySelector("input[name='userType']:checked")?.value || "";
+          const details = document.getElementById("details").value.trim();
+          const email = document.getElementById("email").value.trim();
 
-      // We removed businessName from the strict validation!
-      if (!email || !businessType) {
-        alert("Please fill all required fields.");
-        return;
+          // 3. Validation Check
+          if (!email || !businessType) {
+            alert("Please fill all required fields.");
+            return;
+          }
+
+          // 4. Package data for the AI Kernel
+          const userData = {
+            businessName: businessName || "Auto-Generate", 
+            businessDesc,
+            businessType,
+            preferences: needs,
+            userType,
+            extraDetails: details,
+            email
+          };
+
+          // 5. Store in temporary browser memory
+          localStorage.setItem("launchAxisTempData", JSON.stringify(userData));
+
+          // 6. Jump to the cinematic loading screen
+          window.location.href = "./loading.html";
+
+      } catch (error) {
+          console.error("Form collection failed:", error);
+          alert("An error occurred. Open the developer console (Inspect -> Console) to see the details.");
       }
-
-      // Package the data
-      const userData = {
-        businessName: businessName || "Auto-Generate", // If blank, tells AI to invent one
-        businessDesc,
-        businessType,
-        preferences: needs,
-        userType,
-        extraDetails: details,
-        email
-      };
-
-      // Store in temporary browser memory
-      localStorage.setItem("launchAxisTempData", JSON.stringify(userData));
-
-      // Instantly go to the cinematic loading screen
-      window.location.href = "loading.html"; 
   });
   </script>
 </body>
