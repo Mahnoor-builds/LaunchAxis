@@ -168,7 +168,7 @@
         
         <div class="form-group">
           <label for="businessName">Business Name</label>
-          <input type="text" id="businessName" name="businessName" required placeholder="e.g. Neon Studios" />
+          <input type="text" id="businessName" name="businessName" placeholder="e.g. Neon Studios" />
         </div>
 
         <div class="form-group">
@@ -239,7 +239,8 @@
   const realtimeDB = getDatabase(app);
 
   // Handle Form Submission
-  document.getElementById("multiStepForm").addEventListener("submit", async function (e) {
+  // Handle Form Submission
+  document.getElementById("multiStepForm").addEventListener("submit", function (e) {
       e.preventDefault();
 
       const businessName = document.getElementById("businessName").value.trim();
@@ -250,37 +251,28 @@
       const details = document.getElementById("details").value.trim();
       const email = document.getElementById("email").value.trim();
 
-      // Validate
-      if (!businessName || !email || !businessType) {
+      // We removed businessName from the strict validation!
+      if (!email || !businessType) {
         alert("Please fill all required fields.");
         return;
       }
 
+      // Package the data
       const userData = {
-        businessName,
+        businessName: businessName || "Auto-Generate", // If blank, tells AI to invent one
         businessDesc,
         businessType,
         preferences: needs,
         userType,
         extraDetails: details,
-        email,
-        timestamp: serverTimestamp()
+        email
       };
 
-      try {
-          // Store user setup data in Firestore
-          await addDoc(collection(db, "users"), userData);
+      // Store in temporary browser memory
+      localStorage.setItem("launchAxisTempData", JSON.stringify(userData));
 
-          // Store setup status in Realtime Database using safe key
-          const userKey = userData.email.replace(/[.#$[\]]/g, "_"); 
-          await set(ref(realtimeDB, `setupStatus/${userKey}`), "generating");
-
-          alert("Initialization initialized. Your business architecture is being generated.");
-          window.location.href = "loading.html"; // Make sure loading.html looks just as futuristic!
-      } catch (error) {
-          alert("Submission failed: " + error.message);
-          console.error("Firestore error:", error);
-      }
+      // Instantly go to the cinematic loading screen
+      window.location.href = "loading.html"; 
   });
   </script>
 </body>

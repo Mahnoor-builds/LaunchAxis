@@ -2,86 +2,335 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Preparing Your Setup – LaunchAxis</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kernel Initialization | LaunchAxis</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
   <style>
+    /* =========================================
+       LAUNCHAXIS CINEMATIC LOADER
+       ========================================= */
+    
+    :root {
+      --bg-dark: #050505;
+      --card-bg: rgba(10, 10, 10, 0.6);
+      --neon-cyan: #00f0ff;
+      --neon-purple: #8B5CF6;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-main: #FFFFFF;
+      --text-muted: #888888;
+    }
+
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #0f172a;
-      color: #f1f5f9;
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
       display: flex;
       justify-content: center;
       align-items: center;
-      flex-direction: column;
       height: 100vh;
-      margin: 0;
+      overflow: hidden;
+      /* Subtle glowing background effect */
+      background-image: radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.1), transparent 60%);
+    }
+
+    .loader-container {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 3rem 2.5rem;
+      width: 100%;
+      max-width: 450px;
       text-align: center;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    /* The Glowing Orbit Core */
+    .core-wrapper {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .core-icon {
+      font-size: 2rem;
+      color: var(--neon-cyan);
+      text-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+      z-index: 2;
+    }
+
+    .orbit-ring {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 2px dashed rgba(139, 92, 246, 0.5);
+      animation: spin 6s linear infinite;
+    }
+
+    .orbit-ring::before {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: 50%;
+      width: 8px;
+      height: 8px;
+      background: var(--neon-purple);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--neon-purple);
     }
 
     h1 {
-      font-size: 2rem;
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.5px;
+    }
+
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 0.9rem;
       margin-bottom: 2rem;
-      animation: fadeIn 1s ease-in-out;
     }
 
-    .step {
-      font-size: 1.3rem;
-      margin-top: 1rem;
-      animation: fadeIn 1s ease-in-out;
-      min-height: 30px;
+    /* Sleek Progress Bar */
+    .progress-track {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+      position: relative;
     }
 
-    .loader {
-      border: 5px solid #1e293b;
-      border-top: 5px solid #38bdf8;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      animation: spin 1s linear infinite;
-      margin-bottom: 25px;
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan));
+      border-radius: 10px;
+      transition: width 0.5s ease-out;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    /* Terminal Log Window */
+    .terminal-window {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      height: 110px;
+      text-align: left;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+    .log-line {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      opacity: 0.5;
+      transform: translateY(10px);
+      animation: slideUp 0.3s forwards;
     }
+
+    .log-line.active {
+      color: var(--neon-cyan);
+      opacity: 1;
+      text-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+    }
+
+    .log-line i {
+      margin-right: 8px;
+      font-size: 0.7rem;
+    }
+
+    /* Keyframes */
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    @keyframes slideUp { to { transform: translateY(0); } }
+
   </style>
 </head>
 <body>
-  <div class="loader"></div>
-  <h1>🚀 Launching Your Business Setup</h1>
-  <div class="step" id="status">Initializing...</div>
 
-  <script>
+  <div class="loader-container">
+    <div class="core-wrapper">
+      <div class="orbit-ring"></div>
+      <i class="fa-solid fa-microchip core-icon"></i>
+    </div>
+
+    <h1>Architecting Workspace</h1>
+    <p class="subtitle">Please wait while the AI Kernel builds your environment.</p>
+
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="terminal-window" id="terminalWindow">
+      </div>
+  </div>
+
+  <script type="module">
+    // 1. Firebase Imports
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+    // 2. Your Firebase Config (Paste your keys here)
+    // Your Firebase Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyCgW3AW6wuebd8nde-Udenu-3X6hPbLkhY",
+    authDomain: "launchaxis.firebaseapp.com",
+    projectId: "launchaxis",
+    storageBucket: "launchaxis.firebasestorage.app",
+    messagingSenderId: "986994724231",
+    appId: "1:986994724231:web:cf895161f7cf6c366a9722"
+  };
+
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // 3. UI Animation Setup
     const steps = [
-      "🔍 Reading your business idea...",
-      "🧠 AI is preparing your assets...",
-      "🎨 Designing your brand identity...",
-      "💻 Building your website layout...",
-      "📦 Finalizing your setup..."
+      { text: "Authenticating LaunchAxis Kernel...", icon: "fa-solid fa-lock" },
+      { text: "Analyzing startup parameters...", icon: "fa-solid fa-server" },
+      { text: "Synthesizing neural brand identity...", icon: "fa-solid fa-wand-magic-sparkles" },
+      { text: "Compiling dashboard architecture...", icon: "fa-solid fa-cubes" },
+      { text: "Establishing secure database uplink...", icon: "fa-solid fa-network-wired" }
     ];
 
     let currentStep = 0;
-    const statusEl = document.getElementById("status");
+    let isApiFinished = false; 
+    const terminalWindow = document.getElementById("terminalWindow");
+    const progressFill = document.getElementById("progressFill");
 
-    function showNextStep() {
+    // 4. The Animation Function
+    function logNextStep() {
+      if (isApiFinished) return; // Stop animation if API is done early
+
       if (currentStep < steps.length) {
-        statusEl.innerText = steps[currentStep];
+        const previousLines = document.querySelectorAll('.log-line');
+        previousLines.forEach(line => line.classList.remove('active'));
+
+        const newLine = document.createElement("div");
+        newLine.className = "log-line active";
+        newLine.innerHTML = `<i class="${steps[currentStep].icon}"></i> ${steps[currentStep].text}`;
+        terminalWindow.appendChild(newLine);
+
+        // Cap visual progress at 90% while waiting for the API
+        const progressPercentage = ((currentStep + 1) / steps.length) * 90;
+        progressFill.style.width = `${progressPercentage}%`;
+        terminalWindow.scrollTop = terminalWindow.scrollHeight;
+
         currentStep++;
-        setTimeout(showNextStep, 2000);
-      } else {
-        statusEl.innerText = "✅ Setup Complete! Redirecting...";
-        setTimeout(() => {
-          window.location.href = "dashboard.html";
-        }, 1500);
+        const nextDelay = Math.random() * 1000 + 1000;
+        setTimeout(logNextStep, nextDelay);
       }
     }
 
-    // Start animation sequence
-    setTimeout(showNextStep, 1000);
+    // 5. The Real API Engine
+    async function executeLaunchAxisKernel() {
+      try {
+        // Grab the form data passed from start-building.html
+        const rawData = localStorage.getItem("launchAxisTempData");
+        if (!rawData) throw new Error("No startup data found in memory.");
+        const userData = JSON.parse(rawData);
+
+        // Your Gemini Setup
+        const geminiApiKey = "AQ.Ab8RN6L7T6tsHQTA6tdWldvN-Tn8tEBizhZcP0QYdp28YbYLbg"; 
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
+
+        const systemPrompt = `
+          You are the backend architect for LaunchAxis. 
+          The user will give you a business idea. 
+          If their businessName is "Auto-Generate", you MUST invent a modern 1-2 word name for them.
+          You MUST respond with ONLY a valid JSON object. Do not use markdown blocks like \`\`\`json.
+          
+          Structure:
+          {
+            "businessName": "Name here",
+            "tagline": "Short punchy slogan",
+            "targetAudience": "Ideal customer profile",
+            "colorPalette": {
+              "primary": "Hex code",
+              "secondary": "Hex code",
+              "accent": "Hex code"
+            },
+            "services": ["Service 1", "Service 2", "Service 3"]
+          }
+        `;
+
+        const payload = {
+          contents: [{
+            parts: [{ text: `${systemPrompt}\n\nUser Data: ${JSON.stringify(userData)}` }]
+          }]
+        };
+
+        // Fire the API Request
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const apiData = await response.json();
+        const generatedJSON = JSON.parse(apiData.candidates[0].content.parts[0].text);
+
+        // Merge the AI data with the user's original form data
+        const finalDashboardData = {
+          ...userData,
+          aiArchitecture: generatedJSON,
+          createdAt: serverTimestamp()
+        };
+
+        // Save everything securely to Firebase Firestore
+        // We use the user's email as the document ID so we can easily find it later
+        await setDoc(doc(db, "users", userData.email), finalDashboardData);
+
+        // SIGNAL COMPLETE: Override the animation!
+        isApiFinished = true;
+        progressFill.style.width = `100%`;
+        
+        const previousLines = document.querySelectorAll('.log-line');
+        previousLines.forEach(line => line.classList.remove('active'));
+
+        const successLine = document.createElement("div");
+        successLine.className = "log-line active";
+        successLine.innerHTML = `<i class="fa-solid fa-check-double"></i> Kernel Execution Complete. Redirecting...`;
+        successLine.style.color = "#10B981"; // Success Green
+        terminalWindow.appendChild(successLine);
+        terminalWindow.scrollTop = terminalWindow.scrollHeight;
+
+        // Redirect to dashboard
+        setTimeout(() => {
+          window.location.href = "http://localhost:3000/admin";
+        }, 1500);
+
+      } catch (error) {
+        console.error("Kernel Failure:", error);
+        alert("LaunchAxis Kernel encountered an error. Check the console.");
+      }
+    }
+
+    // Start the visual trickery
+    setTimeout(logNextStep, 500);
+    
+    // Start the actual heavy lifting
+    executeLaunchAxisKernel();
+
   </script>
+
 </body>
 </html>
