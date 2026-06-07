@@ -52,10 +52,10 @@ const Sidebar = ({ activeSection, setActiveSection, theme, toggleTheme, branding
         <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
         <label className="switch">
           <input 
-            type="checkbox" 
-            checked={theme === 'light'} 
-            onChange={toggleTheme} 
-          />
+  type="checkbox" 
+  defaultChecked={theme === 'light'} 
+  onChange={toggleTheme} 
+/>
           <span className="slider"></span>
         </label>
       </div>

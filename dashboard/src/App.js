@@ -30,14 +30,18 @@ const AdminPanel = ({
   transactions, addTransaction, accounts, addAccount,
   activeSection, setActiveSection,
   siteConfig, setSiteConfig,
-  features // Added to hide/show tabs based on AI preferences
+  features, // <--- ADDED THE COMMA HERE!
+  theme, toggleTheme 
 }) => {
   return (
-    <div className="app-container" style={{ '--brand-color': siteConfig.themeColor }}>
+    // Make sure to use the backticks (`) and the ${theme} variable here!
+    <div className={`app-container ${theme}`} style={{ '--brand-color': siteConfig.themeColor }}>
       <Sidebar 
         activeSection={activeSection} setActiveSection={setActiveSection}
         branding={branding}
-        features={features} // Pass features to Sidebar so it knows what to hide
+        features={features} 
+        theme={theme}             
+        toggleTheme={toggleTheme} 
       />
       <main className="main">
         {activeSection === 'dashboard' && <Dashboard products={products} transactions={transactions} branding={branding} setActiveSection={setActiveSection} orders={orders} />}
@@ -64,6 +68,13 @@ function App() {
     name: 'Loading...', slogan: '', industry: '',
     logo: '', owners: [{ name: 'Admin', role: 'Founder' }]
   });
+
+// --- THEME STATE ---
+  const [theme, setTheme] = useState('dark'); // Defaulting to your awesome dark mode
+
+  const toggleTheme = () => {
+    setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark');
+  };
 
   // --- WEBSITE CONFIGURATION ---
   const [siteConfig, setSiteConfig] = useState({
@@ -167,6 +178,14 @@ function App() {
                 themeColor: aiData.colorPalette.primary || '#2dd4bf' 
             }));
 
+            // 4. UNLOCK THE DASHBOARD TABS
+            // This tells React to stop hiding your protected pages!
+            setUserFeatures({
+                wantsWebsite: true,
+                wantsAccounting: true,
+                wantsBranding: true
+            });
+
         } else {
             console.log("No Firebase document found for this email.");
         }
@@ -235,6 +254,8 @@ function App() {
             activeSection={activeSection} setActiveSection={setActiveSection}
             siteConfig={siteConfig} setSiteConfig={setSiteConfig}
             features={userFeatures}
+            theme={theme}              
+            toggleTheme={toggleTheme}
           />
         } />
 
