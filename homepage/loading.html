@@ -183,32 +183,30 @@
   </div>
 
   <script type="module">
-    // 1. Firebase Imports
+    // 1. Firebase Imports (These tell the code what initializeApp is)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
     import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-    // 2. Your Firebase Config (Paste your keys here)
-    // Your Firebase Config
-  const firebaseConfig = {
-    apiKey: "AIzaSyCgW3AW6wuebd8nde-Udenu-3X6hPbLkhY",
-    authDomain: "launchaxis.firebaseapp.com",
-    projectId: "launchaxis",
-    storageBucket: "launchaxis.firebasestorage.app",
-    messagingSenderId: "986994724231",
-    appId: "1:986994724231:web:cf895161f7cf6c366a9722"
-  };
-
+    // 2. Your Firebase Config (Paste your keys here!)
+    const firebaseConfig = {
+        apiKey: "AIzaSyCgW3AW6wuebd8nde-Udenu-3X6hPbLkhY",
+        authDomain: "launchaxis.firebaseapp.com",
+        projectId: "launchaxis",
+        storageBucket: "launchaxis.firebasestorage.app",
+        messagingSenderId: "986994724231",
+        appId: "1:986994724231:web:cf895161f7cf6c366a9722"
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
     // 3. UI Animation Setup
     const steps = [
-      { text: "Authenticating LaunchAxis Kernel...", icon: "fa-solid fa-lock" },
-      { text: "Analyzing startup parameters...", icon: "fa-solid fa-server" },
-      { text: "Synthesizing neural brand identity...", icon: "fa-solid fa-wand-magic-sparkles" },
-      { text: "Compiling dashboard architecture...", icon: "fa-solid fa-cubes" },
-      { text: "Establishing secure database uplink...", icon: "fa-solid fa-network-wired" }
+        { text: "Authenticating LaunchAxis Kernel...", icon: "fa-solid fa-lock" },
+        { text: "Analyzing startup parameters...", icon: "fa-solid fa-server" },
+        { text: "Synthesizing neural brand identity...", icon: "fa-solid fa-wand-magic-sparkles" },
+        { text: "Compiling dashboard architecture...", icon: "fa-solid fa-cubes" },
+        { text: "Establishing secure database uplink...", icon: "fa-solid fa-network-wired" }
     ];
 
     let currentStep = 0;
@@ -218,139 +216,91 @@
 
     // 4. The Animation Function
     function logNextStep() {
-      if (isApiFinished) return; // Stop animation if API is done early
+        if (isApiFinished) return; 
 
-      if (currentStep < steps.length) {
-        const previousLines = document.querySelectorAll('.log-line');
-        previousLines.forEach(line => line.classList.remove('active'));
+        if (currentStep < steps.length) {
+            const previousLines = document.querySelectorAll('.log-line');
+            previousLines.forEach(line => line.classList.remove('active'));
 
-        const newLine = document.createElement("div");
-        newLine.className = "log-line active";
-        newLine.innerHTML = `<i class="${steps[currentStep].icon}"></i> ${steps[currentStep].text}`;
-        terminalWindow.appendChild(newLine);
+            const newLine = document.createElement("div");
+            newLine.className = "log-line active";
+            newLine.innerHTML = `<i class="${steps[currentStep].icon}"></i> ${steps[currentStep].text}`;
+            terminalWindow.appendChild(newLine);
 
-        // Cap visual progress at 90% while waiting for the API
-        const progressPercentage = ((currentStep + 1) / steps.length) * 90;
-        progressFill.style.width = `${progressPercentage}%`;
-        terminalWindow.scrollTop = terminalWindow.scrollHeight;
+            const progressPercentage = ((currentStep + 1) / steps.length) * 90;
+            progressFill.style.width = `${progressPercentage}%`;
+            terminalWindow.scrollTop = terminalWindow.scrollHeight;
 
-        currentStep++;
-        const nextDelay = Math.random() * 1000 + 1000;
-        setTimeout(logNextStep, nextDelay);
-      }
+            currentStep++;
+            const nextDelay = Math.random() * 1000 + 1000;
+            setTimeout(logNextStep, nextDelay);
+        }
     }
 
     // 5. The Real API Engine
     async function executeLaunchAxisKernel() {
-      try {
-        // Grab the form data passed from start-building.html
-        const rawData = localStorage.getItem("launchAxisTempData");
-        if (!rawData) throw new Error("No startup data found in memory.");
-        const userData = JSON.parse(rawData);
+        try {
+            // Grab data
+            const rawData = localStorage.getItem("launchAxisTempData");
+            if (!rawData) throw new Error("No startup data found.");
+            const userData = JSON.parse(rawData);
 
-        // Your Gemini Setup
-        // 1. Ensure your API key is here
-const geminiApiKey = "AQ.Ab8RN6L7T6tsHQTA6tdWldvN-Tn8tEBizhZcP0QYdp28YbYLbg"; 
+            // Define your AI inputs (Paste Gemini Key here!)
+            const geminiApiKey = "AQ.Ab8RN6L7T6tsHQTA6tdWldvN-Tn8tEBizhZcP0QYdp28YbYLbg";
+            const systemPrompt = "You are a professional business architect. Return ONLY valid JSON containing: businessName, tagline, targetAudience, and colorPalette (primary, secondary, accent hex codes).";
+            const promptText = `Generate a business plan for: ${userData.businessName}. Description: ${userData.businessDesc}. Type: ${userData.businessType}.`;
 
-// 2. Use the exact, updated Google API Endpoint (Make sure https:// is included!)
-const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
+            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`;
+            // Fire the API Request
+            const response = await fetch(geminiUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: systemPrompt + "\n\n" + promptText }] }],
+                    generationConfig: { responseMimeType: "application/json" }
+                })
+            });
 
-try {
-    const response = await fetch(geminiUrl, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            contents: [{
-                parts: [{
-                    text: promptText // This is your master prompt string
-                }]
-            }],
-            generationConfig: {
-                temperature: 0.7,
-                responseMimeType: "application/json" // Forces Gemini to return clean JSON
-            }
-        })
-    });
+            if (!response.ok) throw new Error(`API rejected: ${response.status}`);
 
-    if (!response.ok) {
-        throw new Error(`Gemini API rejected the request: ${response.status}`);
+            const apiData = await response.json();
+            const generatedJSON = JSON.parse(apiData.candidates[0].content.parts[0].text);
+
+            // Merge Data
+            const finalDashboardData = {
+                ...userData,
+                aiArchitecture: generatedJSON,
+                createdAt: serverTimestamp()
+            };
+
+            // Save to Firebase
+            await setDoc(doc(db, "users", userData.email), finalDashboardData);
+
+            // Success Handling
+            isApiFinished = true;
+            progressFill.style.width = `100%`;
+            
+            const successLine = document.createElement("div");
+            successLine.className = "log-line active";
+            successLine.innerHTML = `<i class="fa-solid fa-check-double"></i> Kernel Execution Complete. Redirecting to Dashboard...`;
+            successLine.style.color = "#10B981";
+            terminalWindow.appendChild(successLine);
+
+            setTimeout(() => {
+                window.location.href = "http://localhost:3000/admin";
+            }, 1500);
+
+        } catch (error) {
+            console.error("Kernel Failure:", error);
+            alert("LaunchAxis Kernel encountered an error. Check console.");
+        }
     }
 
-    const data = await response.json();
-    
-    // 3. Safely extract the data
-    const aiResponseText = data.candidates[0].content.parts[0].text;
-    
-    // 4. Parse the JSON string into an actual JavaScript object
-    const finalBusinessData = JSON.parse(aiResponseText);
-
-    // ... (Your code to save to Firebase goes here) ...
-
-} catch (error) {
-    console.error("Kernel AI Failure:", error);
-    alert("AI Generation failed. Check the console for exact details.");
-}
-        const payload = {
-          contents: [{
-            parts: [{ text: `${systemPrompt}\n\nUser Data: ${JSON.stringify(userData)}` }]
-          }]
-        };
-
-        // Fire the API Request
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        const apiData = await response.json();
-        const generatedJSON = JSON.parse(apiData.candidates[0].content.parts[0].text);
-
-        // Merge the AI data with the user's original form data
-        const finalDashboardData = {
-          ...userData,
-          aiArchitecture: generatedJSON,
-          createdAt: serverTimestamp()
-        };
-
-        // Save everything securely to Firebase Firestore
-        // We use the user's email as the document ID so we can easily find it later
-        await setDoc(doc(db, "users", userData.email), finalDashboardData);
-
-        // SIGNAL COMPLETE: Override the animation!
-        isApiFinished = true;
-        progressFill.style.width = `100%`;
-        
-        const previousLines = document.querySelectorAll('.log-line');
-        previousLines.forEach(line => line.classList.remove('active'));
-
-        const successLine = document.createElement("div");
-        successLine.className = "log-line active";
-        successLine.innerHTML = `<i class="fa-solid fa-check-double"></i> Kernel Execution Complete. Redirecting...`;
-        successLine.style.color = "#10B981"; // Success Green
-        terminalWindow.appendChild(successLine);
-        terminalWindow.scrollTop = terminalWindow.scrollHeight;
-
-        // Redirect to dashboard
-        setTimeout(() => {
-          window.location.href = "http://localhost:3000/admin";
-        }, 1500);
-
-      } catch (error) {
-        console.error("Kernel Failure:", error);
-        alert("LaunchAxis Kernel encountered an error. Check the console.");
-      }
-    }
-
-    // Start the visual trickery
+    // Start the system
     setTimeout(logNextStep, 500);
-    
-    // Start the actual heavy lifting
+    console.log("Kernel Ignition Sequence Started...");
     executeLaunchAxisKernel();
-
-  </script>
+</script>
 
 </body>
 </html>

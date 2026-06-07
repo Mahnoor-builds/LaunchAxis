@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from './firebaseConfig'; // Make sure this path is correct for your setup!
 // IMPORT YOUR NEW AI ENGINE HERE
 import { generateBusinessSetup } from './components/AiEngine'; 
 
@@ -127,33 +128,59 @@ function App() {
   // =========================================
   // 3. THE AI ENGINE CONNECTION
   // =========================================
+  // =========================================
+  // 3. THE LIVE FIREBASE CONNECTION
+  // =========================================
   useEffect(() => {
-    const fireUpAiEngine = async () => {
-      // Mock data for testing. Later, this will pull directly from Firestore!
-      const mockUserForm = {
-        businessName: "Cyber Nexus",
-        businessType: "Products",
-        businessDesc: "High-end futuristic tech accessories.",
-        email: "ceo@launchaxis.com",
-        preferences: ["Business Website", "Accounting Setup", "Logo & Branding Kit"]
-      };
+    const fetchLiveKernelData = async () => {
+      try {
+        // 1. Get the email we saved during the HTML form step
+        let targetEmail = "ceo@ecosole.store"; // Fallback to your test email
+        const rawMemory = localStorage.getItem("launchAxisTempData");
+        if (rawMemory) {
+            targetEmail = JSON.parse(rawMemory).email;
+        }
 
-      console.log("Sending user data to AI Engine...");
-      const aiResult = await generateBusinessSetup(mockUserForm);
-      
-      if (aiResult) {
-        // Automatically overwrite the default states with the AI generated data!
-        setBranding(aiResult.branding);
-        setProducts(aiResult.products);
-        setUserFeatures(aiResult.features);
-        setSiteConfig(prev => ({ ...prev, themeColor: aiResult.themeColor }));
+        console.log("Connecting to Firebase for:", targetEmail);
+
+        // 2. Fetch the REAL AI data from Firestore
+        const docRef = doc(db, "users", targetEmail);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const liveData = docSnap.data();
+            const aiData = liveData.aiArchitecture;
+
+            console.log("SUCCESS! Real AI Data Loaded:", aiData);
+
+            // 3. Paint the React UI with the real data!
+            setBranding(prev => ({
+                ...prev,
+                name: aiData.businessName,
+                slogan: aiData.tagline,
+                industry: liveData.businessType
+            }));
+            
+            // Apply the AI colors to the website configuration
+            setSiteConfig(prev => ({ 
+                ...prev, 
+                themeColor: aiData.colorPalette.primary || '#2dd4bf' 
+            }));
+
+        } else {
+            console.log("No Firebase document found for this email.");
+        }
+      } catch (error) {
+          console.error("Firebase Sync Error:", error);
+      } finally {
+          setIsAiLoading(false);
       }
-      
-      setIsAiLoading(false);
     };
 
-    fireUpAiEngine();
+    fetchLiveKernelData();
   }, []);
+
+    
 
   // --- HELPERS ---
   const updateOrderStatus = (id, status, trackId) => {
