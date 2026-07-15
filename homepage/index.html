@@ -3,329 +3,401 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LaunchAxis | AI Business Infrastructure</title>
+    <title>LaunchAxis — AI Business OS</title>
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body>
-    
-    <!-- PREMIUM STICKY NAVBAR -->
-    <header class="main-header">
-        <nav class="navbar">
-            <div class="logo">
-                <img src="images/mainlogo.png" alt="LaunchAxis Logo" class="logo-img" onerror="this.style.display='none'" />
-                <span class="logo-text">LaunchAxis</span>
+
+    <!-- SPACE ENVIRONMENT ACCENT CORES -->
+    <div class="space-ambient-glow"></div>
+    <div class="cosmic-dust-overlay"></div>
+
+    <!-- 1. FLOATING GLASS NAVBAR -->
+    <nav class="glass-navbar">
+        <div class="nav-brand">
+            <span class="logo-rocket">▲</span> LaunchAxis
+        </div>
+        <div class="nav-menu">
+            <a href="#platform" class="nav-link">Home</a>
+            <div class="dropdown-trigger">Platform <i class="fa-solid fa-chevron-down"></i></div>
+            <div class="dropdown-trigger">Solutions <i class="fa-solid fa-chevron-down"></i></div>
+            <div class="dropdown-trigger">Resources <i class="fa-solid fa-chevron-down"></i></div>
+            <div class="dropdown-trigger">Company <i class="fa-solid fa-chevron-down"></i></div>
+            <a href="#pricing" class="nav-link">Pricing</a>
+        </div>
+        <div class="nav-actions">
+            <a href="auth.html" class="login-link">Signup</a>
+            <a href="start-building.html" class="btn-pill-cta" style="text-decoration: none;">Start building &rarr;</a>
+        </div>
+    </nav>
+
+    <!-- 2. HIGH-ALTITUDE HERO BLOCK -->
+    <header id="platform" class="hero-section">
+        <div class="hero-container">
+            <div class="announcement-pill">
+                <span class="pulse-dot"></span> LaunchAxis v2 — AI Business OS is live &nbsp;&nearr;
             </div>
-            <ul class="nav-links">
-                <li><a href="#capabilities" class="ghost-link">Capabilities</a></li>
-                <li><a href="#features" class="ghost-link">Features</a></li>
-                <li><a href="#pricing" class="ghost-link">Pricing</a></li>
-                <li><a href="auth.html" class="auth-link">Signup</a></li>
-                <li><a href="start-building.html" class="cta-nav-button">Start Building</a></li>
-            </ul>
-        </nav>
+            
+            <h1 class="hero-main-title">
+                Launch your business <br>into <span class="gradient-text-glow">orbit.</span>
+            </h1>
+            
+            <p class="hero-description">
+                Describe your idea in a sentence. LaunchAxis extracts your market, auto-generates your brand identity, spins up a live responsive web store, and sets up your financial ledger — a complete operational business, instantly.
+            </p>
+
+            <!-- DYNAMIC AI TERMINAL CAPSULE -->
+            <div class="terminal-capsule">
+                <div class="terminal-indicator">
+                    <i class="fa-solid fa-microchip"></i>
+                </div>
+                <div class="terminal-text-wrapper">
+                    <span class="terminal-prefix">Engine_Status:</span>
+                    <span class="typewriter-text" id="typewriter-text">Awaiting founder input...</span><span class="cursor">&nbsp;</span>
+                </div>
+                <a href="start-building.html" class="btn-launch-rocket" style="text-decoration: none;">
+                    Start building <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <!-- DYNAMIC CAPABILITY PILLS -->
+            <div class="suggestion-tray">
+                <span class="tray-label">Systems Online:</span>
+                <span class="suggestion-pill">Brand Generation</span>
+                <span class="suggestion-pill">Live Web Storefronts</span>
+                <span class="suggestion-pill">Financial Ledgers</span>
+            </div>
+
+
+        <!-- FLOATING ROCKET VISUAL -->
+        <div class="hero-visual" style="position: absolute; right: 12%; top: 22%; animation: floatY 6s ease-in-out infinite; z-index: 5;">
+            <svg width="140" height="200" viewBox="0 0 120 180" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0px 15px 25px rgba(45, 212, 191, 0.4));">
+                <!-- Cyan Thrust Flame -->
+                <path d="M50 150 Q60 185 70 150 Z" fill="#2dd4bf" />
+                <!-- Left Silver Fin -->
+                <path d="M40 100 L10 140 L40 140 Z" fill="#94a3b8" />
+                <!-- Right Silver Fin -->
+                <path d="M80 100 L110 140 L80 140 Z" fill="#94a3b8" />
+                <!-- Main Sleek White Body -->
+                <path d="M60 10 C30 50 40 150 40 150 L80 150 C80 150 90 50 60 10 Z" fill="#f8fafc" />
+                <!-- Cyan Glowing Window -->
+                <circle cx="60" cy="70" r="14" fill="#050b14" stroke="#2dd4bf" stroke-width="4" />
+            </svg>
+        </div>
+        
+        <div class="cosmic-floater-saturn"></div>
     </header>
 
-    <!-- CINEMATIC HERO & ZOOM MOCKUP CONTAINER -->
-    <section class="hero-zoom-chamber" id="home">
-        <div class="hero-space-bg"></div>
+    <!-- 3. VALUE PROPOSITION SUB-STRIP -->
+    <section class="trust-value-strip">
+        <div class="trust-item"><i class="fa-solid fa-circle-check"></i> No credit card</div>
+        <div class="trust-item"><i class="fa-solid fa-circle-check"></i> Free forever plan</div>
+        <div class="trust-item"><i class="fa-solid fa-circle-check"></i> Cancel anytime</div>
+    </section>
+
+    <!-- 4. CORE PLATFORM BANNER HYPERHEADLINE -->
+    <section class="section-divider-title">
+        <span class="section-sub-badge">THE PLATFORM</span>
+        <h2>One AI cockpit for <span class="cyan-accent">every part</span> of your business.</h2>
+        <p>Replace Shopify, QuickBooks, Canva, and a dozen open browser tabs with a single, intelligent interface.</p>
+    </section>
+
+    <!-- 5. THREE-MODULE BENTO MATRIX (DASHBOARD HIGHLIGHTS) -->
+    <section class="bento-grid-container">
+        <!-- Main Large Dashboard Render Window -->
+        <div class="bento-card large-preview-window">
+            <div class="window-header-bar">
+                <span class="header-badge">BUSINESS COMMAND CENTER</span>
+                <h3>A live view of everything — revenue, customers, inventory, and ledger settings on one canvas.</h3>
+            </div>
+            <div class="mockup-frame-box">
+                <!-- Visual simulation container representing the dark premium dashboard dashboard -->
+                <div class="mockup-inner-dashboard">
+                    <div class="mockup-sidebar"></div>
+                    <div class="mockup-main-content">
+                        <div class="mockup-metrics-row"></div>
+                        <div class="mockup-chart-box"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side Stack Card 1: AI Assistant Info Layer -->
+        <div class="bento-card side-stack-card">
+            <div class="card-text-header">
+                <i class="fa-solid fa-robot card-icon-cyan"></i>
+                <h4>Your always-on co-founder. Ask anything, configure everything.</h4>
+            </div>
+            <div class="interactive-prompt-list">
+                <div class="prompt-pill-item">&rsaquo; Draft my shipping & return policy layouts.</div>
+                <div class="prompt-pill-item">&rsaquo; Analyze my margin threshold configurations.</div>
+                <div class="prompt-pill-item">&rsaquo; Generate this month's product copy updates.</div>
+            </div>
+        </div>
+
+        <!-- Right Side Stack Card 2: Financial Matrix View -->
+        <div class="bento-card side-stack-card">
+            <div class="card-text-header">
+                <i class="fa-solid fa-wallet card-icon-cyan"></i>
+                <h4>Finance on Autopilot</h4>
+                <p>Invoices, cash runways, and expense structures — reconciled continuously.</p>
+            </div>
+            <div class="mockup-mini-chart">
+                <div class="mini-chart-text">MRR <br><span class="mini-chart-val">PKR 128,430</span></div>
+                <div class="mini-chart-wave"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. ENGINE GRID DETAIL EXPANSION SECTIONS -->
+    <section class="engine-split-showcase">
+        <!-- Left: Web Builder Module -->
+        <div class="showcase-card">
+            <div class="showcase-mockup-pane">
+                <div class="website-builder-interface-simulation"></div>
+            </div>
+            <div class="showcase-content-pane">
+                <span class="module-label-cyan">WEBSITE BUILDER</span>
+                <h3>Type it. See it live.</h3>
+                <p>A production-ready e-commerce website with an integrated store, product grids, custom domains, and fast global CDN hosting — generated instantly from your prompt.</p>
+                <ul class="feature-bullets">
+                    <li><i class="fa-solid fa-circle-check"></i> Instant preview with toggle & text modifications</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Clean responsive templates optimized for checkout conversions</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Fully secure isolated configuration data pipelines</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. THE 4-STEP SEQUENTIAL TIMELINE PIPELINE -->
+    <section class="four-steps-section">
+        <div class="section-divider-title">
+            <span class="section-sub-badge">FROM IDEA TO ORBIT</span>
+            <h2>Four steps. One launch.</h2>
+            <p>No tedious configurations, no bloated plugins, no technical learning curve. Just a direct launch countdown.</p>
+        </div>
+
+        <div class="steps-horizontal-matrix">
+            <div class="step-card">
+                <div class="step-card-num">01</div>
+                <div class="step-icon-box"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                <h5>Describe your idea</h5>
+                <p>One sentence. Any concept. LaunchAxis extracts your core market values, market orientation, and brand persona attributes instantly.</p>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-card-num">02</div>
+                <div class="step-icon-box"><i class="fa-solid fa-palette"></i></div>
+                <h5>Meet your brand</h5>
+                <p>A customized name identity, tailored corporate logos, typography kits, and matching hex theme swatches assembled in seconds.</p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-card-num">03</div>
+                <div class="step-icon-box"><i class="fa-solid fa-globe"></i></div>
+                <h5>Your site goes live</h5>
+                <p>A production e-commerce store with an online checkout system and a beautiful catalog goes live under your dashboard management.</p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-card-num">04</div>
+                <div class="step-icon-box"><i class="fa-solid fa-circle-nodes"></i></div>
+                <h5>Full Ignition</h5>
+                <p>Your administration engine completes setup. Your real-time product trackers, order processors, and financial ledger cards deploy immediately.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 8. TIED SUBSCRIPTION PRICING PACKAGES -->
+    <section id="pricing" class="pricing-matrix-section">
+        <div class="section-divider-title">
+            <span class="section-sub-badge">PRICING</span>
+            <h2>Simple plans. Infinite altitude.</h2>
+            <p>Start completely free. Upgrade seamlessly as your operational volume shifts into scale velocity.</p>
+        </div>
+
+        <div class="pricing-cards-wrapper">
+            <!-- Tier 1 -->
+            <div class="price-tier-card">
+                <div class="tier-name">Cadet</div>
+                <div class="tier-cost">PKR 0 <span class="cost-period">/ forever</span></div>
+                <p class="tier-desc">Everything needed to test, configure, and validate your business ideas.</p>
+                <button class="btn-tier-action">Start free &rarr;</button>
+                <ul class="tier-perks">
+                    <li><i class="fa-solid fa-check"></i> AI Business Constructor</li>
+                    <li><i class="fa-solid fa-check"></i> 1 Active Storefront Site</li>
+                    <li><i class="fa-solid fa-check"></i> Core Administration Dashboard</li>
+                    <li><i class="fa-solid fa-check"></i> Standard Data Infrastructure Security</li>
+                </ul>
+            </div>
+
+            <!-- Tier 2 (Highlighted/Most Popular) -->
+            <div class="price-tier-card popular-tier-highlight">
+                <div class="popular-ribbon">MOST POPULAR</div>
+                <div class="tier-name">Pilot</div>
+                <div class="tier-cost">PKR 5,000 <span class="cost-period">/ month</span></div>
+                <p class="tier-desc">For active founders running live customer order operations and scaling logistics.</p>
+                <button class="btn-tier-action action-popular-btn">Start free trial &rarr;</button>
+                <ul class="tier-perks">
+                    <li><i class="fa-solid fa-check"></i> Everything included in Cadet</li>
+                    <li><i class="fa-solid fa-check"></i> Custom Domain Connections</li>
+                    <li><i class="fa-solid fa-check"></i> Ledger Automation & Live Finance Cards</li>
+                    <li><i class="fa-solid fa-check"></i> Priority Dynamic Theme Controls</li>
+                </ul>
+            </div>
+
+            <!-- Tier 3 -->
+            <div class="price-tier-card">
+                <div class="tier-name">Commander</div>
+                <div class="tier-cost">PKR 15,000 <span class="cost-period">/ month</span></div>
+                <p class="tier-desc">For collaborative team frameworks requiring advanced operational metrics analytics.</p>
+                <button class="btn-tier-action">Talk to sales &rarr;</button>
+                <ul class="tier-perks">
+                    <li><i class="fa-solid fa-check"></i> Everything included in Pilot</li>
+                    <li><i class="fa-solid fa-check"></i> Advanced Financial Forecasting</li>
+                    <li><i class="fa-solid fa-check"></i> Multi-User Operations Integration</li>
+                    <li><i class="fa-solid fa-check"></i> Enterprise Storage Redundancy Guardrails</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- 9. FAQ CONTAINER -->
+    <section class="faq-accordion-section">
+        <div class="section-divider-title">
+            <span class="section-sub-badge">FAQ</span>
+            <h2>Every question, answered.</h2>
+        </div>
+
+        <div class="accordion-box-wrapper">
+            <div class="faq-row active">
+                <div class="faq-question">What is LaunchAxis, exactly? <span class="faq-toggle-icon">&minus;</span></div>
+                <div class="faq-answer">LaunchAxis is an AI-driven full-stack business launch platform and operational operating system. You describe an idea, and our workspace automatically constructs your visual identity, builds a working responsive web store, and sets up your accounting ledgers so you can run a real business out of one unified command center.</div>
+            </div>
+            <div class="faq-row">
+                <div class="faq-question">Do I need any technical or web design skills? <span class="faq-toggle-icon">&plus;</span></div>
+                <div class="faq-answer">None at all. The entire pipeline is designed for total convenience. LaunchAxis structures the backend, validates user inputs securely, and outputs high-conversion templates so non-technical everyday entrepreneurs can launch instantly without touching code.</div>
+            </div>
+            <div class="faq-row">
+                <div class="faq-question">Can I use my own custom domain and theme styles? <span class="faq-toggle-icon">&plus;</span></div>
+                <div class="faq-answer">Yes. Through your dedicated administration dashboard, you can quickly mount custom domains, change navigation parameters, switch accent theme colors, and toggle web sections with real-time UI previews.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 10. FINAL BOTTOM RECRUITMENT CALIBRATION SECTION -->
+    <section class="countdown-conversion-banner">
+        <div class="countdown-box-card">
+            <span class="badge-tag">IGNITION READY</span>
+            <h3>Start your countdown.</h3>
+            <p>Your business idea deserves an unfair operational advantage. Launch it with a software architecture engineered for speed.</p>
+            <div class="cta-button-cluster">
+                <button class="btn-final-launch">Start building — it's free</button>
+                <button class="btn-final-demo">Book a demo &rarr;</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 11. ENTERPRISE SYSTEM FOOTER -->
+    <footer class="enterprise-footer">
+        <div class="footer-matrix-grid">
+            <div class="footer-brand-column">
+                <div class="footer-logo">▲ LaunchAxis</div>
+                <p class="brand-subtext-clause">The AI-driven workspace for engineering, launching, and managing online storefront models from absolute zero.</p>
+                <div class="footer-social-tray">
+                    <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                    <a href="#"><i class="fa-brands fa-github"></i></a>
+                    <a href="#"><i class="fa-brands fa-youtube"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-links-column">
+                <h6>Platform</h6>
+                <a href="#">AI Builder</a>
+                <a href="#">Dashboards</a>
+                <a href="#">Website Builder</a>
+                <a href="#">Finance Ledger</a>
+            </div>
+
+            <div class="footer-links-column">
+                <h6>Solutions</h6>
+                <a href="#">Students</a>
+                <a href="#">Freelancers</a>
+                <a href="#">Small Business</a>
+                <a href="#">Startups</a>
+            </div>
+
+            <div class="footer-links-column">
+                <h6>Resources</h6>
+                <a href="#">Docs</a>
+                <a href="#">Tutorials</a>
+                <a href="#">System Security</a>
+                <a href="#">Changelog</a>
+            </div>
+
+            <div class="footer-links-column">
+                <h6>Company</h6>
+                <a href="#">About</a>
+                <a href="#">Careers</a>
+                <a href="#">Contact</a>
+                <a href="#">Privacy Engine</a>
+            </div>
+        </div>
         
-        <div class="hero-content">
-            <div class="badge">LaunchAxis Enterprise Kernel 2.0</div>
-            <h1 class="display-title">Launch a Business<br>With Just an Idea.</h1>
-            <p class="hero-subtitle">The elite AI-powered infrastructure to architect, design, and scale your startup in minutes. No technical background required.</p>
-            
-            <div class="hero-actions-container">
-                <a href="auth.html" class="primary-pill-button">Start Building Free</a>
-                <a href="#capabilities" class="secondary-pill-button">Explore Platform</a>
-            </div>
-        </div>
-
-        <div class="laptop-track">
-            <div class="laptop-container">
-                <div class="laptop-bezel">
-                    <div class="laptop-screen">
-                        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1200&auto=format&fit=crop" alt="Dashboard Mockup Preview" class="mockup-img">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- SECTION-BASED PLATFORM CAPABILITIES (Replaces old card grid) -->
-    <section class="capabilities-container" id="capabilities">
-        <div class="container">
-            <h2 class="section-title">Platform <span>Capabilities</span></h2>
-        </div>
-
-        <!-- CAPABILITY 1: AI BUSINESS SETUP -->
-        <div class="stack-section">
-            <div class="container split-layout">
-                <div class="stack-text">
-                    <span class="stack-step">01 / CORE PIPELINE</span>
-                    <h3>Autonomous AI Business Setup</h3>
-                    <p>Turn raw concept descriptions into a fully structured business framework. The AI engine instantly parses your domain intent, organizes strategic milestones, and coordinates background deployment sequences while you look at live indicators.</p>
-                </div>
-                <div class="stack-visual">
-                    <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=800&auto=format&fit=crop" alt="AI Core Framework Pipeline">
-                </div>
-            </div>
-        </div>
-
-        <!-- CAPABILITY 2: DOMAIN & HOSTING -->
-        <div class="stack-section inverse">
-            <div class="container split-layout">
-                <div class="stack-visual">
-                    <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop" alt="Cloud Network Infrastructure">
-                </div>
-                <div class="stack-text">
-                    <span class="stack-step">02 / NETWORK</span>
-                    <h3>Instant Domain & Production Hosting</h3>
-                    <p>Skip complex DNS configuration, server assignment, and security certificate setups. LaunchAxis provisions enterprise-grade cloud hosting and secures domain attachments within minutes, locking down optimized load speeds globally.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- CAPABILITY 3: LOGO & BRANDING -->
-        <div class="stack-section">
-            <div class="container split-layout">
-                <div class="stack-text">
-                    <span class="stack-step">03 / DESIGN ENGINE</span>
-                    <h3>Algorithmic Logo & Brand Identity</h3>
-                    <p>Generate high-definition professional assets, comprehensive vector layouts, and coordinated neon-accented color patterns based directly on your business vertical. Receive a ready-to-use marketing and branding manual instantly.</p>
-                </div>
-                <div class="stack-visual">
-                    <img src="https://images.unsplash.com/photo-1561070791-2526d30994b5?q=80&w=800&auto=format&fit=crop" alt="Digital Vector Typography and Colors">
-                </div>
-            </div>
-        </div>
-
-        <!-- CAPABILITY 4: READY TO USE WEBSITE -->
-        <div class="stack-section inverse">
-            <div class="container split-layout">
-                <div class="stack-visual">
-                    <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800&auto=format&fit=crop" alt="Modern User Interfaces">
-                </div>
-                <div class="stack-text">
-                    <span class="stack-step">04 / FRONTEND</span>
-                    <h3>Futuristic Ready-to-Use Interfaces</h3>
-                    <p>Deploy clean, highly conversion-focused, and fully interactive homepages. Every generated platform component matches unified modern standards, equipped with smooth dynamic transitions and structured section flows out of the box.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- CAPABILITY 5: BRANDING GENERATOR & LEGAL -->
-        <div class="stack-section">
-            <div class="container split-layout">
-                <div class="stack-text">
-                    <span class="stack-step">05 / COMPLIANCE</span>
-                    <h3>Compliance Guides & System Registry</h3>
-                    <p>Acquire targeted regional checklist protocols, automated legal summaries, and structural name availability verifications. Navigate cross-border infrastructure parameters without paying massive initial consultancy fees.</p>
-                </div>
-                <div class="stack-visual">
-                    <img src="https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=800&auto=format&fit=crop" alt="Enterprise Document Management">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CORE FEATURES SECTION -->
-    <section class="premium-section" id="features">
-        <div class="container">
-            <h2 class="section-title">Core <span>Features</span></h2>
-            <div class="grid-3">
-                <div class="glass-card">
-                    <i class="fa-solid fa-microchip feature-icon"></i>
-                    <h3>AI-Driven Efficiency</h3>
-                    <p>Get instant setup, smart suggestions, and business tools powered by advanced AI automation workflows.</p>
-                </div>
-                <div class="glass-card">
-                    <i class="fa-solid fa-code feature-icon"></i>
-                    <h3>Zero Tech Skills Needed</h3>
-                    <p>No coding, no manual system configurations. Just clarify your direction and launch with total ease.</p>
-                </div>
-                <div class="glass-card">
-                    <i class="fa-solid fa-layer-group feature-icon"></i>
-                    <h3>Everything in One Place</h3>
-                    <p>Control domains, dynamic styling assets, accounting models, and system setups all from one central console.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- HOW IT WORKS FLOW -->
-    <section class="premium-section bg-alternate" id="how-it-works">
-        <div class="container">
-            <h2 class="section-title">How <span>It Works</span></h2>
-            <div class="grid-4 steps-grid">
-                <div class="step-card">
-                    <div class="step-number">01</div>
-                    <h3>Choose Framework</h3>
-                    <p>Select an architectural package tailored to your enterprise scale targets.</p>
-                </div>
-                <div class="step-card">
-                    <div class="step-number">02</div>
-                    <h3>Input Core Idea</h3>
-                    <p>Provide your vision parameters—our system coordinates the entire foundation backend.</p>
-                </div>
-                <div class="step-card">
-                    <div class="step-number">03</div>
-                    <h3>Automated Setup</h3>
-                    <p>Your user interface layers, business systems, and styling deploy onto the live server.</p>
-                </div>
-                <div class="step-card">
-                    <div class="step-number">04</div>
-                    <h3>Launch & Manage</h3>
-                    <p>Open your administrative dashboard to monitor incoming users and live analytics.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- PRICING TIERS -->
-    <section class="premium-section" id="pricing">
-        <div class="container">
-            <h2 class="section-title">Transparent <span>Pricing</span></h2>
-            <div class="grid-3 pricing-grid">
-                
-                <div class="glass-card pricing-card">
-                    <h3>Starter</h3>
-                    <div class="price">Free</div>
-                    <ul class="pricing-features">
-                        <li><i class="fa-solid fa-check"></i> AI Business Summary Generation</li>
-                        <li><i class="fa-solid fa-check"></i> Basic Vector Logo Core Build</li>
-                        <li><i class="fa-solid fa-check"></i> Fundamental Interface Previews</li>
-                        <li><i class="fa-solid fa-check"></i> Secure Sandboxed Environment</li>
-                    </ul>
-                    <a href="start-building.html" class="btn-secondary w-100">Deploy Free</a>
-                </div>
-
-                <div class="glass-card pricing-card featured-plan">
-                    <div class="plan-badge">Most Popular</div>
-                    <h3>Pro</h3>
-                    <div class="price">Coming Soon</div>
-                    <ul class="pricing-features">
-                        <li><i class="fa-solid fa-check"></i> Advanced AI Deep Architecture</li>
-                        <li><i class="fa-solid fa-check"></i> Complete Production Branding Kit</li>
-                        <li><i class="fa-solid fa-check"></i> Automated Custom Domain Link</li>
-                        <li><i class="fa-solid fa-check"></i> Premium Interactive Component Access</li>
-                    </ul>
-                    <button class="btn-primary w-100 disabled" disabled>Join Waitlist</button>
-                </div>
-
-                <div class="glass-card pricing-card">
-                    <h3>Enterprise</h3>
-                    <div class="price">Coming Soon</div>
-                    <ul class="pricing-features">
-                        <li><i class="fa-solid fa-check"></i> Dedicated Dedicated Agent Channels</li>
-                        <li><i class="fa-solid fa-check"></i> Automated Regional Compliance Kit</li>
-                        <li><i class="fa-solid fa-check"></i> Live API & Webhook Connectivity</li>
-                        <li><i class="fa-solid fa-check"></i> Full Isolated Custom Configuration</li>
-                    </ul>
-                    <button class="btn-secondary w-100 disabled" disabled>Contact Sales</button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- REVIEWS & FAQ INTEGRATION -->
-    <section class="premium-section bg-alternate" id="about">
-        <div class="container">
-            <div class="split-layout">
-                
-                <div class="testimonials-half">
-                    <h2 class="section-title text-left">Trusted By <span>Founders</span></h2>
-                    <div class="glass-card testimonial-card">
-                        <p>"LaunchAxis transformed how our core system coordinates startup deployments. The automated setup layer functions flawlessly."</p>
-                        <h4>— Wajiha, Technology Founder</h4>
-                    </div>
-                    <div class="glass-card testimonial-card">
-                        <p>"The visual balance and deep architectural automation minimized our time-to-market completely. Highly secure."</p>
-                        <h4>— Mahnoor, Principal Systems Architect</h4>
-                    </div>
-                </div>
-
-                <div class="faq-half">
-                    <h2 class="section-title text-left">System <span>FAQ</span></h2>
-                    <div class="faq-item border-bottom">
-                        <h3>What is LaunchAxis?</h3>
-                        <p>An integrated SaaS orchestration platform designed to provision clean user interfaces, assets, and business settings using automated AI logic models.</p>
-                    </div>
-                    <div class="faq-item border-bottom">
-                        <h3>Is my database layer sandboxed?</h3>
-                        <p>Yes. Every user workspace builds on rigorous security protocols, isolated sessions, and structured rule controls to prevent unauthorized resource overlaps.</p>
-                    </div>
-                    <div class="faq-item">
-                        <h3>Can I modify the code afterward?</h3>
-                        <p>Absolutely. The administrative workspace provides complete access keys to handle visual adjustments and manage incoming data streams easily.</p>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- MODERN MASTER FOOTER -->
-    <footer class="premium-footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-brand-col">
-                    <div class="logo">
-                        <img src="images/mainlogo.png" alt="LaunchAxis Logo" class="logo-img" onerror="this.style.display='none'" />
-                        <span class="logo-text">LaunchAxis</span>
-                    </div>
-                    <p class="footer-desc">The elite AI-powered infrastructure to architect, design, and scale high-performance corporate startups globally.</p>
-                    <div class="social-links">
-                        <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
-                        <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
-                        <a href="#"><i class="fa-brands fa-github"></i></a>
-                    </div>
-                </div>
-                
-                <div class="footer-links-col">
-                    <h4>Platform</h4>
-                    <ul>
-                        <li><a href="#features">Features</a></li>
-                        <li><a href="#pricing">Pricing</a></li>
-                        <li><a href="#capabilities">Capabilities</a></li>
-                    </ul>
-                </div>
-
-                <div class="footer-links-col">
-                    <h4>Company</h4>
-                    <ul>
-                        <li><a href="#about">About Systems</a></li>
-                        <li><a href="#about">Security Policy</a></li>
-                        <li><a href="#">Infrastructure</a></li>
-                    </ul>
-                </div>
-
-                <div class="footer-contact-col">
-                    <h4>System Status</h4>
-                    <p><span class="status-dot"></span> Core Cluster Online</p>
-                    <p class="contact-email">security@launchaxis.ai</p>
-                </div>
-            </div>
-            
-            <div class="footer-bottom">
-                <p>&copy; 2026 LaunchAxis.ai. All rights reserved.</p>
-                <div class="legal-links">
-                    <a href="#">Privacy Protocol</a>
-                    <a href="#">Terms of Service</a>
-                </div>
-            </div>
+        <div class="footer-bottom-legal-strip">
+            <p>&copy; 2026 LaunchAxis Inc. All rights reserved. Powered by high-efficiency cloud data tokens.</p>
         </div>
     </footer>
+<!-- TYPEWRITER EFFECT SCRIPT -->
+    <script>
+    const textElement = document.getElementById('typewriter-text');
+        const phrases = [
+            "Awaiting founder input...",
+            "Ready to deploy web storefronts...",
+            "Ledger algorithms standing by...",
+            "Brand identity matrix loaded..."
+        ];
+        
+        let phraseIndex = 0;
+        let letterIndex = 0;
+        let isDeleting = false;
 
-    <!-- INTERACTIVE ORB TRIGGER -->
-    <a href="chatbot.html" class="chatbot-trigger">
-        <div class="chatbot-glass-orb">
-            <i class="fa-solid fa-wand-magic-sparkles orb-icon"></i>
-        </div>
-        <div class="orb-pulse"></div>
-    </a>
+        function typeLoop() {
+            const currentPhrase = phrases[phraseIndex];
+            
+            if (isDeleting) {
+                textElement.innerText = currentPhrase.substring(0, letterIndex - 1);
+                letterIndex--;
+            } else {
+                textElement.innerText = currentPhrase.substring(0, letterIndex + 1);
+                letterIndex++;
+            }
 
-    <!-- SCRIPT CONNECTIONS PANEL -->
-    <script src="script.js"></script>
+            let typeSpeed = isDeleting ? 50 : 100;
+
+            if (!isDeleting && letterIndex === currentPhrase.length) {
+                typeSpeed = 2000; // Pause at the end of the phrase
+                isDeleting = true;
+            } else if (isDeleting && letterIndex === 0) {
+                isDeleting = false;
+                phraseIndex = (phraseIndex + 1) % phrases.length;
+                typeSpeed = 500; // Pause before typing next phrase
+            }
+
+            setTimeout(typeLoop, typeSpeed);
+        }
+
+        // Start the loop
+        setTimeout(typeLoop, 1000);
+</script>
+
 </body>
 </html>
