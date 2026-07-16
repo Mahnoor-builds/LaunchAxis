@@ -24,11 +24,11 @@ const Sidebar = ({ activeSection, setActiveSection, theme, toggleTheme, branding
   return (
     <aside className="sidebar">
       {/* BRANDING HEADER */}
-      <div className="brand">
+      <div className="brand" style={{ padding: '0 24px 32px', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '20px', fontWeight: 'bold' }}>
         {branding.logo ? (
-          <img src={branding.logo} alt="Logo" style={{display: 'block'}} />
+          <img src={branding.logo} alt="Logo" style={{ width: '32px', borderRadius: '8px' }} />
         ) : (
-          <FontAwesomeIcon icon={faRocket} />
+          <FontAwesomeIcon icon={faRocket} style={{ color: '#2dd4bf' }} />
         )}
         <span>{branding.name}</span>
       </div>
@@ -41,21 +41,21 @@ const Sidebar = ({ activeSection, setActiveSection, theme, toggleTheme, branding
             className={`nav-item ${activeSection === item.id ? 'active' : ''}`}
             onClick={() => setActiveSection(item.id)}
           >
-            <FontAwesomeIcon icon={item.icon} />
+            <FontAwesomeIcon icon={item.icon} style={{ width: '20px' }} />
             {item.label}
           </div>
         ))}
       </nav>
 
-      {/* THEME TOGGLE (BOTTOM) */}
+      {/* THEME TOGGLE (CUSTOM UI) */}
       <div className="theme-toggle">
-        <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+        <span>{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
         <label className="switch">
           <input 
-  type="checkbox" 
-  defaultChecked={theme === 'light'} 
-  onChange={toggleTheme} 
-/>
+            type="checkbox" 
+            checked={theme === 'light'} 
+            onChange={toggleTheme} 
+          />
           <span className="slider"></span>
         </label>
       </div>

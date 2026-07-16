@@ -1,126 +1,356 @@
-/* --- GLOBAL DEFAULTS --- */
+/* ==========================================================================
+   1. GLOBAL DEFAULTS & VARIABLES
+   ========================================================================== */
 :root {
-    --primary: #2dd4bf;
-    --bg-dark: #0f172a;
-    --bg-light: #ffffff;
-    --text-light: #f8fafc;
-    --text-dark: #1e293b;
-    --sidebar-width: 260px;
+  /* Your original brand colors */
+  --primary: #2dd4bf;
+  --bg-dark: #0f172a;
+  --bg-light: #ffffff;
+  --text-light: #f8fafc;
+  --text-dark: #1e293b;
+  
+  /* New Premium Dashboard Variables */
+  --bg-space: #030712;
+  --glass-panel: rgba(10, 15, 30, 0.7);
+  --glass-border: rgba(45, 212, 191, 0.15);
+  --neon-cyan: #2dd4bf;
+  --text-muted: #94a3b8;
+  --sidebar-width: 260px;
 }
 
 body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Inter', sans-serif;
-    overflow-x: hidden; /* Prevents side-scrolling */
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
 }
 
-/* --- DASHBOARD SPECIFIC LAYOUT (Only for Admin) --- */
+/* ==========================================================================
+   2. DASHBOARD SHELL LAYOUT
+   ========================================================================== */
 .app-container {
-    display: flex;
-    min-height: 100vh;
-    background-color: var(--bg-dark);
-    color: var(--text-light);
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-space); /* Upgraded to deep space */
+  color: var(--text-light);
 }
 
-.main {
-    flex: 1;
-    padding: 30px;
-    background-color: #1e293b; /* Dark content background */
-    overflow-y: auto;
-    height: 100vh;
+.admin-main-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Light Mode Override for Dashboard */
-[data-theme='light'] .app-container {
-    background-color: #f3f4f6;
-    color: #1f2937;
-}
-[data-theme='light'] .main {
-    background-color: #fff;
+.main-content {
+  padding: 30px;
+  overflow-y: auto;
+  flex: 1;
+  background-color: transparent; 
 }
 
-/* --- DASHBOARD COMPONENTS --- */
+/* Light Mode Overrides */
+.app-container.light {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+.app-container.light .sidebar,
+.app-container.light .admin-topbar {
+  background: #ffffff;
+  border-color: #e5e7eb;
+}
+.app-container.light .nav-item { color: #4b5563; }
+.app-container.light .nav-item:hover { background: #f9fafb; }
+.app-container.light .icon-btn { color: #1f2937; border-color: #e5e7eb; }
+.app-container.light .topbar-greeting p { color: #6b7280; }
+
+/* ==========================================================================
+   3. PREMIUM UI COMPONENTS (SIDEBAR & TOPBAR)
+   ========================================================================== */
 .sidebar {
-    width: var(--sidebar-width);
-    background: #0f172a;
-    border-right: 1px solid #334155;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
+  width: var(--sidebar-width);
+  background: var(--glass-panel);
+  backdrop-filter: blur(16px);
+  border-right: 1px solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 0;
 }
 
+.nav-item {
+  padding: 16px 24px;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.nav-item:hover {
+  color: var(--text-light);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.nav-item.active {
+  color: var(--neon-cyan);
+  background: rgba(45, 212, 191, 0.08);
+  border-left: 3px solid var(--neon-cyan);
+}
+
+.admin-topbar {
+  height: 72px;
+  border-bottom: 1px solid var(--glass-border);
+  background: rgba(10, 15, 30, 0.4);
+  backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 32px;
+}
+
+.topbar-greeting h2 { font-size: 18px; margin: 0; }
+.topbar-greeting p { font-size: 12px; color: var(--text-muted); margin: 4px 0 0 0; }
+.highlight-cyan { color: var(--neon-cyan); font-weight: 600; }
+
+.topbar-actions { display: flex; gap: 16px; }
+
+.icon-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-light);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.icon-btn:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+
+/* CUSTOM SLEEK TOGGLE SWITCH */
+.theme-toggle {
+  margin-top: auto;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+  position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #1e293b; transition: .4s; border-radius: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.slider:before {
+  position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 3px;
+  background-color: var(--text-muted); transition: .4s; border-radius: 50%;
+}
+input:checked + .slider { background-color: rgba(45, 212, 191, 0.2); border-color: var(--neon-cyan); }
+input:checked + .slider:before { transform: translateX(20px); background-color: var(--neon-cyan); }
+
+/* ==========================================================================
+   4. GLOBAL INPUT FIXES (No More Ugly Outlines)
+   ========================================================================== */
+input, select, textarea, button {
+  font-family: inherit;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none !important;
+  border-color: var(--neon-cyan) !important;
+  box-shadow: 0 0 15px rgba(45, 212, 191, 0.15) !important;
+}
+
+/* ==========================================================================
+   5. ORIGINAL LAUNCHAXIS UTILITIES & COMPONENTS 
+   ========================================================================== */
 .section { display: none; }
 .section.active { display: block; animation: fadeIn 0.3s ease-in-out; }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- UTILITIES --- */
 .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
 .card {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 12px;
-    padding: 20px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 20px;
 }
-[data-theme='light'] .card {
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+.app-container.light .card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
 .btn {
-    padding: 10px 20px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-weight: 500;
-    transition: 0.2s;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s;
 }
 .btn-primary { background: var(--primary); color: #000; }
 .btn-primary:hover { opacity: 0.9; }
 .btn-outline { background: transparent; border: 1px solid #475569; color: inherit; }
+.app-container.light .btn-outline { border-color: #d1d5db; color: #374151; }
 
 .input-neon {
-    width: 100%;
-    background: rgba(0,0,0,0.2);
-    border: 1px solid #334155;
-    padding: 12px;
-    border-radius: 8px;
-    color: #fff;
-    margin-bottom: 15px;
+  width: 100%;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid #334155;
+  padding: 12px;
+  border-radius: 8px;
+  color: #fff;
+  margin-bottom: 15px;
+  box-sizing: border-box;
 }
-[data-theme='light'] .input-neon {
-    background: #fff;
-    border: 1px solid #d1d5db;
-    color: #000;
+.app-container.light .input-neon {
+  background: #fff;
+  border: 1px solid #d1d5db;
+  color: #000;
 }
 
 .blink-dot {
-    height: 8px; width: 8px;
-    background-color: #10b981;
-    border-radius: 50%;
-    display: inline-block;
-    animation: blink 1.5s infinite;
+  height: 8px; width: 8px;
+  background-color: #10b981;
+  border-radius: 50%;
+  display: inline-block;
+  animation: blink 1.5s infinite;
 }
 @keyframes blink { 50% { opacity: 0.5; } }
 
 .finance-tile {
-    background: rgba(255,255,255,0.03);
-    padding: 20px;
-    border-radius: 12px;
-    border-top: 4px solid var(--primary);
+  background: rgba(255,255,255,0.03);
+  padding: 20px;
+  border-radius: 12px;
+  border-top: 4px solid var(--primary);
 }
-[data-theme='light'] .finance-tile {
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-top: 4px solid var(--primary);
+.app-container.light .finance-tile {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-top: 4px solid var(--primary);
 }
 .finance-tile h3 { font-size: 14px; color: #94a3b8; margin: 0 0 10px 0; }
 .finance-tile .amount { font-size: 28px; font-weight: bold; margin-bottom: 5px; }
 .finance-tile .trend { font-size: 12px; color: #10b981; display: flex; align-items: center; gap: 5px; }
+
+/* ==========================================================================
+   6. DASHBOARD RESPONSIVE BREAKPOINTS
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 80px;
+    padding: 24px 0;
+  }
+  
+  /* Hide the text labels on tablets to save massive screen space */
+  .brand span, 
+  .nav-item {
+    font-size: 0;
+    justify-content: center;
+    padding: 16px 0;
+  }
+  
+  .nav-item i, 
+  .nav-item svg {
+    font-size: 18px;
+    margin: 0;
+  }
+  
+  .theme-toggle {
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px 0;
+    align-items: center;
+  }
+  
+  .theme-toggle span {
+    display: none; /* Hide 'Dark Mode' text */
+  }
+
+  /* Adjust grid columns dynamically */
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    flex-direction: column; /* Stack sidebar on top of main content for mobile */
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+    border-right: none;
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  .brand {
+    padding: 0 !important;
+    margin: 0;
+  }
+
+  .brand span {
+    display: none;
+  }
+
+  .sidebar nav {
+    display: flex;
+    gap: 8px;
+  }
+
+  .nav-item {
+    padding: 8px 12px;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+    border-radius: 4px;
+  }
+
+  .nav-item.active {
+    border-left: none;
+    border-bottom: 3px solid var(--neon-cyan);
+  }
+
+  .theme-toggle {
+    margin-top: 0;
+    padding: 0;
+  }
+
+  .admin-topbar {
+    padding: 0 20px;
+    height: 64px;
+  }
+
+  .topbar-greeting h2 {
+    font-size: 15px;
+  }
+
+  .topbar-greeting p {
+    display: none; /* Hide small subtext on small devices */
+  }
+
+  .main-content {
+    padding: 20px;
+  }
+
+  .grid-4, .grid-2 {
+    grid-template-columns: 1fr; /* Drop everything into a beautiful clean single column stack */
+  }
+}

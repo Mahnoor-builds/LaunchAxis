@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from './firebaseConfig'; // Make sure this path is correct for your setup!
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCog, faUserCircle } from '@fortawesome/free-solid-svg-icons';
 // IMPORT YOUR NEW AI ENGINE HERE
 import { generateBusinessSetup } from './components/AiEngine'; 
 
@@ -30,11 +32,10 @@ const AdminPanel = ({
   transactions, addTransaction, accounts, addAccount,
   activeSection, setActiveSection,
   siteConfig, setSiteConfig,
-  features, // <--- ADDED THE COMMA HERE!
+  features, 
   theme, toggleTheme 
 }) => {
   return (
-    // Make sure to use the backticks (`) and the ${theme} variable here!
     <div className={`app-container ${theme}`} style={{ '--brand-color': siteConfig.themeColor }}>
       <Sidebar 
         activeSection={activeSection} setActiveSection={setActiveSection}
@@ -43,18 +44,38 @@ const AdminPanel = ({
         theme={theme}             
         toggleTheme={toggleTheme} 
       />
-      <main className="main">
-        {activeSection === 'dashboard' && <Dashboard products={products} transactions={transactions} branding={branding} setActiveSection={setActiveSection} orders={orders} />}
-        {activeSection === 'finance' && features?.wantsAccounting && <FinancePro transactions={transactions} accounts={accounts} addAccount={addAccount} branding={branding} addTransaction={addTransaction} />}
-        {activeSection === 'branding' && features?.wantsBranding && <Branding branding={branding} setBranding={setBranding} />}
-        {activeSection === 'website' && features?.wantsWebsite && <WebsiteEditor branding={branding} products={products} siteConfig={siteConfig} setSiteConfig={setSiteConfig} />}
-        {activeSection === 'products' && <Products products={products} setProducts={setProducts} />}
-        {activeSection === 'orders' && <Orders orders={orders} updateOrderStatus={updateOrderStatus} />}
-      </main>
+      
+      {/* NEW RIGHT-SIDE WRAPPER */}
+      <div className="admin-main-wrapper">
+        
+        {/* NEW PROFESSIONAL COMMAND BAR */}
+        <header className="admin-topbar">
+          <div className="topbar-greeting">
+            <h2>Welcome back, CEO</h2>
+            <p>System Overview for <span className="highlight-cyan">{branding.name}</span></p>
+          </div>
+          <div className="topbar-actions">
+            <button className="icon-btn" title="Settings">
+              <FontAwesomeIcon icon={faCog} />
+            </button>
+            <button className="icon-btn profile-btn" title="Account Profile">
+              <FontAwesomeIcon icon={faUserCircle} />
+            </button>
+          </div>
+        </header>
+
+        <main className="main-content">
+          {activeSection === 'dashboard' && <Dashboard products={products} transactions={transactions} branding={branding} setActiveSection={setActiveSection} orders={orders} />}
+          {activeSection === 'finance' && features?.wantsAccounting && <FinancePro transactions={transactions} accounts={accounts} addAccount={addAccount} branding={branding} addTransaction={addTransaction} />}
+          {activeSection === 'branding' && features?.wantsBranding && <Branding branding={branding} setBranding={setBranding} />}
+          {activeSection === 'website' && features?.wantsWebsite && <WebsiteEditor branding={branding} products={products} siteConfig={siteConfig} setSiteConfig={setSiteConfig} />}
+          {activeSection === 'products' && <Products products={products} setProducts={setProducts} />}
+          {activeSection === 'orders' && <Orders orders={orders} updateOrderStatus={updateOrderStatus} />}
+        </main>
+      </div>
     </div>
   );
 };
-
 // =========================================
 // 2. THE MAIN APP (The Brain)
 // =========================================
