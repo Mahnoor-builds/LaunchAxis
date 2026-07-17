@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from './firebaseConfig'; // Make sure this path is correct for your setup!
+// UPGRADED FIREBASE IMPORTS
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { db } from './firebaseConfig'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCog, faUserCircle } from '@fortawesome/free-solid-svg-icons';
-// IMPORT YOUR NEW AI ENGINE HERE
 import { generateBusinessSetup } from './components/AiEngine'; 
 
 // ADMIN COMPONENTS
@@ -29,26 +29,20 @@ const AdminPanel = ({
   branding, setBranding, 
   products, setProducts, 
   orders, updateOrderStatus,
-  transactions, addTransaction, accounts, addAccount,
+  transactions, addTransaction, accounts, addAccount, updateAccount, 
   activeSection, setActiveSection,
   siteConfig, setSiteConfig,
-  features, 
-  theme, toggleTheme 
+  features 
 }) => {
   return (
-    <div className={`app-container ${theme}`} style={{ '--brand-color': siteConfig.themeColor }}>
+    <div className="app-container split-theme" style={{ '--brand-color': siteConfig.themeColor }}>
       <Sidebar 
         activeSection={activeSection} setActiveSection={setActiveSection}
         branding={branding}
         features={features} 
-        theme={theme}             
-        toggleTheme={toggleTheme} 
       />
       
-      {/* NEW RIGHT-SIDE WRAPPER */}
       <div className="admin-main-wrapper">
-        
-        {/* NEW PROFESSIONAL COMMAND BAR */}
         <header className="admin-topbar">
           <div className="topbar-greeting">
             <h2>Welcome back, CEO</h2>
@@ -65,8 +59,8 @@ const AdminPanel = ({
         </header>
 
         <main className="main-content">
-          {activeSection === 'dashboard' && <Dashboard products={products} transactions={transactions} branding={branding} setActiveSection={setActiveSection} orders={orders} />}
-          {activeSection === 'finance' && features?.wantsAccounting && <FinancePro transactions={transactions} accounts={accounts} addAccount={addAccount} branding={branding} addTransaction={addTransaction} />}
+          {activeSection === 'dashboard' && <Dashboard products={products} transactions={transactions} branding={branding} setActiveSection={setActiveSection} orders={orders} features={features} />}
+          {activeSection === 'finance' && features?.wantsAccounting && <FinancePro transactions={transactions} accounts={accounts} addAccount={addAccount} updateAccount={updateAccount} branding={branding} addTransaction={addTransaction} />}
           {activeSection === 'branding' && features?.wantsBranding && <Branding branding={branding} setBranding={setBranding} />}
           {activeSection === 'website' && features?.wantsWebsite && <WebsiteEditor branding={branding} products={products} siteConfig={siteConfig} setSiteConfig={setSiteConfig} />}
           {activeSection === 'products' && <Products products={products} setProducts={setProducts} />}
@@ -76,28 +70,20 @@ const AdminPanel = ({
     </div>
   );
 };
+
 // =========================================
 // 2. THE MAIN APP (The Brain)
 // =========================================
 function App() {
-  // --- AI LOADING STATE ---
   const [isAiLoading, setIsAiLoading] = useState(true);
   const [userFeatures, setUserFeatures] = useState(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState(null); // NEW: Track logged-in user
 
-  // --- BRANDING STATE ---
   const [branding, setBranding] = useState({
     name: 'Loading...', slogan: '', industry: '',
     logo: '', owners: [{ name: 'Admin', role: 'Founder' }]
   });
 
-// --- THEME STATE ---
-  const [theme, setTheme] = useState('dark'); // Defaulting to your awesome dark mode
-
-  const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'dark' ? 'light' : 'dark');
-  };
-
-  // --- WEBSITE CONFIGURATION ---
   const [siteConfig, setSiteConfig] = useState({
     themeColor: '#2dd4bf', 
     showHero: true,
@@ -111,14 +97,10 @@ function App() {
     ]
   });
 
-  // --- PRODUCTS STATE ---
   const [products, setProducts] = useState([]);
-
-  // --- SMART CART LOGIC ---
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false); 
 
-  // Add Item
   const addToCart = (product) => {
     setCart(prevCart => {
       const existing = prevCart.find(item => item.id === product.id);
@@ -133,12 +115,10 @@ function App() {
     setIsCartOpen(true); 
   };
 
-  // Remove Item
   const removeFromCart = (id) => {
     setCart(prevCart => prevCart.filter(item => item.id !== id));
   };
 
-  // Update Quantity
   const updateQty = (id, change) => {
     setCart(prevCart => prevCart.map(item => {
         if (item.id === id) {
@@ -149,25 +129,21 @@ function App() {
     }));
   };
 
-  // --- ORDERS & FINANCE STATE ---
   const [orders, setOrders] = useState([]);
-  const [accounts, setAccounts] = useState([{ id: 1, name: 'Cash Register', type: 'asset', category: 'Cash' }]);
-  const [transactions, setTransactions] = useState([{ id: 1, date: new Date().toLocaleDateString(), desc: 'Initial Capital', amount: 100000, type: 'income', category: 'Capital', accountId: 99 }]);
+  
+  // FIXED INITIAL DATA (Properly linked IDs)
+  const [accounts, setAccounts] = useState([{ id: 1, name: 'Cash Register', type: 'asset', category: 'Bank' }]);
+  const [transactions, setTransactions] = useState([{ id: 1, date: new Date().toLocaleDateString(), desc: 'Initial Capital', amount: 100000, type: 'income', category: 'Capital', accountId: 1, accountName: 'Cash Register' }]);
 
-  // --- ACTIVE SECTION ---
   const [activeSection, setActiveSection] = useState('dashboard');
 
-  // =========================================
-  // 3. THE AI ENGINE CONNECTION
-  // =========================================
   // =========================================
   // 3. THE LIVE FIREBASE CONNECTION
   // =========================================
   useEffect(() => {
     const fetchLiveKernelData = async () => {
       try {
-        // 1. Get the email we saved during the HTML form step
-        let targetEmail = "ceo@ecosole.store"; // Fallback to your test email
+        let targetEmail = "ceo@ecosole.store"; 
         const rawMemory = localStorage.getItem("launchAxisTempData");
         if (rawMemory) {
             targetEmail = JSON.parse(rawMemory).email;
@@ -175,7 +151,6 @@ function App() {
 
         console.log("Connecting to Firebase for:", targetEmail);
 
-        // 2. Fetch the REAL AI data from Firestore
         const docRef = doc(db, "users", targetEmail);
         const docSnap = await getDoc(docRef);
 
@@ -183,29 +158,29 @@ function App() {
             const liveData = docSnap.data();
             const aiData = liveData.aiArchitecture;
 
+            // Save email to state so we can push updates later
+            setCurrentUserEmail(targetEmail);
+
             console.log("SUCCESS! Real AI Data Loaded:", aiData);
 
-            // 3. Paint the React UI with the real data!
+            // 1. Load Branding & Theme
             setBranding(prev => ({
                 ...prev,
                 name: aiData.businessName,
                 slogan: aiData.tagline,
                 industry: liveData.businessType
             }));
-            
-            // Apply the AI colors to the website configuration
             setSiteConfig(prev => ({ 
                 ...prev, 
                 themeColor: aiData.colorPalette.primary || '#2dd4bf' 
             }));
+            setUserFeatures({ wantsWebsite: true, wantsAccounting: true, wantsBranding: true });
 
-            // 4. UNLOCK THE DASHBOARD TABS
-            // This tells React to stop hiding your protected pages!
-            setUserFeatures({
-                wantsWebsite: true,
-                wantsAccounting: true,
-                wantsBranding: true
-            });
+            // 2. LOAD SAVED USER DATA FROM FIREBASE (If it exists)
+            if (liveData.accounts) setAccounts(liveData.accounts);
+            if (liveData.transactions) setTransactions(liveData.transactions);
+            if (liveData.orders) setOrders(liveData.orders);
+            if (liveData.products && liveData.products.length > 0) setProducts(liveData.products);
 
         } else {
             console.log("No Firebase document found for this email.");
@@ -220,20 +195,48 @@ function App() {
     fetchLiveKernelData();
   }, []);
 
-    
-
-  // --- HELPERS ---
-  const updateOrderStatus = (id, status, trackId) => {
-    const updated = orders.map(o => o.id === id ? { ...o, status, trackingId: trackId } : o);
-    setOrders(updated);
-    if(status === 'Delivered') {
-      const ord = orders.find(o => o.id === id);
-      if(ord) addTransaction({ date: new Date().toLocaleDateString(), desc: `Sale: Order #${id}`, amount: ord.amount, type: 'income', category: 'Sales', accountId: 1 });
+  // --- FIREBASE PUSH HELPER ---
+  const syncToFirebase = async (field, data) => {
+    if (!currentUserEmail) return;
+    try {
+      const docRef = doc(db, "users", currentUserEmail);
+      await updateDoc(docRef, { [field]: data });
+    } catch (error) {
+      console.error(`Error saving ${field} to Firebase:`, error);
     }
   };
 
-  const addTransaction = (tx) => setTransactions([tx, ...transactions]);
-  const addAccount = (acc) => setAccounts([...accounts, acc]);
+  // --- HELPERS (NOW EQUIPPED WITH FIREBASE SYNC) ---
+  const updateOrderStatus = (id, status, trackId) => {
+    const updated = orders.map(o => o.id === id ? { ...o, status, trackingId: trackId } : o);
+    setOrders(updated);
+    syncToFirebase("orders", updated);
+
+    if(status === 'Delivered') {
+      const ord = orders.find(o => o.id === id);
+      if(ord) addTransaction({ date: new Date().toLocaleDateString(), desc: `Sale: Order #${id}`, amount: ord.amount, type: 'income', category: 'Sales', accountId: 1, accountName: 'Cash Register' });
+    }
+  };
+
+  const addTransaction = (tx) => {
+    const newTx = {...tx, id: Math.floor(Math.random() * 100000)};
+    const updatedList = [newTx, ...transactions];
+    setTransactions(updatedList);
+    syncToFirebase("transactions", updatedList);
+  };
+  
+  const addAccount = (acc) => {
+    const newAcc = { ...acc, id: Math.floor(Math.random() * 100000) };
+    const updatedList = [...accounts, newAcc];
+    setAccounts(updatedList);
+    syncToFirebase("accounts", updatedList);
+  };
+  
+  const updateAccount = (id, updatedData) => {
+    const updatedList = accounts.map(acc => acc.id === id ? { ...acc, ...updatedData } : acc);
+    setAccounts(updatedList);
+    syncToFirebase("accounts", updatedList);
+  };
 
   const placeOrder = (orderDetails) => {
     const newOrder = {
@@ -247,13 +250,15 @@ function App() {
         status: 'Pending',
         trackingId: ''
     };
-    setOrders([newOrder, ...orders]);
+    const updatedOrders = [newOrder, ...orders];
+    setOrders(updatedOrders);
+    syncToFirebase("orders", updatedOrders);
+    
     setCart([]); 
     setIsCartOpen(false); 
     alert("Order Placed Successfully!");
   };
 
-  // --- LOADING SCREEN ---
   if (isAiLoading) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: '#111', color: '#2dd4bf', fontSize: '24px', fontWeight: 'bold' }}>
@@ -272,36 +277,17 @@ function App() {
             orders={orders} updateOrderStatus={updateOrderStatus}
             transactions={transactions} addTransaction={addTransaction}
             accounts={accounts} addAccount={addAccount}
+            updateAccount={updateAccount}
             activeSection={activeSection} setActiveSection={setActiveSection}
             siteConfig={siteConfig} setSiteConfig={setSiteConfig}
             features={userFeatures}
-            theme={theme}              
-            toggleTheme={toggleTheme}
           />
         } />
-
-        <Route path="/checkout" element={
-          <ShopCheckout cart={cart} branding={branding} onPlaceOrder={placeOrder} />
-        } />
-
+        <Route path="/checkout" element={<ShopCheckout cart={cart} branding={branding} onPlaceOrder={placeOrder} />} />
         <Route path="/" element={
           <>
-            <ShopCartDrawer 
-                isOpen={isCartOpen} 
-                onClose={() => setIsCartOpen(false)} 
-                cart={cart}
-                updateQty={updateQty}
-                removeFromCart={removeFromCart}
-            />
-            
-            <ShopHome 
-              branding={branding} 
-              products={products} 
-              cartCount={cart.reduce((sum, item) => sum + item.qty, 0)} 
-              addToCart={addToCart}
-              siteConfig={siteConfig}
-              openCart={() => setIsCartOpen(true)}
-            />
+            <ShopCartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} updateQty={updateQty} removeFromCart={removeFromCart} />
+            <ShopHome branding={branding} products={products} cartCount={cart.reduce((sum, item) => sum + item.qty, 0)} addToCart={addToCart} siteConfig={siteConfig} openCart={() => setIsCartOpen(true)} />
           </>
         } />
       </Routes>

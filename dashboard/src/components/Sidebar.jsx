@@ -1,16 +1,11 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faRocket, 
-  faChartPie, 
-  faWallet, 
-  faGlobe, 
-  faBoxOpen, 
-  faCartShopping, 
-  faWandMagicSparkles 
+  faRocket, faChartPie, faWallet, 
+  faGlobe, faBoxOpen, faCartShopping, faWandMagicSparkles 
 } from '@fortawesome/free-solid-svg-icons';
 
-const Sidebar = ({ activeSection, setActiveSection, theme, toggleTheme, branding }) => {
+const Sidebar = ({ activeSection, setActiveSection, branding }) => {
   
   const navItems = [
     { id: 'dashboard', icon: faChartPie, label: 'Dashboard' },
@@ -24,7 +19,7 @@ const Sidebar = ({ activeSection, setActiveSection, theme, toggleTheme, branding
   return (
     <aside className="sidebar">
       {/* BRANDING HEADER */}
-      <div className="brand" style={{ padding: '0 24px 32px', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '20px', fontWeight: 'bold' }}>
+      <div className="brand" style={{ padding: '0 24px 32px', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '20px', fontWeight: 'bold', color: '#f8fafc' }}>
         {branding.logo ? (
           <img src={branding.logo} alt="Logo" style={{ width: '32px', borderRadius: '8px' }} />
         ) : (
@@ -46,19 +41,6 @@ const Sidebar = ({ activeSection, setActiveSection, theme, toggleTheme, branding
           </div>
         ))}
       </nav>
-
-      {/* THEME TOGGLE (CUSTOM UI) */}
-      <div className="theme-toggle">
-        <span>{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
-        <label className="switch">
-          <input 
-            type="checkbox" 
-            checked={theme === 'light'} 
-            onChange={toggleTheme} 
-          />
-          <span className="slider"></span>
-        </label>
-      </div>
     </aside>
   );
 };
