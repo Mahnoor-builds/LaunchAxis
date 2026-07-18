@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-// UPGRADED FIREBASE IMPORTS
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from './firebaseConfig'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCog, faUserCircle } from '@fortawesome/free-solid-svg-icons';
-import { generateBusinessSetup } from './components/AiEngine'; 
 
 // ADMIN COMPONENTS
 import Sidebar from './components/Sidebar';
@@ -29,7 +27,9 @@ const AdminPanel = ({
   branding, setBranding, 
   products, setProducts, 
   orders, updateOrderStatus,
-  transactions, addTransaction, accounts, addAccount, updateAccount, 
+  transactions, addTransaction, 
+  accounts, addAccount, updateAccount, 
+  inventory, addInventoryItem, updateInventoryItem, // <-- NEW INVENTORY PROPS
   activeSection, setActiveSection,
   siteConfig, setSiteConfig,
   features 
@@ -38,8 +38,7 @@ const AdminPanel = ({
     <div className="app-container split-theme" style={{ '--brand-color': siteConfig.themeColor }}>
       <Sidebar 
         activeSection={activeSection} setActiveSection={setActiveSection}
-        branding={branding}
-        features={features} 
+        branding={branding} features={features} 
       />
       
       <div className="admin-main-wrapper">
@@ -49,18 +48,14 @@ const AdminPanel = ({
             <p>System Overview for <span className="highlight-cyan">{branding.name}</span></p>
           </div>
           <div className="topbar-actions">
-            <button className="icon-btn" title="Settings">
-              <FontAwesomeIcon icon={faCog} />
-            </button>
-            <button className="icon-btn profile-btn" title="Account Profile">
-              <FontAwesomeIcon icon={faUserCircle} />
-            </button>
+            <button className="icon-btn" title="Settings"><FontAwesomeIcon icon={faCog} /></button>
+            <button className="icon-btn profile-btn" title="Account Profile"><FontAwesomeIcon icon={faUserCircle} /></button>
           </div>
         </header>
 
         <main className="main-content">
-          {activeSection === 'dashboard' && <Dashboard products={products} transactions={transactions} branding={branding} setActiveSection={setActiveSection} orders={orders} features={features} />}
-          {activeSection === 'finance' && features?.wantsAccounting && <FinancePro transactions={transactions} accounts={accounts} addAccount={addAccount} updateAccount={updateAccount} branding={branding} addTransaction={addTransaction} />}
+          {activeSection === 'dashboard' && <Dashboard products={products} transactions={transactions} branding={branding} setActiveSection={setActiveSection} orders={orders} features={features} inventory={inventory} />}
+          {activeSection === 'finance' && features?.wantsAccounting && <FinancePro transactions={transactions} accounts={accounts} addAccount={addAccount} updateAccount={updateAccount} inventory={inventory} addInventoryItem={addInventoryItem} updateInventoryItem={updateInventoryItem} branding={branding} addTransaction={addTransaction} />}
           {activeSection === 'branding' && features?.wantsBranding && <Branding branding={branding} setBranding={setBranding} />}
           {activeSection === 'website' && features?.wantsWebsite && <WebsiteEditor branding={branding} products={products} siteConfig={siteConfig} setSiteConfig={setSiteConfig} />}
           {activeSection === 'products' && <Products products={products} setProducts={setProducts} />}
@@ -77,65 +72,34 @@ const AdminPanel = ({
 function App() {
   const [isAiLoading, setIsAiLoading] = useState(true);
   const [userFeatures, setUserFeatures] = useState(null);
-  const [currentUserEmail, setCurrentUserEmail] = useState(null); // NEW: Track logged-in user
+  const [currentUserEmail, setCurrentUserEmail] = useState(null); 
 
-  const [branding, setBranding] = useState({
-    name: 'Loading...', slogan: '', industry: '',
-    logo: '', owners: [{ name: 'Admin', role: 'Founder' }]
-  });
-
-  const [siteConfig, setSiteConfig] = useState({
-    themeColor: '#2dd4bf', 
-    showHero: true,
-    notificationEmail: 'orders@launchaxis.com',
-    supportEmail: 'help@launchaxis.com',
-    socials: { facebook: '', instagram: '' },
-    menuItems: [
-        { id: 1, label: 'Home', link: '#home' },
-        { id: 2, label: 'Catalog', link: '#catalog' },
-        { id: 3, label: 'About', link: '#about' }
-    ]
-  });
-
+  const [branding, setBranding] = useState({ name: 'Loading...', slogan: '', industry: '', logo: '', owners: [{ name: 'Admin', role: 'Founder' }] });
+  const [siteConfig, setSiteConfig] = useState({ themeColor: '#2dd4bf', showHero: true, notificationEmail: 'orders@launchaxis.com', supportEmail: 'help@launchaxis.com', socials: { facebook: '', instagram: '' }, menuItems: [{ id: 1, label: 'Home', link: '#home' }, { id: 2, label: 'Catalog', link: '#catalog' }, { id: 3, label: 'About', link: '#about' }] });
+  
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false); 
+  const [orders, setOrders] = useState([]);
+  
+  const [accounts, setAccounts] = useState([{ id: 1, name: 'Cash Register', type: 'asset', category: 'Bank' }]);
+  const [transactions, setTransactions] = useState([{ id: 1, date: new Date().toLocaleDateString(), desc: 'Initial Capital', amount: 100000, type: 'income', category: 'Capital', accountId: 1, accountName: 'Cash Register' }]);
+  
+  // NEW: INVENTORY STATE
+  const [inventory, setInventory] = useState([]);
+
+  const [activeSection, setActiveSection] = useState('dashboard');
 
   const addToCart = (product) => {
     setCart(prevCart => {
       const existing = prevCart.find(item => item.id === product.id);
-      if (existing) {
-        return prevCart.map(item => 
-          item.id === product.id ? { ...item, qty: item.qty + 1 } : item
-        );
-      } else {
-        return [...prevCart, { ...product, qty: 1 }];
-      }
+      if (existing) return prevCart.map(item => item.id === product.id ? { ...item, qty: item.qty + 1 } : item);
+      return [...prevCart, { ...product, qty: 1 }];
     });
     setIsCartOpen(true); 
   };
-
-  const removeFromCart = (id) => {
-    setCart(prevCart => prevCart.filter(item => item.id !== id));
-  };
-
-  const updateQty = (id, change) => {
-    setCart(prevCart => prevCart.map(item => {
-        if (item.id === id) {
-            const newQty = item.qty + change;
-            return newQty > 0 ? { ...item, qty: newQty } : item;
-        }
-        return item;
-    }));
-  };
-
-  const [orders, setOrders] = useState([]);
-  
-  // FIXED INITIAL DATA (Properly linked IDs)
-  const [accounts, setAccounts] = useState([{ id: 1, name: 'Cash Register', type: 'asset', category: 'Bank' }]);
-  const [transactions, setTransactions] = useState([{ id: 1, date: new Date().toLocaleDateString(), desc: 'Initial Capital', amount: 100000, type: 'income', category: 'Capital', accountId: 1, accountName: 'Cash Register' }]);
-
-  const [activeSection, setActiveSection] = useState('dashboard');
+  const removeFromCart = (id) => setCart(prevCart => prevCart.filter(item => item.id !== id));
+  const updateQty = (id, change) => setCart(prevCart => prevCart.map(item => { if (item.id === id) { const newQty = item.qty + change; return newQty > 0 ? { ...item, qty: newQty } : item; } return item; }));
 
   // =========================================
   // 3. THE LIVE FIREBASE CONNECTION
@@ -145,11 +109,7 @@ function App() {
       try {
         let targetEmail = "ceo@ecosole.store"; 
         const rawMemory = localStorage.getItem("launchAxisTempData");
-        if (rawMemory) {
-            targetEmail = JSON.parse(rawMemory).email;
-        }
-
-        console.log("Connecting to Firebase for:", targetEmail);
+        if (rawMemory) targetEmail = JSON.parse(rawMemory).email;
 
         const docRef = doc(db, "users", targetEmail);
         const docSnap = await getDoc(docRef);
@@ -157,33 +117,18 @@ function App() {
         if (docSnap.exists()) {
             const liveData = docSnap.data();
             const aiData = liveData.aiArchitecture;
-
-            // Save email to state so we can push updates later
             setCurrentUserEmail(targetEmail);
 
-            console.log("SUCCESS! Real AI Data Loaded:", aiData);
-
-            // 1. Load Branding & Theme
-            setBranding(prev => ({
-                ...prev,
-                name: aiData.businessName,
-                slogan: aiData.tagline,
-                industry: liveData.businessType
-            }));
-            setSiteConfig(prev => ({ 
-                ...prev, 
-                themeColor: aiData.colorPalette.primary || '#2dd4bf' 
-            }));
+            setBranding(prev => ({ ...prev, name: aiData.businessName, slogan: aiData.tagline, industry: liveData.businessType }));
+            setSiteConfig(prev => ({ ...prev, themeColor: aiData.colorPalette.primary || '#2dd4bf' }));
             setUserFeatures({ wantsWebsite: true, wantsAccounting: true, wantsBranding: true });
 
-            // 2. LOAD SAVED USER DATA FROM FIREBASE (If it exists)
             if (liveData.accounts) setAccounts(liveData.accounts);
             if (liveData.transactions) setTransactions(liveData.transactions);
             if (liveData.orders) setOrders(liveData.orders);
-            if (liveData.products && liveData.products.length > 0) setProducts(liveData.products);
+            if (liveData.products) setProducts(liveData.products);
+            if (liveData.inventory) setInventory(liveData.inventory); // LOAD INVENTORY
 
-        } else {
-            console.log("No Firebase document found for this email.");
         }
       } catch (error) {
           console.error("Firebase Sync Error:", error);
@@ -191,11 +136,9 @@ function App() {
           setIsAiLoading(false);
       }
     };
-
     fetchLiveKernelData();
   }, []);
 
-  // --- FIREBASE PUSH HELPER ---
   const syncToFirebase = async (field, data) => {
     if (!currentUserEmail) return;
     try {
@@ -206,12 +149,11 @@ function App() {
     }
   };
 
-  // --- HELPERS (NOW EQUIPPED WITH FIREBASE SYNC) ---
+  // --- HELPERS ---
   const updateOrderStatus = (id, status, trackId) => {
     const updated = orders.map(o => o.id === id ? { ...o, status, trackingId: trackId } : o);
     setOrders(updated);
     syncToFirebase("orders", updated);
-
     if(status === 'Delivered') {
       const ord = orders.find(o => o.id === id);
       if(ord) addTransaction({ date: new Date().toLocaleDateString(), desc: `Sale: Order #${id}`, amount: ord.amount, type: 'income', category: 'Sales', accountId: 1, accountName: 'Cash Register' });
@@ -226,8 +168,7 @@ function App() {
   };
   
   const addAccount = (acc) => {
-    const newAcc = { ...acc, id: Math.floor(Math.random() * 100000) };
-    const updatedList = [...accounts, newAcc];
+    const updatedList = [...accounts, { ...acc, id: Math.floor(Math.random() * 100000) }];
     setAccounts(updatedList);
     syncToFirebase("accounts", updatedList);
   };
@@ -236,6 +177,19 @@ function App() {
     const updatedList = accounts.map(acc => acc.id === id ? { ...acc, ...updatedData } : acc);
     setAccounts(updatedList);
     syncToFirebase("accounts", updatedList);
+  };
+
+  // NEW: INVENTORY HELPERS
+  const addInventoryItem = (item) => {
+    const updatedList = [...inventory, { ...item, id: Math.floor(Math.random() * 100000) }];
+    setInventory(updatedList);
+    syncToFirebase("inventory", updatedList);
+  };
+
+  const updateInventoryItem = (id, updatedData) => {
+    const updatedList = inventory.map(item => item.id === id ? { ...item, ...updatedData } : item);
+    setInventory(updatedList);
+    syncToFirebase("inventory", updatedList);
   };
 
   const placeOrder = (orderDetails) => {
@@ -254,18 +208,10 @@ function App() {
     setOrders(updatedOrders);
     syncToFirebase("orders", updatedOrders);
     
-    setCart([]); 
-    setIsCartOpen(false); 
-    alert("Order Placed Successfully!");
+    setCart([]); setIsCartOpen(false); alert("Order Placed Successfully!");
   };
 
-  if (isAiLoading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: '#111', color: '#2dd4bf', fontSize: '24px', fontWeight: 'bold' }}>
-        INITIALIZING LAUNCHAXIS AI KERNEL...
-      </div>
-    );
-  }
+  if (isAiLoading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: '#111', color: '#2dd4bf', fontSize: '24px', fontWeight: 'bold' }}>INITIALIZING LAUNCHAXIS AI KERNEL...</div>;
 
   return (
     <Router>
@@ -276,8 +222,8 @@ function App() {
             products={products} setProducts={setProducts}
             orders={orders} updateOrderStatus={updateOrderStatus}
             transactions={transactions} addTransaction={addTransaction}
-            accounts={accounts} addAccount={addAccount}
-            updateAccount={updateAccount}
+            accounts={accounts} addAccount={addAccount} updateAccount={updateAccount}
+            inventory={inventory} addInventoryItem={addInventoryItem} updateInventoryItem={updateInventoryItem} // PASSED DOWN
             activeSection={activeSection} setActiveSection={setActiveSection}
             siteConfig={siteConfig} setSiteConfig={setSiteConfig}
             features={userFeatures}
