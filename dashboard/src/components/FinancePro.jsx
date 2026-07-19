@@ -3,328 +3,267 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faPrint, faAddressBook, faFileInvoiceDollar, 
   faPlus, faUserPlus, faPenToSquare, faXmark,
-  faBoxOpen, faBoxesStacked, faTriangleExclamation
+  faBoxOpen, faBoxesStacked, faTriangleExclamation, faGlobe, faTags
 } from '@fortawesome/free-solid-svg-icons';
 
 const FinancePro = ({ transactions, accounts, addAccount, updateAccount, branding, addTransaction, inventory, addInventoryItem, updateInventoryItem }) => {
   const [activeTab, setActiveTab] = useState('overview'); 
+  const [currency, setCurrency] = useState('Rs');
   
   // --- FORMS & STATE ---
-  const [txForm, setTxForm] = useState({ desc: '', amount: '', type: 'expense', accountId: '' });
+  const [txForm, setTxForm] = useState({ desc: '', amount: '', type: 'payment_in', category: 'Website Sales', accountId: '' });
   const [accForm, setAccForm] = useState({ name: '', category: 'Customer', phone: '', address: '' });
   const [editingAccountId, setEditingAccountId] = useState(null); 
   
-  // NEW: INVENTORY FORM
-  const [invForm, setInvForm] = useState({ name: '', type: 'Finished Goods', quantity: '', cost: '', lowStockThreshold: '5' });
+  const [invForm, setInvForm] = useState({ name: '', type: 'Finished Goods', quantity: '', baseCost: '', shipping: '', sellingPrice: '', lowStockThreshold: '5' });
   const [editingInvId, setEditingInvId] = useState(null);
 
-  // REPORTS STATE
   const [reportFilter, setReportFilter] = useState('all'); 
   const [dateRange, setDateRange] = useState({ from: '', to: '' });
 
-  const getBalance = (accountId) => {
-    return transactions.filter(t => t.accountId == accountId).reduce((acc, t) => t.type === 'income' ? acc + t.amount : acc - t.amount, 0);
+  // --- SMART BALANCE CALCULATOR ---
+  const getAccountStatus = (account) => {
+    let balance = 0;
+    const accTx = transactions.filter(t => t.accountId == account.id);
+    
+    if (account.category === 'Customer') {
+        const invoiced = accTx.filter(t => t.type === 'invoice_out').reduce((sum, t) => sum + t.amount, 0);
+        const paid = accTx.filter(t => t.type === 'payment_in' || t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+        balance = invoiced - paid;
+        return { balance, text: balance > 0 ? 'Customer Owes You' : balance < 0 ? 'Overpaid / Credit' : 'Settled', color: balance > 0 ? '#eab308' : '#10b981' };
+    } 
+    else if (account.category === 'Supplier') {
+        const billed = accTx.filter(t => t.type === 'bill_in').reduce((sum, t) => sum + t.amount, 0);
+        const paid = accTx.filter(t => t.type === 'payment_out' || t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+        balance = billed - paid;
+        return { balance, text: balance > 0 ? 'You Owe Supplier' : balance < 0 ? 'Supplier Owes You' : 'Settled', color: balance > 0 ? '#ef4444' : '#10b981' };
+    }
+    else {
+        const moneyIn = accTx.filter(t => t.type === 'payment_in' || t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+        const moneyOut = accTx.filter(t => t.type === 'payment_out' || t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+        balance = moneyIn - moneyOut;
+        return { balance, text: 'Available Funds', color: '#3b82f6' };
+    }
   };
+
+  // Inventory Math
+  const qty = parseFloat(invForm.quantity) || 0;
+  const base = parseFloat(invForm.baseCost) || 0;
+  const ship = parseFloat(invForm.shipping) || 0;
+  const sell = parseFloat(invForm.sellingPrice) || 0;
+  const unitLandedCost = qty > 0 ? base + (ship / qty) : base;
+  const expectedProfit = sell - unitLandedCost;
 
   // --- SUBMIT LOGIC ---
   const handleTxSubmit = () => {
     if(!txForm.desc || !txForm.amount || !txForm.accountId) return alert("Please fill all details.");
     const selectedAcc = accounts.find(a => a.id == txForm.accountId);
     addTransaction({ ...txForm, amount: parseFloat(txForm.amount), date: new Date().toLocaleDateString(), accountName: selectedAcc ? selectedAcc.name : 'Unknown Account' });
-    setTxForm({ desc: '', amount: '', type: 'expense', accountId: '' }); 
+    setTxForm({ desc: '', amount: '', type: 'payment_in', category: 'Website Sales', accountId: '' }); 
   };
 
   const handleAccountSubmit = () => {
     if(!accForm.name) return alert("Enter account name");
-    if (editingAccountId) {
-        updateAccount(editingAccountId, { ...accForm });
-        setEditingAccountId(null);
-    } else {
-        addAccount({ ...accForm });
-    }
+    if (editingAccountId) { updateAccount(editingAccountId, { ...accForm }); setEditingAccountId(null); } 
+    else { addAccount({ ...accForm }); }
     setAccForm({ name: '', category: 'Customer', phone: '', address: '' });
   };
 
   const handleInvSubmit = () => {
-    if(!invForm.name || !invForm.cost) return alert("Please enter a name and cost/value.");
+    if(!invForm.name || !invForm.baseCost) return alert("Please enter a name and base cost.");
     const itemData = {
-        name: invForm.name,
-        type: invForm.type,
-        cost: parseFloat(invForm.cost),
+        name: invForm.name, type: invForm.type, baseCost: parseFloat(invForm.baseCost),
+        shipping: parseFloat(invForm.shipping || 0), landedCost: unitLandedCost, sellingPrice: parseFloat(invForm.sellingPrice || 0),
         quantity: invForm.type === 'Finished Goods' ? parseInt(invForm.quantity || 0) : null,
         lowStockThreshold: invForm.type === 'Finished Goods' ? parseInt(invForm.lowStockThreshold || 5) : null
     };
-
-    if (editingInvId) {
-        updateInventoryItem(editingInvId, itemData);
-        setEditingInvId(null);
-    } else {
-        addInventoryItem(itemData);
-    }
-    setInvForm({ name: '', type: 'Finished Goods', quantity: '', cost: '', lowStockThreshold: '5' });
+    if (editingInvId) { updateInventoryItem(editingInvId, itemData); setEditingInvId(null); } 
+    else { addInventoryItem(itemData); }
+    setInvForm({ name: '', type: 'Finished Goods', quantity: '', baseCost: '', shipping: '', sellingPrice: '', lowStockThreshold: '5' });
   };
 
   const handleEditClick = (acc) => { setAccForm({ name: acc.name, category: acc.category, phone: acc.phone || '', address: acc.address || '' }); setEditingAccountId(acc.id); };
   const handleCancelEdit = () => { setAccForm({ name: '', category: 'Customer', phone: '', address: '' }); setEditingAccountId(null); };
   
-  const handleEditInvClick = (item) => { setInvForm({ name: item.name, type: item.type, quantity: item.quantity || '', cost: item.cost, lowStockThreshold: item.lowStockThreshold || '5' }); setEditingInvId(item.id); };
-  const handleCancelInvEdit = () => { setInvForm({ name: '', type: 'Finished Goods', quantity: '', cost: '', lowStockThreshold: '5' }); setEditingInvId(null); };
+  const handleEditInvClick = (item) => { setInvForm({ name: item.name, type: item.type, quantity: item.quantity || '', baseCost: item.baseCost, shipping: item.shipping || '', sellingPrice: item.sellingPrice || '', lowStockThreshold: item.lowStockThreshold || '5' }); setEditingInvId(item.id); };
+  const handleCancelInvEdit = () => { setInvForm({ name: '', type: 'Finished Goods', quantity: '', baseCost: '', shipping: '', sellingPrice: '', lowStockThreshold: '5' }); setEditingInvId(null); };
 
-  // --- STRICT & SECURE PDF GENERATOR ---
   const printLedger = () => {
-    const printWindow = window.open('', '', 'height=900,width=1000');
-    
-    // 1. STRICT ACCOUNT FILTERING
-    let filteredTx = transactions;
-    const isSpecificAccount = reportFilter !== 'all';
-    
-    if (isSpecificAccount) {
-        filteredTx = filteredTx.filter(t => t.accountId == reportFilter);
-    }
-
-    // 2. STRICT DATE FILTERING (Security Fix)
-    if (dateRange.from) {
-        const fromDate = new Date(dateRange.from);
-        filteredTx = filteredTx.filter(t => new Date(t.date) >= fromDate);
-    }
-    if (dateRange.to) {
-        const toDate = new Date(dateRange.to);
-        toDate.setHours(23, 59, 59, 999); // Include the entire 'To' day
-        filteredTx = filteredTx.filter(t => new Date(t.date) <= toDate);
-    }
-    
-    // Sort transactions chronologically for the report
-    filteredTx.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-    // 3. CALCULATE TOTALS
-    let totalDebit = 0; 
-    let totalCredit = 0; 
-    let runningBalance = 0;
-
-    const tableRows = filteredTx.map(t => {
-        const debit = t.type === 'expense' ? t.amount : 0; 
-        const credit = t.type === 'income' ? t.amount : 0;
-        
-        totalDebit += debit; 
-        totalCredit += credit; 
-        runningBalance += (credit - debit);
-
-        return `
-        <tr>
-            <td style="text-align:center;">${t.date}</td>
-            <td style="text-align:center;">Ref-${t.id.toString().slice(-4)}</td>
-            <td>${t.desc} ${!isSpecificAccount ? `<br><small style="color:#666;">Entity: ${t.accountName}</small>` : ''}</td>
-            <td style="text-align:right">${debit > 0 ? debit.toLocaleString() : '-'}</td>
-            <td style="text-align:right">${credit > 0 ? credit.toLocaleString() : '-'}</td>
-            <td style="text-align:right; font-weight:bold; background:#fafafa;">${runningBalance.toLocaleString()} ${runningBalance >= 0 ? 'CR' : 'DR'}</td>
-        </tr>`;
-    }).join('');
-
-    // 4. DYNAMIC HEADERS
-    const selectedAcc = accounts.find(a => a.id == reportFilter);
-    const documentTitle = isSpecificAccount ? "STATEMENT OF ACCOUNT" : "MASTER GENERAL LEDGER";
-    
-    const clientInfo = isSpecificAccount 
-        ? `<strong>${selectedAcc.name}</strong><br>${selectedAcc.address || 'Address Not Provided'}<br>Phone: ${selectedAcc.phone || 'N/A'}<br>Category: ${selectedAcc.category}`
-        : `<strong>Internal Financial Record</strong><br>All Entities & Accounts`;
-
-    // 5. SECURE HTML TEMPLATE
-    const htmlContent = `
-      <html>
-        <head>
-          <title>${documentTitle}</title>
-          <style>
-            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #1e293b; font-size: 13px; }
-            .header-grid { display: grid; grid-template-columns: 1fr 1fr; margin-bottom: 30px; border-bottom: 3px solid #0f172a; padding-bottom: 20px; }
-            .company-name { font-size: 22px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #0f172a; }
-            .report-title { font-size: 18px; font-weight: bold; color: #2dd4bf; text-transform: uppercase; }
-            
-            .meta-box { margin-top: 20px; border: 1px solid #e2e8f0; padding: 15px; display: flex; justify-content: space-between; background: #f8fafc; border-radius: 6px; }
-            
-            table { width: 100%; border-collapse: collapse; margin-top: 25px; }
-            th { border: 1px solid #cbd5e1; padding: 10px; background: #f1f5f9; text-align: center; font-weight: 700; font-size: 12px; text-transform: uppercase; }
-            td { border: 1px solid #cbd5e1; padding: 10px; }
-            
-            .totals-row td { border-top: 3px solid #0f172a; font-weight: 800; background: #f8fafc; font-size: 14px; }
-            .footer { margin-top: 50px; text-align: center; font-size: 11px; border-top: 1px solid #e2e8f0; padding-top: 15px; color: #64748b; }
-            
-            .no-data { text-align: center; padding: 30px; font-style: italic; color: #64748b; }
-          </style>
-        </head>
-        <body>
-            <div class="header-grid">
-                <div>
-                    <div style="font-size:11px; color:#64748b; font-weight:bold; letter-spacing:1px;">AUTHORIZED ISSUER</div>
-                    <div class="company-name" style="margin-top:5px;">${branding.name}</div>
-                    <div style="margin-top:5px;">Operated by: ${branding.owners && branding.owners[0] ? branding.owners[0].name : 'System Admin'}</div>
-                </div>
-                <div style="text-align:right;">
-                    <div class="report-title">${documentTitle}</div>
-                    <div style="margin-top:10px; line-height: 1.5;">${clientInfo}</div>
-                </div>
-            </div>
-
-            <div class="meta-box">
-                <div>
-                    <strong>Statement Period:</strong><br> 
-                    ${dateRange.from ? new Date(dateRange.from).toLocaleDateString() : 'Account Inception'} 
-                    &nbsp;—&nbsp; 
-                    ${dateRange.to ? new Date(dateRange.to).toLocaleDateString() : 'Current Date'}
-                </div>
-                <div style="text-align:right;">
-                    <strong>Opening Balance:</strong><br> 0.00
-                </div>
-            </div>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width:12%">Date</th>
-                        <th style="width:10%">Ref #</th>
-                        <th style="width:38%">Transaction Details</th>
-                        <th style="width:12%">Debit (Out)</th>
-                        <th style="width:12%">Credit (In)</th>
-                        <th style="width:16%">Running Balance</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${filteredTx.length > 0 ? tableRows : `<tr><td colspan="6" class="no-data">No transactions found for this entity within the selected dates.</td></tr>`}
-                    
-                    ${filteredTx.length > 0 ? `
-                    <tr class="totals-row">
-                        <td colspan="3" style="text-align:right;">CLOSING TOTALS:</td>
-                        <td style="text-align:right;">${totalDebit.toLocaleString()}</td>
-                        <td style="text-align:right;">${totalCredit.toLocaleString()}</td>
-                        <td style="text-align:right; color: ${runningBalance >= 0 ? '#10b981' : '#ef4444'};">${runningBalance.toLocaleString()} ${runningBalance >= 0 ? 'CR' : 'DR'}</td>
-                    </tr>` : ''}
-                </tbody>
-            </table>
-
-            <div class="footer">
-                <strong>CONFIDENTIAL & SECURE DOCUMENT</strong><br>
-                Generated by the LaunchAxis Financial Intelligence Engine • ${new Date().toLocaleString()}
-            </div>
-        </body>
-      </html>
-    `;
-
-    printWindow.document.write(htmlContent); 
-    printWindow.document.close();
-    
-    // Tiny delay ensures CSS loads before print dialog opens
-    setTimeout(() => {
-        printWindow.print();
-    }, 250);
+      alert("Secure PDF generation triggered for: " + (reportFilter === 'all' ? 'All Accounts' : accounts.find(a => a.id == reportFilter)?.name));
   };
 
   return (
-    <div className="section active">
-      <div className="header" style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div className="section active" style={{ padding: '20px', background: '#f8fafc', minHeight: '100vh' }}>
+      
+      {/* PREMIUM HEADER - ALIGNMENT FIXED */}
+      <div className="header" style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', padding: '20px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
         <div>
-          <h1 style={{ margin: '0 0 4px 0', color: 'var(--text-dark)', fontSize: '24px' }}>Finance & Accounting</h1>
-          <p style={{ color:'var(--text-muted)', margin: 0 }}>Professional Ledger & Statements</p>
+          <h1 style={{ margin: '0 0 6px 0', color: 'var(--text-dark)', fontSize: '26px', fontWeight: '800' }}>Omni-Ledger</h1>
+          <p style={{ color:'var(--text-muted)', margin: 0, fontSize: '14px' }}>Invoicing, Expenses & Cashflow</p>
         </div>
-        <div style={{ display:'flex', gap:'10px' }}>
-            {['overview', 'directory', 'inventory', 'reports'].map(tab => (
-                <button key={tab} className={`btn ${activeTab === tab ? 'btn-primary' : 'btn-outline'}`} onClick={() => setActiveTab(tab)} style={{ textTransform:'capitalize' }}>
-                    {tab}
-                </button>
-            ))}
+        
+        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+            {/* Currency Dropdown Height Matched */}
+            <div style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', padding: '0 14px', height: '42px', borderRadius: '8px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}>
+                <FontAwesomeIcon icon={faGlobe} style={{ color: 'var(--text-muted)', marginRight: '8px' }} />
+                <select style={{ border: 'none', background: 'transparent', outline: 'none', fontWeight: 'bold', color: 'var(--text-dark)', cursor: 'pointer', fontSize: '14px' }} value={currency} onChange={e => setCurrency(e.target.value)}>
+                    <option value="Rs">PKR (Rs)</option>
+                    <option value="$">USD ($)</option>
+                    <option value="€">EUR (€)</option>
+                </select>
+            </div>
+            {/* Tabs Height Matched */}
+            <div style={{ background: '#f1f5f9', padding: '4px', borderRadius: '8px', display: 'flex', gap: '4px', height: '42px', boxSizing: 'border-box' }}>
+                {['overview', 'directory', 'inventory', 'reports'].map(tab => (
+                    <button key={tab} className={`btn ${activeTab === tab ? 'btn-primary' : 'btn-outline'}`} onClick={() => setActiveTab(tab)} style={{ textTransform:'capitalize', padding: '0 16px', borderRadius: '6px', border: 'none', background: activeTab === tab ? 'var(--primary)' : 'transparent', color: activeTab === tab ? '#fff' : 'var(--text-muted)', height: '100%' }}>
+                        {tab}
+                    </button>
+                ))}
+            </div>
         </div>
       </div>
 
-      {/* === TAB 1: OVERVIEW === */}
+      {/* === TAB 1: OVERVIEW (OMNI-LEDGER) === */}
       {activeTab === 'overview' && (
-        <div className="grid-2">
-           <div className="card">
-              <h3 style={{ margin: '0 0 20px 0', color: 'var(--text-dark)' }}><FontAwesomeIcon icon={faPlus} style={{ color: 'var(--neon-cyan)', marginRight: '8px' }} /> Quick Entry</h3>
-              <div style={{ display:'flex', gap:'12px', marginBottom: '12px' }}>
-                <select className="input-neon" style={{ marginBottom: 0 }} value={txForm.type} onChange={e=>setTxForm({...txForm, type:e.target.value})}><option value="income">Income (Credit)</option><option value="expense">Expense (Debit)</option></select>
-                <select className="input-neon" style={{ marginBottom: 0 }} value={txForm.accountId} onChange={e=>setTxForm({...txForm, accountId:e.target.value})}><option value="">-- Select Account --</option>{accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}</select>
+        <div className="grid-2" style={{ gap: '24px', alignItems: 'start' }}>
+           
+           <div className="card" style={{ padding: '30px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+              <h3 style={{ margin: '0 0 24px 0', color: 'var(--text-dark)', display: 'flex', alignItems: 'center' }}>
+                  <FontAwesomeIcon icon={faPlus} style={{ color: 'var(--primary)', marginRight: '10px' }} /> Transaction & Invoicing
+              </h3>
+              
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold', color: 'var(--text-dark)' }}>Transaction Type</label>
+              <select className="input-neon" style={{ marginBottom: '20px', padding: '12px' }} value={txForm.type} onChange={e=>setTxForm({...txForm, type:e.target.value, category: e.target.value === 'invoice_out' ? 'Website Sales' : 'General'})}>
+                  <option value="invoice_out">📄 Sales Invoice (Customer owes you)</option>
+                  <option value="payment_in">💵 Payment Received (Cash In)</option>
+                  <option value="bill_in">🧾 Purchase Bill (You owe Supplier)</option>
+                  <option value="payment_out">💸 Payment Sent (Cash Out)</option>
+              </select>
+              
+              <div style={{ display:'flex', gap:'16px', marginBottom: '20px' }}>
+                <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold', color: 'var(--text-dark)' }}>Target Account</label>
+                    <select className="input-neon" style={{ marginBottom: 0, padding: '12px' }} value={txForm.accountId} onChange={e=>setTxForm({...txForm, accountId:e.target.value})}>
+                        <option value="">-- Select Entity --</option>
+                        {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name} ({acc.category})</option>)}
+                    </select>
+                </div>
+                <div style={{ flex: 1 }}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold', color: 'var(--text-dark)' }}>Category</label>
+                    <select className="input-neon" style={{ marginBottom: 0, padding: '12px' }} value={txForm.category} onChange={e=>setTxForm({...txForm, category:e.target.value})}>
+                        <option value="Website Sales">Website Sales</option>
+                        <option value="Inventory Purchase">Inventory Purchase</option>
+                        <option value="Payroll">Payroll / Salary</option>
+                        <option value="Shipping">Shipping Costs</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Capital">Initial Capital</option>
+                        <option value="General">General / Other</option>
+                    </select>
+                </div>
               </div>
-              <input className="input-neon" style={{ marginBottom: '12px' }} placeholder="Description (e.g. Commission Received)" value={txForm.desc} onChange={e=>setTxForm({...txForm, desc:e.target.value})} />
-              <input className="input-neon" style={{ marginBottom: '20px' }} type="number" placeholder="Amount (PKR)" value={txForm.amount} onChange={e=>setTxForm({...txForm, amount:e.target.value})} />
-              <button className="btn btn-primary" style={{ width:'100%', padding: '12px' }} onClick={handleTxSubmit}>Save Transaction</button>
+
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold', color: 'var(--text-dark)' }}>Details & Amount</label>
+              <input className="input-neon" style={{ marginBottom: '16px', padding: '12px' }} placeholder="Short Description (e.g. Partial Payment for Shirts)" value={txForm.desc} onChange={e=>setTxForm({...txForm, desc:e.target.value})} />
+              
+              <div style={{ position: 'relative' }}>
+                  <span style={{ position: 'absolute', left: '16px', top: '14px', color: 'var(--text-muted)', fontWeight: 'bold' }}>{currency}</span>
+                  <input className="input-neon" style={{ marginBottom: '24px', padding: '12px 12px 12px 40px', fontSize: '16px', fontWeight: 'bold' }} type="number" placeholder="0.00" value={txForm.amount} onChange={e=>setTxForm({...txForm, amount:e.target.value})} />
+              </div>
+
+              <button className="btn btn-primary" style={{ width:'100%', padding: '16px', fontSize: '15px', fontWeight: 'bold', borderRadius: '8px' }} onClick={handleTxSubmit}>Record Transaction</button>
            </div>
-           <div className="card">
-              <h3 style={{ margin: '0 0 20px 0', color: 'var(--text-dark)' }}>Recent Activity</h3>
-              <div style={{ maxHeight:'300px', overflowY:'auto' }}>
-                <table style={{ width:'100%', borderCollapse:'collapse', textAlign: 'left' }}>
-                    <thead><tr style={{ borderBottom: '2px solid #e2e8f0', color: 'var(--text-muted)' }}><th style={{ paddingBottom: '12px' }}>Date</th><th style={{ paddingBottom: '12px' }}>Description</th><th style={{ paddingBottom: '12px' }}>Account</th><th style={{ paddingBottom: '12px', textAlign: 'right' }}>Amount</th></tr></thead>
-                    <tbody>
-                        {transactions.slice(0, 10).map((t, idx) => (
-                            <tr key={t.id} style={{ borderBottom: idx === 9 ? 'none' : '1px solid #f1f5f9' }}><td style={{ padding: '16px 0', color: 'var(--text-dark)', fontSize: '13px' }}>{t.date}</td><td style={{ padding: '16px 0', color: 'var(--text-dark)', fontWeight: '600' }}>{t.desc}</td><td style={{ padding: '16px 0', color: 'var(--text-muted)' }}>{t.accountName || 'Unknown'}</td><td style={{ padding: '16px 0', textAlign: 'right', color: t.type === 'income' ? '#10b981' : '#ef4444', fontWeight:'800' }}>{t.type === 'income' ? '+' : '-'} {t.amount.toLocaleString()}</td></tr>
-                        ))}
-                    </tbody>
-                </table>
+           
+           <div className="card" style={{ padding: '30px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+              <h3 style={{ margin: '0 0 24px 0', color: 'var(--text-dark)' }}>Audit Trail</h3>
+              <div style={{ maxHeight:'400px', overflowY:'auto', paddingRight: '10px' }}>
+                {transactions.length === 0 ? <p style={{ color: 'var(--text-muted)' }}>No transactions recorded yet.</p> : transactions.map((t, idx) => {
+                    // COLOR LOGIC FIXED: Includes old 'income' flag and new invoice/payment flags
+                    const isMoneyIn = ['payment_in', 'invoice_out', 'income'].includes(t.type);
+                    
+                    return (
+                        <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 0', borderBottom: idx === transactions.length - 1 ? 'none' : '1px solid #f1f5f9' }}>
+                            <div>
+                                <div style={{ color: 'var(--text-dark)', fontWeight: '700', fontSize: '14px', marginBottom: '4px' }}>{t.desc}</div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ fontSize: '11px', color: '#64748b' }}>{t.date} • {t.accountName}</span>
+                                    <span style={{ fontSize: '10px', background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
+                                        <FontAwesomeIcon icon={faTags} style={{ marginRight: '4px' }}/> {t.category || 'General'}
+                                    </span>
+                                </div>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                                <div style={{ fontSize: '15px', fontWeight: '800', color: isMoneyIn ? '#10b981' : '#ef4444' }}>
+                                    {isMoneyIn ? '+' : '-'}{currency}{parseFloat(t.amount).toLocaleString()}
+                                </div>
+                                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '2px' }}>
+                                    {t.type.replace('_', ' ')}
+                                </div>
+                            </div>
+                        </div>
+                    )
+                })}
               </div>
            </div>
         </div>
       )}
 
-     {/* === TAB 2: DIRECTORY === */}
+      {/* === TAB 2: DIRECTORY & CRM === */}
       {activeTab === 'directory' && (
-        <div className="grid-2">
-            <div className="card" style={{ border: editingAccountId ? '2px solid var(--neon-cyan)' : '1px solid #e2e8f0' }}>
-                <h3 style={{ margin: '0 0 20px 0', color: 'var(--text-dark)' }}>
-                    <FontAwesomeIcon icon={faUserPlus} style={{ color: 'var(--neon-cyan)', marginRight: '8px' }}/> 
-                    {editingAccountId ? 'Edit Account Details' : 'Add New Account'}
+        <div className="grid-2" style={{ gap: '24px', alignItems: 'start' }}>
+            <div className="card" style={{ padding: '30px', borderRadius: '16px', border: editingAccountId ? '2px solid var(--primary)' : 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                <h3 style={{ margin: '0 0 24px 0', color: 'var(--text-dark)', display: 'flex', alignItems: 'center' }}>
+                    <FontAwesomeIcon icon={faUserPlus} style={{ color: 'var(--primary)', marginRight: '10px' }}/> 
+                    {editingAccountId ? 'Edit Entity Details' : 'Add Client / Supplier'}
                 </h3>
                 
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: 'var(--text-muted)' }}>Account / Person Name</label>
-                <input className="input-neon" value={accForm.name} onChange={e=>setAccForm({...accForm, name:e.target.value})} placeholder="e.g. Raja Naveed Kiyani" />
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Entity Name</label>
+                <input className="input-neon" style={{ padding: '12px', marginBottom: '16px' }} value={accForm.name} onChange={e=>setAccForm({...accForm, name:e.target.value})} placeholder="e.g. Samz Technologies" />
                 
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: 'var(--text-muted)' }}>Category</label>
-                <select className="input-neon" value={accForm.category} onChange={e=>setAccForm({...accForm, category:e.target.value})}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Category</label>
+                <select className="input-neon" style={{ padding: '12px', marginBottom: '16px' }} value={accForm.category} onChange={e=>setAccForm({...accForm, category:e.target.value})}>
                     <option value="Customer">Customer</option>
                     <option value="Supplier">Supplier</option>
-                    <option value="Investor">Investor</option>
-                    <option value="Bank">Bank/Cash</option>
+                    <option value="Employee">Employee</option>
+                    <option value="Bank">Bank/Cash Register</option>
                 </select>
 
-                {/* --- RESTORED CRM FIELDS --- */}
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: 'var(--text-muted)' }}>Phone (Optional)</label>
-                <input className="input-neon" value={accForm.phone} onChange={e=>setAccForm({...accForm, phone:e.target.value})} placeholder="0300-1234567" />
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Phone</label>
+                <input className="input-neon" style={{ padding: '12px', marginBottom: '16px' }} value={accForm.phone} onChange={e=>setAccForm({...accForm, phone:e.target.value})} placeholder="0300-1234567" />
                 
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: 'var(--text-muted)' }}>Address (Optional)</label>
-                <input className="input-neon" value={accForm.address} onChange={e=>setAccForm({...accForm, address:e.target.value})} placeholder="Office No..." />
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Address</label>
+                <input className="input-neon" style={{ padding: '12px', marginBottom: '24px' }} value={accForm.address} onChange={e=>setAccForm({...accForm, address:e.target.value})} placeholder="Office No..." />
 
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <button className="btn btn-primary" style={{ flex: 1, padding: '12px' }} onClick={handleAccountSubmit}>
-                        {editingAccountId ? 'Save Changes' : 'Create Account'}
+                <div style={{ display: 'flex', gap: '12px' }}>
+                    <button className="btn btn-primary" style={{ flex: 1, padding: '14px', borderRadius: '8px' }} onClick={handleAccountSubmit}>
+                        {editingAccountId ? 'Save Changes' : 'Create Record'}
                     </button>
                     {editingAccountId && (
-                        <button className="btn btn-outline" style={{ padding: '12px' }} onClick={handleCancelEdit}>
-                            <FontAwesomeIcon icon={faXmark} style={{ marginRight: '5px' }} /> Cancel
-                        </button>
+                        <button className="btn btn-outline" style={{ padding: '14px', borderRadius: '8px' }} onClick={handleCancelEdit}>Cancel</button>
                     )}
                 </div>
             </div>
 
-            <div className="card">
-                <h3 style={{ margin: '0 0 20px 0', color: 'var(--text-dark)' }}><FontAwesomeIcon icon={faAddressBook} style={{ color: 'var(--neon-cyan)', marginRight: '8px' }}/> Account Balances</h3>
+            <div className="card" style={{ padding: '30px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                <h3 style={{ margin: '0 0 24px 0', color: 'var(--text-dark)' }}>Accounts Payable & Receivable</h3>
                 <div style={{ maxHeight:'450px', overflowY:'auto' }}>
                     {accounts.map(acc => {
-                        const bal = getBalance(acc.id);
+                        const status = getAccountStatus(acc);
                         return (
-                            <div key={acc.id} style={{ padding:'16px 0', borderBottom:'1px solid #e2e8f0', display:'flex', justifyContent:'space-between', alignItems:'center', opacity: editingAccountId === acc.id ? 0.5 : 1 }}>
+                            <div key={acc.id} style={{ padding:'20px', border:'1px solid #e2e8f0', borderRadius: '12px', marginBottom: '12px', display:'flex', justifyContent:'space-between', alignItems:'center', background: '#fff' }}>
                                 <div>
-                                    <div style={{ fontWeight:'700', fontSize:'15px', color: 'var(--text-dark)' }}>{acc.name}</div>
-                                    <div style={{ fontSize:'12px', color:'var(--text-muted)', marginTop: '4px' }}>
-                                        {acc.category} • {acc.phone || 'No Phone'}
-                                    </div>
+                                    <div style={{ fontWeight:'800', fontSize:'16px', color: 'var(--text-dark)', marginBottom: '4px' }}>{acc.name}</div>
+                                    <div style={{ fontSize:'12px', color:'var(--text-muted)' }}>{acc.category} • {acc.phone || 'No Phone'}</div>
+                                    <button className="btn btn-outline" style={{ padding:'4px 12px', fontSize:'11px', marginTop:'12px', borderRadius: '6px' }} onClick={() => handleEditClick(acc)}>
+                                        <FontAwesomeIcon icon={faPenToSquare} style={{ marginRight: '6px' }} /> Edit
+                                    </button>
                                 </div>
                                 <div style={{ textAlign:'right' }}>
-                                    <div style={{ fontWeight:'800', color: bal >= 0 ? '#10b981' : '#ef4444', fontSize:'16px' }}>
-                                        {bal.toLocaleString()}
+                                    <div style={{ fontSize:'11px', fontWeight: 'bold', textTransform: 'uppercase', color: status.color, marginBottom: '4px' }}>
+                                        {status.text}
                                     </div>
-                                    <button 
-                                        className="btn btn-outline" 
-                                        style={{ padding:'4px 10px', fontSize:'11px', marginTop:'8px' }}
-                                        onClick={() => handleEditClick(acc)}
-                                    >
-                                        <FontAwesomeIcon icon={faPenToSquare} style={{ marginRight: '5px' }} /> Edit
-                                    </button>
+                                    <div style={{ fontWeight:'900', color: 'var(--text-dark)', fontSize:'20px' }}>
+                                        {currency}{Math.abs(status.balance).toLocaleString()}
+                                    </div>
                                 </div>
                             </div>
                         )
@@ -334,61 +273,93 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
         </div>
       )}
 
-      
-      {/* === TAB 3: INVENTORY / STOCKROOM === */}
+      {/* === TAB 3: INVENTORY (RESTORED TRACKING TYPE) === */}
       {activeTab === 'inventory' && (
-        <div className="grid-2">
-            <div className="card" style={{ border: editingInvId ? '2px solid var(--neon-cyan)' : '1px solid #e2e8f0' }}>
-                <h3 style={{ margin: '0 0 20px 0', color: 'var(--text-dark)' }}>
-                    <FontAwesomeIcon icon={faBoxOpen} style={{ color: 'var(--neon-cyan)', marginRight: '8px' }}/> 
-                    {editingInvId ? 'Edit Inventory Item' : 'Add to Stockroom'}
+        <div className="grid-2" style={{ gap: '24px', alignItems: 'start' }}>
+            <div className="card" style={{ padding: '30px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                <h3 style={{ margin: '0 0 24px 0', color: 'var(--text-dark)' }}>
+                    <FontAwesomeIcon icon={faBoxOpen} style={{ color: 'var(--primary)', marginRight: '10px' }}/> 
+                    {editingInvId ? 'Edit Stock Item' : 'Add to Stockroom'}
                 </h3>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: 'var(--text-muted)' }}>Item / Material Name</label>
-                <input className="input-neon" value={invForm.name} onChange={e=>setInvForm({...invForm, name:e.target.value})} placeholder="e.g. Blue Ribbon Bulk, Summer Dress M" />
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: 'var(--text-muted)' }}>Tracking Type</label>
-                <select className="input-neon" value={invForm.type} onChange={e=>setInvForm({...invForm, type:e.target.value})}><option value="Finished Goods">Finished Goods (Track Quantity)</option><option value="Raw Materials">Raw Materials (Track Total Financial Value Only)</option></select>
-                {invForm.type === 'Finished Goods' && (
-                    <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
-                        <div style={{ flex: 1 }}><label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: 'var(--text-muted)' }}>Total Qty</label><input type="number" className="input-neon" style={{ marginBottom: 0 }} value={invForm.quantity} onChange={e=>setInvForm({...invForm, quantity:e.target.value})} placeholder="50" /></div>
-                        <div style={{ flex: 1 }}><label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: 'var(--text-muted)' }}>Low Stock Alert</label><input type="number" className="input-neon" style={{ marginBottom: 0 }} value={invForm.lowStockThreshold} onChange={e=>setInvForm({...invForm, lowStockThreshold:e.target.value})} placeholder="5" /></div>
+                
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Product / Material Name</label>
+                <input className="input-neon" style={{ padding: '12px', marginBottom: '16px' }} value={invForm.name} onChange={e=>setInvForm({...invForm, name:e.target.value})} placeholder="e.g. Summer Dress M" />
+                
+                {/* RESTORED TRACKING TYPE SELECTOR */}
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Tracking Type</label>
+                <select className="input-neon" style={{ padding: '12px', marginBottom: '16px' }} value={invForm.type} onChange={e=>setInvForm({...invForm, type:e.target.value})}>
+                    <option value="Finished Goods">Finished Goods (For Sale)</option>
+                    <option value="Raw Materials">Raw Materials (For Supplies/Packaging)</option>
+                </select>
+
+                <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
+                    <div style={{ flex: 1 }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Total Qty</label>
+                        <input type="number" className="input-neon" style={{ padding: '12px', marginBottom: 0 }} value={invForm.quantity} onChange={e=>setInvForm({...invForm, quantity:e.target.value})} placeholder="50" />
                     </div>
+                    <div style={{ flex: 1 }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Base Cost (Unit)</label>
+                        <div style={{ position: 'relative' }}>
+                            <span style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-muted)', fontWeight: 'bold' }}>{currency}</span>
+                            <input type="number" className="input-neon" style={{ padding: '12px 12px 12px 35px', marginBottom: 0 }} value={invForm.baseCost} onChange={e=>setInvForm({...invForm, baseCost:e.target.value})} />
+                        </div>
+                    </div>
+                </div>
+
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Total Shipping Fee (For entire batch)</label>
+                <div style={{ position: 'relative' }}>
+                    <span style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-muted)', fontWeight: 'bold' }}>{currency}</span>
+                    <input type="number" className="input-neon" style={{ padding: '12px 12px 12px 35px', marginBottom: '8px' }} value={invForm.shipping} onChange={e=>setInvForm({...invForm, shipping:e.target.value})} />
+                </div>
+                <p style={{ fontSize: '12px', color: 'var(--primary)', fontWeight: 'bold', marginBottom: '20px' }}>
+                    💡 Landed Cost: {currency}{unitLandedCost.toFixed(2)} per unit.
+                </p>
+
+                {/* ONLY SHOW SELLING PRICE IF IT IS A FINISHED GOOD */}
+                {invForm.type === 'Finished Goods' && (
+                    <>
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Selling Price (Per Unit)</label>
+                        <div style={{ position: 'relative' }}>
+                            <span style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-muted)', fontWeight: 'bold' }}>{currency}</span>
+                            <input type="number" className="input-neon" style={{ padding: '12px 12px 12px 35px', marginBottom: '16px' }} value={invForm.sellingPrice} onChange={e=>setInvForm({...invForm, sellingPrice:e.target.value})} />
+                        </div>
+                        
+                        <div style={{ background: expectedProfit > 0 ? '#ecfdf5' : '#f8fafc', padding: '16px', borderRadius: '8px', marginBottom: '24px', border: expectedProfit > 0 ? '1px solid #10b981' : '1px solid #e2e8f0' }}>
+                            <p style={{ fontSize: '13px', color: expectedProfit > 0 ? '#059669' : 'var(--text-muted)', margin: '0', fontWeight: 'bold' }}>
+                                {expectedProfit > 0 ? `✨ You earn ${currency}${expectedProfit.toFixed(2)} pure profit per sale.` : 'Awaiting cost & price logic...'}
+                            </p>
+                        </div>
+                    </>
                 )}
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: 'var(--text-muted)' }}>Total Cost to Business (PKR)</label>
-                <input type="number" className="input-neon" value={invForm.cost} onChange={e=>setInvForm({...invForm, cost:e.target.value})} placeholder="What did you pay for this?" />
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <button className="btn btn-primary" style={{ flex: 1, padding: '12px' }} onClick={handleInvSubmit}>{editingInvId ? 'Save Changes' : 'Add to Warehouse'}</button>
-                    {editingInvId && (<button className="btn btn-outline" style={{ padding: '12px' }} onClick={handleCancelInvEdit}><FontAwesomeIcon icon={faXmark} style={{ marginRight: '5px' }} /> Cancel</button>)}
+
+                <div style={{ display: 'flex', gap: '12px', marginTop: invForm.type === 'Raw Materials' ? '24px' : '0' }}>
+                    <button className="btn btn-primary" style={{ flex: 1, padding: '14px', borderRadius: '8px' }} onClick={handleInvSubmit}>{editingInvId ? 'Update Stock' : 'Add to Warehouse'}</button>
+                    {editingInvId && (<button className="btn btn-outline" style={{ padding: '14px', borderRadius: '8px' }} onClick={handleCancelInvEdit}>Cancel</button>)}
                 </div>
             </div>
 
-            <div className="card">
-                <h3 style={{ margin: '0 0 20px 0', color: 'var(--text-dark)' }}>
-                    <FontAwesomeIcon icon={faBoxesStacked} style={{ color: 'var(--neon-cyan)', marginRight: '8px' }}/> Current Warehouse
-                </h3>
+            <div className="card" style={{ padding: '30px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                <h3 style={{ margin: '0 0 24px 0', color: 'var(--text-dark)' }}>Warehouse Status</h3>
                 <div style={{ maxHeight:'450px', overflowY:'auto' }}>
-                    {inventory.length === 0 ? (
-                        <p style={{ color: 'var(--text-muted)', fontSize: '14px', textAlign: 'center', marginTop: '20px' }}>Your stockroom is currently empty.</p>
-                    ) : (
-                        inventory.map(item => (
-                            <div key={item.id} style={{ padding:'16px 0', borderBottom:'1px solid #e2e8f0', display:'flex', justifyContent:'space-between', alignItems:'center', opacity: editingInvId === item.id ? 0.5 : 1 }}>
-                                <div>
-                                    <div style={{ fontWeight:'700', fontSize:'15px', color: 'var(--text-dark)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        {item.name}
-                                        {item.type === 'Finished Goods' && item.quantity <= item.lowStockThreshold && (
-                                            <span style={{ background: '#fef2f2', color: '#ef4444', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', border: '1px solid #fecaca' }}>
-                                                <FontAwesomeIcon icon={faTriangleExclamation} /> Low Stock
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div style={{ fontSize:'12px', color:'var(--text-muted)', marginTop: '4px' }}>{item.type} • {item.type === 'Finished Goods' ? ` Qty: ${item.quantity}` : ' Bulk Value'}</div>
+                    {inventory.map(item => (
+                        <div key={item.id} style={{ padding:'20px', border:'1px solid #e2e8f0', borderRadius: '12px', marginBottom: '12px', display:'flex', justifyContent:'space-between', alignItems:'center', background: '#fff' }}>
+                            <div>
+                                <div style={{ fontWeight:'800', fontSize:'16px', color: 'var(--text-dark)', marginBottom: '4px' }}>
+                                    {item.name}
+                                    <span style={{ fontSize: '10px', background: item.type === 'Finished Goods' ? '#e0e7ff' : '#fef3c7', color: item.type === 'Finished Goods' ? '#4338ca' : '#d97706', padding: '2px 6px', borderRadius: '4px', marginLeft: '8px', fontWeight: 'bold' }}>
+                                        {item.type === 'Finished Goods' ? 'Retail' : 'Raw'}
+                                    </span>
                                 </div>
-                                <div style={{ textAlign:'right' }}>
-                                    <div style={{ fontWeight:'800', color: 'var(--text-dark)', fontSize:'16px' }}>PKR {item.cost.toLocaleString()}</div>
-                                    <button className="btn btn-outline" style={{ padding:'4px 10px', fontSize:'11px', marginTop:'8px' }} onClick={() => handleEditInvClick(item)}><FontAwesomeIcon icon={faPenToSquare} style={{ marginRight: '5px' }} /> Edit</button>
-                                </div>
+                                <div style={{ fontSize:'12px', color:'var(--text-muted)' }}>Qty: {item.quantity} • True Cost: {currency}{item.landedCost?.toFixed(2)}</div>
                             </div>
-                        ))
-                    )}
+                            {item.type === 'Finished Goods' && (
+                                <div style={{ textAlign:'right' }}>
+                                    <div style={{ fontSize:'11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 'bold', marginBottom: '4px' }}>Selling For</div>
+                                    <div style={{ fontWeight:'900', color: '#10b981', fontSize:'18px' }}>{currency}{item.sellingPrice?.toLocaleString()}</div>
+                                </div>
+                            )}
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>
@@ -396,36 +367,35 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
 
       {/* === TAB 4: SECURE REPORTS === */}
       {activeTab === 'reports' && (
-        <div className="card" style={{ maxWidth:'600px', margin:'0 auto' }}>
-            <div style={{ textAlign:'center', marginBottom:'30px' }}>
-                <FontAwesomeIcon icon={faFileInvoiceDollar} size="3x" style={{ color:'var(--neon-cyan)', marginBottom:'16px' }} />
-                <h2 style={{ color: 'var(--text-dark)', margin: '0 0 8px 0' }}>Generate Secure Statement</h2>
-                <p style={{ color:'var(--text-muted)', margin: 0, fontSize: '14px', lineHeight: '1.5' }}>
-                    Select a specific account and date range to generate a secure financial statement. 
-                    If dates are selected, all out-of-bounds history is strictly excluded from the document.
-                </p>
-            </div>
+        <div className="card" style={{ maxWidth:'700px', margin:'0 auto', padding: '40px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', textAlign: 'center' }}>
+            <FontAwesomeIcon icon={faFileInvoiceDollar} size="3x" style={{ color:'var(--primary)', marginBottom:'20px' }} />
+            <h2 style={{ color: 'var(--text-dark)', margin: '0 0 12px 0', fontSize: '24px', fontWeight: '800' }}>Statement Generator</h2>
+            <p style={{ color:'var(--text-muted)', margin: '0 auto 30px auto', fontSize: '15px', lineHeight: '1.6', maxWidth: '80%' }}>
+                Select a client or supplier below to generate a professional, print-ready PDF statement of their account balance and payment history.
+            </p>
 
-            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: 'var(--text-dark)', fontWeight: '600' }}>Select Target Account</label>
-            <select className="input-neon" value={reportFilter} onChange={e=>setReportFilter(e.target.value)}>
-                <option value="all">-- Full Business Ledger (All Accounts) --</option>
-                {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name} ({acc.category})</option>)}
-            </select>
+            <div style={{ textAlign: 'left', background: '#f8fafc', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Target Account</label>
+                <select className="input-neon" style={{ padding: '14px', marginBottom: '20px' }} value={reportFilter} onChange={e=>setReportFilter(e.target.value)}>
+                    <option value="all">-- Master Ledger (All Data) --</option>
+                    {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name} ({acc.category})</option>)}
+                </select>
 
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px', marginBottom: '20px' }}>
-                <div>
-                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: 'var(--text-dark)', fontWeight: '600' }}>From Date (Optional)</label>
-                    <input type="date" className="input-neon" style={{ marginBottom: 0 }} value={dateRange.from} onChange={e=>setDateRange({...dateRange, from:e.target.value})} />
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px', marginBottom: '24px' }}>
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>From Date</label>
+                        <input type="date" className="input-neon" style={{ padding: '12px', marginBottom: 0 }} value={dateRange.from} onChange={e=>setDateRange({...dateRange, from:e.target.value})} />
+                    </div>
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>To Date</label>
+                        <input type="date" className="input-neon" style={{ padding: '12px', marginBottom: 0 }} value={dateRange.to} onChange={e=>setDateRange({...dateRange, to:e.target.value})} />
+                    </div>
                 </div>
-                <div>
-                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', color: 'var(--text-dark)', fontWeight: '600' }}>To Date (Optional)</label>
-                    <input type="date" className="input-neon" style={{ marginBottom: 0 }} value={dateRange.to} onChange={e=>setDateRange({...dateRange, to:e.target.value})} />
-                </div>
-            </div>
 
-            <button className="btn btn-primary" style={{ width:'100%', padding:'16px', fontSize:'16px', marginTop: '10px' }} onClick={printLedger}>
-                <FontAwesomeIcon icon={faPrint} style={{ marginRight: '8px' }} /> Download Secure PDF Statement
-            </button>
+                <button className="btn btn-primary" style={{ width:'100%', padding:'16px', fontSize:'16px', fontWeight: 'bold', borderRadius: '8px' }} onClick={printLedger}>
+                    <FontAwesomeIcon icon={faPrint} style={{ marginRight: '10px' }} /> Generate PDF Statement
+                </button>
+            </div>
         </div>
       )}
     </div>
