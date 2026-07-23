@@ -18,6 +18,7 @@ import Orders from './components/Orders';
 import ShopHome from './components/shop/ShopHome';
 import ShopCheckout from './components/shop/ShopCheckout';
 import ShopCartDrawer from './components/shop/ShopCartDrawer';
+import ShopCatalog from './components/shop/ShopCatalog'; // <-- NEW IMPORT
 import './App.css'; 
 
 // =========================================
@@ -29,7 +30,7 @@ const AdminPanel = ({
   orders, updateOrderStatus,
   transactions, addTransaction, 
   accounts, addAccount, updateAccount, 
-  inventory, addInventoryItem, updateInventoryItem, // <-- NEW INVENTORY PROPS
+  inventory, addInventoryItem, updateInventoryItem, 
   activeSection, setActiveSection,
   siteConfig, setSiteConfig,
   features 
@@ -58,7 +59,7 @@ const AdminPanel = ({
           {activeSection === 'finance' && features?.wantsAccounting && <FinancePro transactions={transactions} accounts={accounts} addAccount={addAccount} updateAccount={updateAccount} inventory={inventory} addInventoryItem={addInventoryItem} updateInventoryItem={updateInventoryItem} branding={branding} addTransaction={addTransaction} />}
           {activeSection === 'branding' && features?.wantsBranding && <Branding branding={branding} setBranding={setBranding} />}
           {activeSection === 'website' && features?.wantsWebsite && <WebsiteEditor branding={branding} products={products} siteConfig={siteConfig} setSiteConfig={setSiteConfig} />}
-          {activeSection === 'products' && <Products products={products} setProducts={setProducts} />}
+          {activeSection === 'products' && <Products products={products} setProducts={setProducts} siteConfig={siteConfig} />}
           {activeSection === 'orders' && <Orders orders={orders} updateOrderStatus={updateOrderStatus} />}
         </main>
       </div>
@@ -85,21 +86,31 @@ function App() {
   const [accounts, setAccounts] = useState([{ id: 1, name: 'Cash Register', type: 'asset', category: 'Bank' }]);
   const [transactions, setTransactions] = useState([{ id: 1, date: new Date().toLocaleDateString(), desc: 'Initial Capital', amount: 100000, type: 'income', category: 'Capital', accountId: 1, accountName: 'Cash Register' }]);
   
-  // NEW: INVENTORY STATE
   const [inventory, setInventory] = useState([]);
-
   const [activeSection, setActiveSection] = useState('dashboard');
 
+  // --- UPDATED CART LOGIC (Firebase & Variant Ready) ---
   const addToCart = (product) => {
     setCart(prevCart => {
-      const existing = prevCart.find(item => item.id === product.id);
-      if (existing) return prevCart.map(item => item.id === product.id ? { ...item, qty: item.qty + 1 } : item);
-      return [...prevCart, { ...product, qty: 1 }];
+      // Find matching item using cartId so variants don't overwrite each other
+      const existing = prevCart.find(item => item.cartId === product.cartId);
+      if (existing) {
+        return prevCart.map(item => item.cartId === product.cartId ? { ...item, qty: item.qty + product.qty } : item);
+      }
+      return [...prevCart, product];
     });
     setIsCartOpen(true); 
   };
-  const removeFromCart = (id) => setCart(prevCart => prevCart.filter(item => item.id !== id));
-  const updateQty = (id, change) => setCart(prevCart => prevCart.map(item => { if (item.id === id) { const newQty = item.qty + change; return newQty > 0 ? { ...item, qty: newQty } : item; } return item; }));
+  
+  const removeFromCart = (cartId) => setCart(prevCart => prevCart.filter(item => item.cartId !== cartId));
+  
+  const updateQty = (cartId, change) => setCart(prevCart => prevCart.map(item => { 
+    if (item.cartId === cartId) { 
+        const newQty = item.qty + change; 
+        return newQty > 0 ? { ...item, qty: newQty } : item; 
+    } 
+    return item; 
+  }));
 
   // =========================================
   // 3. THE LIVE FIREBASE CONNECTION
@@ -127,7 +138,7 @@ function App() {
             if (liveData.transactions) setTransactions(liveData.transactions);
             if (liveData.orders) setOrders(liveData.orders);
             if (liveData.products) setProducts(liveData.products);
-            if (liveData.inventory) setInventory(liveData.inventory); // LOAD INVENTORY
+            if (liveData.inventory) setInventory(liveData.inventory); 
 
         }
       } catch (error) {
@@ -179,7 +190,6 @@ function App() {
     syncToFirebase("accounts", updatedList);
   };
 
-  // NEW: INVENTORY HELPERS
   const addInventoryItem = (item) => {
     const updatedList = [...inventory, { ...item, id: Math.floor(Math.random() * 100000) }];
     setInventory(updatedList);
@@ -223,13 +233,22 @@ function App() {
             orders={orders} updateOrderStatus={updateOrderStatus}
             transactions={transactions} addTransaction={addTransaction}
             accounts={accounts} addAccount={addAccount} updateAccount={updateAccount}
-            inventory={inventory} addInventoryItem={addInventoryItem} updateInventoryItem={updateInventoryItem} // PASSED DOWN
+            inventory={inventory} addInventoryItem={addInventoryItem} updateInventoryItem={updateInventoryItem} 
             activeSection={activeSection} setActiveSection={setActiveSection}
             siteConfig={siteConfig} setSiteConfig={setSiteConfig}
             features={userFeatures}
           />
         } />
         <Route path="/checkout" element={<ShopCheckout cart={cart} branding={branding} onPlaceOrder={placeOrder} />} />
+        
+        {/* === NEW CATALOG ROUTE === */}
+        <Route path="/catalog" element={
+          <>
+            <ShopCartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} updateQty={updateQty} removeFromCart={removeFromCart} />
+            <ShopCatalog branding={branding} products={products} cartCount={cart.reduce((sum, item) => sum + item.qty, 0)} addToCart={addToCart} siteConfig={siteConfig} openCart={() => setIsCartOpen(true)} />
+          </>
+        } />
+
         <Route path="/" element={
           <>
             <ShopCartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} updateQty={updateQty} removeFromCart={removeFromCart} />

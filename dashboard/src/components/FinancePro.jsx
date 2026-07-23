@@ -88,8 +88,136 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
   const handleEditInvClick = (item) => { setInvForm({ name: item.name, type: item.type, quantity: item.quantity || '', baseCost: item.baseCost, shipping: item.shipping || '', sellingPrice: item.sellingPrice || '', lowStockThreshold: item.lowStockThreshold || '5' }); setEditingInvId(item.id); };
   const handleCancelInvEdit = () => { setInvForm({ name: '', type: 'Finished Goods', quantity: '', baseCost: '', shipping: '', sellingPrice: '', lowStockThreshold: '5' }); setEditingInvId(null); };
 
+  // --- NATIVE HTML PRINT GENERATOR (The "Side Popup" Method) ---
   const printLedger = () => {
-      alert("Secure PDF generation triggered for: " + (reportFilter === 'all' ? 'All Accounts' : accounts.find(a => a.id == reportFilter)?.name));
+    let filteredTx = transactions;
+
+    // Helper: strips time so "today" matches exactly
+    const normalizeDate = (dateString) => {
+        const d = new Date(dateString);
+        d.setHours(0, 0, 0, 0); 
+        return d.getTime();
+    };
+    
+    // 1. Apply Filters
+    if (reportFilter !== 'all') {
+        // Use loose equality (==) to safely match strings to IDs
+        filteredTx = filteredTx.filter(tx => tx.accountId == reportFilter || tx.accountName === reportFilter);
+    }
+    if (dateRange.from) {
+        filteredTx = filteredTx.filter(tx => normalizeDate(tx.date) >= normalizeDate(dateRange.from));
+    }
+    if (dateRange.to) {
+        filteredTx = filteredTx.filter(tx => normalizeDate(tx.date) <= normalizeDate(dateRange.to));
+    }
+
+    // 2. Calculate Totals & Build HTML Rows
+    let totalIncome = 0;
+    let totalExpense = 0;
+    
+    const tableRowsHTML = filteredTx.map(tx => {
+        if (['payment_in', 'invoice_out', 'income'].includes(tx.type)) {
+            totalIncome += parseFloat(tx.amount);
+        } else {
+            totalExpense += parseFloat(tx.amount);
+        }
+        
+        return `
+            <tr>
+                <td style="padding: 14px; border-bottom: 1px solid #e2e8f0; color: #475569;">${tx.date}</td>
+                <td style="padding: 14px; border-bottom: 1px solid #e2e8f0; font-weight: 600;">${tx.desc}</td>
+                <td style="padding: 14px; border-bottom: 1px solid #e2e8f0; color: #64748b;">${tx.category || 'General'}</td>
+                <td style="padding: 14px; border-bottom: 1px solid #e2e8f0; color: #64748b;">${tx.type.replace('_', ' ').toUpperCase()}</td>
+                <td style="padding: 14px; border-bottom: 1px solid #e2e8f0; font-weight: 800; text-align: right;">${currency} ${parseFloat(tx.amount).toLocaleString()}</td>
+            </tr>
+        `;
+    }).join('');
+
+    const net = totalIncome - totalExpense;
+    const brandName = branding?.name || 'LaunchAxis Store';
+    const accountLabel = reportFilter === 'all' ? 'Master Ledger (All Accounts)' : `Target Account: ${accounts.find(a => a.id == reportFilter)?.name || reportFilter}`;
+
+    // 3. Open New Window & Inject Premium HTML
+    const printWindow = window.open('', '_blank', 'width=900,height=800');
+    
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>${brandName} - Official Statement</title>
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+                body { font-family: 'Inter', sans-serif; padding: 40px; color: #0f172a; margin: 0; }
+                .header { border-bottom: 4px solid #2dd4bf; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; }
+                .header h1 { margin: 0; font-size: 32px; font-weight: 900; letter-spacing: -1px; }
+                .header p { margin: 5px 0 0 0; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 12px; }
+                .meta { margin-bottom: 40px; line-height: 1.8; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 40px; text-align: left; }
+                th { background: #0f172a; color: #fff; padding: 14px; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+                th:last-child { text-align: right; }
+                .empty-state { text-align: center; padding: 40px; color: #94a3b8; font-weight: 600; border-bottom: 1px solid #e2e8f0; }
+                .totals-box { width: 350px; margin-left: auto; background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; }
+                .totals-row { display: flex; justify-content: space-between; margin-bottom: 10px; color: #475569; font-weight: 600; font-size: 14px; }
+                .totals-row.net { margin-top: 15px; padding-top: 15px; border-top: 1px solid #cbd5e1; font-size: 18px; color: #0f172a; font-weight: 900; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div>
+                    <h1>${brandName}</h1>
+                    <p>Official Account Statement</p>
+                </div>
+                <div style="text-align: right; font-size: 12px; color: #64748b; font-weight: 600;">
+                    Generated<br/>
+                    <span style="color: #0f172a; font-size: 14px;">${new Date().toLocaleDateString()}</span>
+                </div>
+            </div>
+            
+            <div class="meta">
+                <div style="font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 800; margin-bottom: 4px;">Statement For</div>
+                <strong style="font-size: 18px; color: #0f172a;">${accountLabel}</strong><br>
+                <div style="margin-top: 8px; font-size: 14px; color: #475569;"><strong>Period:</strong> ${dateRange.from || 'Beginning of time'} &nbsp;&mdash;&nbsp; ${dateRange.to || 'Present'}</div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tableRowsHTML || '<tr><td colspan="5" class="empty-state">No transactions found for this period.</td></tr>'}
+                </tbody>
+            </table>
+
+            <div class="totals-box">
+                <div class="totals-row">
+                    <span>Total Cash In</span>
+                    <span>${currency} ${totalIncome.toLocaleString()}</span>
+                </div>
+                <div class="totals-row">
+                    <span>Total Cash Out</span>
+                    <span>${currency} ${totalExpense.toLocaleString()}</span>
+                </div>
+                <div class="totals-row net">
+                    <span>Net Movement</span>
+                    <span style="color: ${net >= 0 ? '#10b981' : '#ef4444'}">${currency} ${net.toLocaleString()}</span>
+                </div>
+            </div>
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.focus();
+    
+    // 4. Trigger the native browser print dialogue
+    setTimeout(() => {
+        printWindow.print();
+    }, 500);
   };
 
   return (
@@ -103,7 +231,6 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
         </div>
         
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            {/* Currency Dropdown Height Matched */}
             <div style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', padding: '0 14px', height: '42px', borderRadius: '8px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}>
                 <FontAwesomeIcon icon={faGlobe} style={{ color: 'var(--text-muted)', marginRight: '8px' }} />
                 <select style={{ border: 'none', background: 'transparent', outline: 'none', fontWeight: 'bold', color: 'var(--text-dark)', cursor: 'pointer', fontSize: '14px' }} value={currency} onChange={e => setCurrency(e.target.value)}>
@@ -112,7 +239,6 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
                     <option value="€">EUR (€)</option>
                 </select>
             </div>
-            {/* Tabs Height Matched */}
             <div style={{ background: '#f1f5f9', padding: '4px', borderRadius: '8px', display: 'flex', gap: '4px', height: '42px', boxSizing: 'border-box' }}>
                 {['overview', 'directory', 'inventory', 'reports'].map(tab => (
                     <button key={tab} className={`btn ${activeTab === tab ? 'btn-primary' : 'btn-outline'}`} onClick={() => setActiveTab(tab)} style={{ textTransform:'capitalize', padding: '0 16px', borderRadius: '6px', border: 'none', background: activeTab === tab ? 'var(--primary)' : 'transparent', color: activeTab === tab ? '#fff' : 'var(--text-muted)', height: '100%' }}>
@@ -177,7 +303,6 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
               <h3 style={{ margin: '0 0 24px 0', color: 'var(--text-dark)' }}>Audit Trail</h3>
               <div style={{ maxHeight:'400px', overflowY:'auto', paddingRight: '10px' }}>
                 {transactions.length === 0 ? <p style={{ color: 'var(--text-muted)' }}>No transactions recorded yet.</p> : transactions.map((t, idx) => {
-                    // COLOR LOGIC FIXED: Includes old 'income' flag and new invoice/payment flags
                     const isMoneyIn = ['payment_in', 'invoice_out', 'income'].includes(t.type);
                     
                     return (
@@ -273,7 +398,7 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
         </div>
       )}
 
-      {/* === TAB 3: INVENTORY (RESTORED TRACKING TYPE) === */}
+      {/* === TAB 3: INVENTORY === */}
       {activeTab === 'inventory' && (
         <div className="grid-2" style={{ gap: '24px', alignItems: 'start' }}>
             <div className="card" style={{ padding: '30px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
@@ -285,7 +410,6 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Product / Material Name</label>
                 <input className="input-neon" style={{ padding: '12px', marginBottom: '16px' }} value={invForm.name} onChange={e=>setInvForm({...invForm, name:e.target.value})} placeholder="e.g. Summer Dress M" />
                 
-                {/* RESTORED TRACKING TYPE SELECTOR */}
                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Tracking Type</label>
                 <select className="input-neon" style={{ padding: '12px', marginBottom: '16px' }} value={invForm.type} onChange={e=>setInvForm({...invForm, type:e.target.value})}>
                     <option value="Finished Goods">Finished Goods (For Sale)</option>
@@ -315,7 +439,6 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
                     💡 Landed Cost: {currency}{unitLandedCost.toFixed(2)} per unit.
                 </p>
 
-                {/* ONLY SHOW SELLING PRICE IF IT IS A FINISHED GOOD */}
                 {invForm.type === 'Finished Goods' && (
                     <>
                         <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Selling Price (Per Unit)</label>
