@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from './firebaseConfig'; 
+import { doc, getDoc, updateDoc, setDoc, collection, onSnapshot } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth'; // <-- NEW: Auth Listener
+import { db, auth } from './firebaseConfig'; // <-- NEW: Added auth import
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCog, faUserCircle } from '@fortawesome/free-solid-svg-icons';
 
@@ -18,7 +19,7 @@ import Orders from './components/Orders';
 import ShopHome from './components/shop/ShopHome';
 import ShopCheckout from './components/shop/ShopCheckout';
 import ShopCartDrawer from './components/shop/ShopCartDrawer';
-import ShopCatalog from './components/shop/ShopCatalog'; // <-- NEW IMPORT
+import ShopCatalog from './components/shop/ShopCatalog'; 
 import './App.css'; 
 
 // =========================================
@@ -59,8 +60,11 @@ const AdminPanel = ({
           {activeSection === 'finance' && features?.wantsAccounting && <FinancePro transactions={transactions} accounts={accounts} addAccount={addAccount} updateAccount={updateAccount} inventory={inventory} addInventoryItem={addInventoryItem} updateInventoryItem={updateInventoryItem} branding={branding} addTransaction={addTransaction} />}
           {activeSection === 'branding' && features?.wantsBranding && <Branding branding={branding} setBranding={setBranding} />}
           {activeSection === 'website' && features?.wantsWebsite && <WebsiteEditor branding={branding} products={products} siteConfig={siteConfig} setSiteConfig={setSiteConfig} />}
-          {activeSection === 'products' && <Products products={products} setProducts={setProducts} siteConfig={siteConfig} />}
-          {activeSection === 'orders' && <Orders orders={orders} updateOrderStatus={updateOrderStatus} />}
+          
+          {/* UPDATED: Products component now handles its own Firestore data */}
+          {activeSection === 'products' && <Products siteConfig={siteConfig} />}
+          
+          {activeSection === 'orders' && <Orders />}
         </main>
       </div>
     </div>
@@ -92,7 +96,6 @@ function App() {
   // --- UPDATED CART LOGIC (Firebase & Variant Ready) ---
   const addToCart = (product) => {
     setCart(prevCart => {
-      // Find matching item using cartId so variants don't overwrite each other
       const existing = prevCart.find(item => item.cartId === product.cartId);
       if (existing) {
         return prevCart.map(item => item.cartId === product.cartId ? { ...item, qty: item.qty + product.qty } : item);
@@ -113,41 +116,69 @@ function App() {
   }));
 
   // =========================================
-  // 3. THE LIVE FIREBASE CONNECTION
+  // 3. THE LIVE FIREBASE CONNECTION (UPDATED)
   // =========================================
   useEffect(() => {
-    const fetchLiveKernelData = async () => {
-      try {
-        let targetEmail = "ceo@ecosole.store"; 
-        const rawMemory = localStorage.getItem("launchAxisTempData");
-        if (rawMemory) targetEmail = JSON.parse(rawMemory).email;
+    let unsubscribeProducts = null;
 
-        const docRef = doc(db, "users", targetEmail);
+    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+      try {
+        let targetId = "ceo@ecosole.store"; 
+        const rawMemory = localStorage.getItem("launchAxisTempData");
+        if (rawMemory) targetId = JSON.parse(rawMemory).email;
+
+        if (user) {
+          targetId = user.uid;
+        }
+
+        const docRef = doc(db, "users", targetId);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
             const liveData = docSnap.data();
-            const aiData = liveData.aiArchitecture;
-            setCurrentUserEmail(targetEmail);
+            setCurrentUserEmail(targetId);
 
-            setBranding(prev => ({ ...prev, name: aiData.businessName, slogan: aiData.tagline, industry: liveData.businessType }));
-            setSiteConfig(prev => ({ ...prev, themeColor: aiData.colorPalette.primary || '#2dd4bf' }));
+            if (liveData.aiArchitecture) {
+                setBranding(prev => ({ ...prev, name: liveData.aiArchitecture.businessName, slogan: liveData.aiArchitecture.tagline, industry: liveData.businessType }));
+            }
+
+            if (liveData.siteConfig) {
+                setSiteConfig(liveData.siteConfig);
+            } else if (liveData.aiArchitecture?.colorPalette?.primary) {
+                setSiteConfig(prev => ({ ...prev, themeColor: liveData.aiArchitecture.colorPalette.primary }));
+            }
+
             setUserFeatures({ wantsWebsite: true, wantsAccounting: true, wantsBranding: true });
 
             if (liveData.accounts) setAccounts(liveData.accounts);
             if (liveData.transactions) setTransactions(liveData.transactions);
             if (liveData.orders) setOrders(liveData.orders);
-            if (liveData.products) setProducts(liveData.products);
             if (liveData.inventory) setInventory(liveData.inventory); 
-
+        } else {
+            console.log("No store config found for this user yet.");
         }
+
+        // --- LIVE PRODUCTS SUBCOLLECTION LISTENER ---
+        const productsRef = collection(db, `users/${targetId}/products`);
+        unsubscribeProducts = onSnapshot(productsRef, (snapshot) => {
+            const liveProducts = [];
+            snapshot.forEach((docSnap) => {
+                liveProducts.push({ id: docSnap.id, ...docSnap.data() });
+            });
+            setProducts(liveProducts);
+        });
+
       } catch (error) {
           console.error("Firebase Sync Error:", error);
       } finally {
           setIsAiLoading(false);
       }
+    });
+
+    return () => {
+        unsubscribeAuth();
+        if (unsubscribeProducts) unsubscribeProducts();
     };
-    fetchLiveKernelData();
   }, []);
 
   const syncToFirebase = async (field, data) => {
@@ -202,9 +233,11 @@ function App() {
     syncToFirebase("inventory", updatedList);
   };
 
-  const placeOrder = (orderDetails) => {
+  const placeOrder = async (orderDetails) => {
+    // Generate a clean Order ID
+    const orderId = `ord_${Math.floor(Math.random() * 100000)}`;
+    
     const newOrder = {
-        id: Math.floor(Math.random() * 10000) + 1000,
         customerName: `${orderDetails.customer.firstName} ${orderDetails.customer.lastName}`,
         phone: orderDetails.customer.phone,
         address: `${orderDetails.customer.address}, ${orderDetails.customer.city}`,
@@ -212,13 +245,27 @@ function App() {
         qty: orderDetails.items.length,
         amount: orderDetails.total,
         status: 'Pending',
-        trackingId: ''
+        trackingId: '',
+        timestamp: Date.now() // Allows us to sort newest to oldest!
     };
-    const updatedOrders = [newOrder, ...orders];
-    setOrders(updatedOrders);
-    syncToFirebase("orders", updatedOrders);
-    
-    setCart([]); setIsCartOpen(false); alert("Order Placed Successfully!");
+
+    try {
+        // Find the right user database
+        let targetId = "ceo@ecosole.store"; 
+        if (auth.currentUser) targetId = auth.currentUser.uid;
+
+        // Save directly to the subcollection!
+        const orderRef = doc(db, `users/${targetId}/orders`, orderId);
+        await setDoc(orderRef, newOrder);
+        
+        // Clear cart and show success
+        setCart([]); 
+        setIsCartOpen(false); 
+        alert("Order Placed Successfully!");
+    } catch (error) {
+        console.error("Error saving order:", error);
+        alert("Failed to place order.");
+    }
   };
 
   if (isAiLoading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: '#111', color: '#2dd4bf', fontSize: '24px', fontWeight: 'bold' }}>INITIALIZING LAUNCHAXIS AI KERNEL...</div>;

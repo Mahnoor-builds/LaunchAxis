@@ -2,8 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faGlobe, faToggleOn, faToggleOff, faTrash, faPlus,
-  faEnvelope, faBars, faPalette, faFont, faHeading, faMagic, faTags, faLock, faUpload
+  faEnvelope, faBars, faPalette, faFont, faHeading, faMagic, faTags, faLock, faUpload,
+  faSave, faLink, faExternalLinkAlt
 } from '@fortawesome/free-solid-svg-icons';
+
+// --- FIREBASE IMPORTS FOR STEP 2 ---
+import { doc, setDoc } from 'firebase/firestore';
+import { db, auth } from '../firebaseConfig';
+
 import ShopHome from '../components/shop/ShopHome'; 
 
 const WebsiteEditor = ({ branding, siteConfig, setSiteConfig, products = [], addToCart = () => {} }) => {
@@ -11,6 +17,7 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig, products = [], add
   const [newLink, setNewLink] = useState({ label: '', link: '' });
   const [newCategory, setNewCategory] = useState('');
   const [isGenerating, setIsGenerating] = useState({ hero: false, about: false });
+  const [isSaving, setIsSaving] = useState(false);
 
   // --- IRON-CLAD CORE LINKS LOGIC ---
   let baseMenu = siteConfig.menuItems || [];
@@ -42,6 +49,12 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig, products = [], add
   // --- SECURE INPUT SANITIZATION ---
   const sanitizeInput = (text) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#x27;");
 
+  // --- SUBDOMAIN SANITIZER (Lowercase, Alphanumeric & Hyphens only) ---
+  const handleSubdomainChange = (val) => {
+    const cleanSubdomain = val.toLowerCase().replace(/[^a-z0-9-]/g, '').substring(0, 30);
+    setSiteConfig({ ...siteConfig, subdomain: cleanSubdomain });
+  };
+
   // --- CONFIGURATION HANDLERS ---
   const handleToggle = (field) => setSiteConfig({ ...siteConfig, [field]: !siteConfig[field] });
 
@@ -57,6 +70,26 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig, products = [], add
     if (file) {
       const imageUrl = URL.createObjectURL(file);
       setSiteConfig({ ...siteConfig, [field]: imageUrl });
+    }
+  };
+
+  // --- STEP 2: FIREBASE SAVE FUNCTION ---
+  const handleSaveToFirebase = async () => {
+    try {
+      setIsSaving(true);
+      const user = auth.currentUser;
+      
+      // Fallback ID if user is testing offline/unauthenticated
+      const userId = user ? user.uid : 'ceo@ecosole.store';
+      const userRef = doc(db, "users", userId);
+      await setDoc(userRef, { siteConfig }, { merge: true });
+      
+      alert("✨ Website configuration successfully published to Firebase!");
+    } catch (error) {
+      console.error("Error saving site config:", error);
+      alert("Failed to save website config: " + error.message);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -114,17 +147,50 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig, products = [], add
 
   const currentCategories = siteConfig.categories || [];
   const isCategoryLimitReached = currentCategories.length >= 6;
+  const currentSubdomain = siteConfig.subdomain || 'yourstore';
+  const liveUrl = `https://${currentSubdomain}.launchaxis.com`;
 
   return (
     <div style={{ height: 'calc(100vh - 40px)', display: 'flex', flexDirection: 'column', padding: '0 20px 20px', boxSizing: 'border-box' }}>
       
-      {/* HEADER */}
+      {/* HEADER WITH ACTION BUTTONS */}
       <div style={{ padding: '20px 0', flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 style={{ fontSize: '26px', margin: 0, display: 'flex', alignItems: 'center', gap: '10px', color: '#0f172a', fontWeight: '800' }}>
             <FontAwesomeIcon icon={faGlobe} style={{ color: 'var(--primary)' }} /> Website Engine
           </h1>
           <p style={{ color: '#64748b', fontSize: '14px', margin: '5px 0 0' }}>Configure themes, content blocks, and storefront navigation</p>
+        </div>
+
+        <div style={{ display: 'flex', gap: '12px' }}>
+          {/* OPEN LIVE SITE BUTTON */}
+          <button 
+            onClick={() => window.open(liveUrl, '_blank')}
+            style={{ 
+              background: '#f1f5f9', color: '#0f172a', border: '1px solid #cbd5e1', 
+              borderRadius: '8px', padding: '12px 20px', fontWeight: 'bold', 
+              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)', transition: 'all 0.2s'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.background = '#e2e8f0'}
+            onMouseOut={(e) => e.currentTarget.style.background = '#f1f5f9'}
+          >
+            <FontAwesomeIcon icon={faExternalLinkAlt} /> View Live Store
+          </button>
+
+          {/* STEP 2 SAVE BUTTON */}
+          <button 
+            onClick={handleSaveToFirebase} 
+            disabled={isSaving}
+            style={{ 
+              background: 'var(--primary)', color: '#fff', border: 'none', 
+              borderRadius: '8px', padding: '12px 24px', fontWeight: 'bold', 
+              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            }}
+          >
+            <FontAwesomeIcon icon={faSave} /> {isSaving ? 'Publishing to Cloud...' : 'Save & Publish'}
+          </button>
         </div>
       </div>
 
@@ -134,6 +200,37 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig, products = [], add
         <div style={{ width: '420px', flexShrink: 0, overflowY: 'auto', paddingRight: '10px', scrollbarWidth: 'none', msOverflowStyle: 'none' }} className="hide-scrollbar-webkit">
           <style>{`.hide-scrollbar-webkit::-webkit-scrollbar { display: none; }`}</style>
             
+            {/* STORE SUBDOMAIN CARD */}
+            <div style={cardStyle}>
+                <h3 style={{ fontSize: '16px', margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a' }}>
+                  <FontAwesomeIcon icon={faLink} style={{ color: 'var(--primary)' }} /> Store Subdomain
+                </h3>
+                <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '14px', marginTop: 0 }}>
+                  Your store's official LaunchAxis web address.
+                </p>
+                
+                <div style={{ display: 'flex', alignItems: 'center', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '0 12px' }}>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. eco-sole" 
+                    value={siteConfig.subdomain || ''} 
+                    onChange={(e) => handleSubdomainChange(e.target.value)} 
+                    style={{ border: 'none', background: 'transparent', padding: '12px 0', fontSize: '14px', outline: 'none', flex: 1, fontWeight: 'bold', color: '#0f172a' }} 
+                  />
+                  <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 'bold' }}>.launchaxis.com</span>
+                </div>
+
+                {/* LIVE SUBDOMAIN LINK BADGE */}
+                <div style={{ marginTop: '12px', padding: '10px 12px', background: '#f0fdfa', border: '1px solid #99f6e4', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '12px', color: '#0d9488', fontWeight: 'bold', wordBreak: 'break-all', cursor: 'pointer' }} onClick={() => window.open(liveUrl, '_blank')} title="Click to open">
+                    {liveUrl}
+                  </span>
+                  <span style={{ fontSize: '10px', background: '#14b8a6', color: '#fff', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold', flexShrink: 0, marginLeft: '8px' }}>
+                    ACTIVE
+                  </span>
+                </div>
+            </div>
+
             {/* DESIGN BOARD */}
             <div style={cardStyle}>
                 <h3 style={{ fontSize: '16px', margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a' }}><FontAwesomeIcon icon={faPalette} style={{ color: 'var(--primary)' }} /> Design Board</h3>
@@ -192,16 +289,46 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig, products = [], add
                 </div>
             </div>
 
-            {/* PRODUCT CATEGORIES */}
+            {/* PRODUCT CATEGORIES WITH IMAGE UPLOAD */}
             <div style={cardStyle}>
                 <h3 style={{ fontSize: '16px', margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a' }}><FontAwesomeIcon icon={faTags} style={{ color: 'var(--primary)' }} /> Product Collections</h3>
-                <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px', marginTop: 0 }}>Organize your storefront. Max 6 categories.</p>
+                <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px', marginTop: 0 }}>Organize your storefront with circular images. Max 6 categories.</p>
                 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
-                    {currentCategories.map(cat => (
-                        <div key={cat.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                            <span style={{ fontSize: '14px', color: '#334155', fontWeight: '500' }}>{cat.label}</span>
-                            <FontAwesomeIcon icon={faTrash} style={{ cursor: 'pointer', color: '#ef4444', fontSize: '14px' }} onClick={() => removeCategory(cat.id)} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+                    {currentCategories.map((cat, idx) => (
+                        <div key={cat.id || idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#f8fafc', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                            
+                            {/* Circular Preview Thumbnail */}
+                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', background: '#cbd5e1', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {cat.image ? (
+                                    <img src={cat.image} alt={cat.label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                ) : (
+                                    <span style={{ fontSize: '9px', color: '#fff', fontWeight: 'bold' }}>Img</span>
+                                )}
+                            </div>
+
+                            <span style={{ fontSize: '14px', color: '#334155', fontWeight: 'bold', flex: 1, wordBreak: 'break-all' }}>{cat.label}</span>
+
+                            {/* Hidden file input for category image */}
+                            <input 
+                                type="file" 
+                                accept="image/*" 
+                                id={`cat-upload-${cat.id || idx}`} 
+                                style={{ display: 'none' }} 
+                                onChange={(e) => {
+                                    const file = e.target.files[0];
+                                    if (file) {
+                                        const imageUrl = URL.createObjectURL(file);
+                                        const updatedCats = currentCategories.map(c => c.id === cat.id ? { ...c, image: imageUrl } : c);
+                                        setSiteConfig({ ...siteConfig, categories: updatedCats });
+                                    }
+                                }} 
+                            />
+                            <label htmlFor={`cat-upload-${cat.id || idx}`} style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '6px 10px', fontSize: '11px', fontWeight: 'bold', color: '#475569', cursor: 'pointer' }}>
+                                Upload
+                            </label>
+
+                            <FontAwesomeIcon icon={faTrash} style={{ cursor: 'pointer', color: '#ef4444', fontSize: '14px', marginLeft: '4px' }} onClick={() => removeCategory(cat.id)} />
                         </div>
                     ))}
                 </div>
@@ -213,12 +340,17 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig, products = [], add
                 ) : (
                     <div style={{ display: 'flex', gap: '8px' }}>
                         <input placeholder="e.g. Summer Wear..." value={newCategory} onChange={(e) => setNewCategory(e.target.value)} style={{...inputStyle, marginTop: 0}} />
-                        <button onClick={addCategory} style={{ background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '8px', padding: '0 18px', cursor: 'pointer', fontWeight: 'bold' }}><FontAwesomeIcon icon={faPlus}/></button>
+                        <button onClick={() => {
+                            if (!newCategory.trim()) return;
+                            const item = { id: Date.now(), label: sanitizeInput(newCategory.trim()).substring(0, 20), image: '' };
+                            setSiteConfig({ ...siteConfig, categories: [...currentCategories, item] });
+                            setNewCategory('');
+                        }} style={{ background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: '8px', padding: '0 18px', cursor: 'pointer', fontWeight: 'bold' }}><FontAwesomeIcon icon={faPlus}/></button>
                     </div>
                 )}
             </div>
-
-            {/* HERO SECTION (WITH IMAGE UPLOAD) */}
+            
+            {/* HERO SECTION */}
             <div style={cardStyle}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: siteConfig.showHero ? '20px' : '0' }}>
                   <h3 style={{ fontSize: '16px', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a' }}><FontAwesomeIcon icon={faHeading} style={{ color: 'var(--primary)' }} /> Hero Banner</h3>
@@ -251,7 +383,7 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig, products = [], add
                 )}
             </div>
 
-            {/* ABOUT SECTION (WITH IMAGE UPLOAD) */}
+            {/* ABOUT SECTION */}
             <div style={cardStyle}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: siteConfig.showAbout ? '20px' : '0' }}>
                   <h3 style={{ fontSize: '16px', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a' }}><FontAwesomeIcon icon={faFont} style={{ color: 'var(--primary)' }} /> Brand Bio</h3>
@@ -286,12 +418,15 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig, products = [], add
             flex: 1, position: 'relative', background: '#0f172a', borderRadius: '16px', border: '1px solid #cbd5e1',
             display: 'flex', flexDirection: 'column', minWidth: 0, maxWidth: 'calc(100% - 440px)', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)'
         }}>
+            {/* LIVE BROWSER TOP BAR */}
             <div style={{ flexShrink: 0, height: '45px', background: '#1e293b', padding: '0 20px', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #334155' }}>
               <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ef4444' }}></div>
               <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#eab308' }}></div>
               <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#22c55e' }}></div>
-              <div style={{ margin: '0 auto', background: '#0f172a', padding: '4px 24px', borderRadius: '16px', fontSize: '12px', color: '#94a3b8', fontWeight: '500' }}>
-                launchaxis.com/preview
+              
+              {/* DYNAMIC SUBDOMAIN URL DISPLAY */}
+              <div style={{ margin: '0 auto', background: '#0f172a', padding: '4px 24px', borderRadius: '16px', fontSize: '12px', color: '#2dd4bf', fontWeight: 'bold', fontFamily: 'monospace' }}>
+                {liveUrl}
               </div>
             </div>
             

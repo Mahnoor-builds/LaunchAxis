@@ -6,6 +6,10 @@ import {
   faToggleOn, faToggleOff, faLayerGroup
 } from '@fortawesome/free-solid-svg-icons';
 
+// --- FIREBASE IMPORTS ---
+import { collection, doc, setDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
+import { db, auth } from '../firebaseConfig';
+
 // --- SUB-COMPONENT: INFINITE IMAGE SLIDER (Crash-Proofed) ---
 const ProductImageSlider = ({ images = [] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -45,27 +49,48 @@ const ProductImageSlider = ({ images = [] }) => {
 };
 
 // --- MAIN COMPONENT ---
-// Added products = [] and siteConfig = {} to prevent ANY blank screen crashes
-const Products = ({ products = [], setProducts, siteConfig = {} }) => {
+// Removed products/setProducts props; state is now handled locally via Firestore
+const Products = ({ siteConfig = {} }) => {
   const [view, setView] = useState('grid'); 
   const [isEditing, setIsEditing] = useState(false);
+  const [localProducts, setLocalProducts] = useState([]); // State for Firestore data
+  const [isSaving, setIsSaving] = useState(false);
   
   // FORM STATE
   const [formData, setFormData] = useState({
     id: null, name: '', price: '', description: '', status: 'active', 
     images: [], ordersCount: 0, category: 'Uncategorized', isFeatured: false,
-    variants: [] // NEW: Stores custom options like Size, Color
+    variants: [] 
   });
 
-  // VARIANT BUILDER STATE
   const [variantInput, setVariantInput] = useState({ name: '', options: '' });
-
   const availableCategories = siteConfig.categories || [];
-  const safeProducts = Array.isArray(products) ? products : []; // Final safety check
+
+  // --- FIREBASE: LIVE SYNC ---
+  useEffect(() => {
+    const user = auth.currentUser;
+    const userId = user ? user.uid : 'ceo@ecosole.store'; // Matching the App.js fallback
+
+    const productsRef = collection(db, `users/${userId}/products`);
+    
+    // Listen for real-time updates to the subcollection
+    const unsubscribe = onSnapshot(productsRef, (snapshot) => {
+      const liveProducts = [];
+      snapshot.forEach((doc) => {
+        liveProducts.push({ id: doc.id, ...doc.data() });
+      });
+      setLocalProducts(liveProducts);
+    });
+
+    return () => unsubscribe(); // Cleanup listener on unmount
+  }, []);
+
 
   // --- ACTIONS ---
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
+    // Note: For full production, these should upload to Firebase Storage to get a permanent URL.
+    // We are currently using temporary blob URLs for testing.
     const newImageUrls = files.map(file => URL.createObjectURL(file));
     setFormData({ ...formData, images: [...(formData.images || []), ...newImageUrls] });
   };
@@ -73,7 +98,7 @@ const Products = ({ products = [], setProducts, siteConfig = {} }) => {
   const handleFeaturedToggle = (e) => {
       const isChecked = e.target.checked;
       if (isChecked) {
-          const currentFeaturedCount = safeProducts.filter(p => p.isFeatured && p.id !== formData.id).length;
+          const currentFeaturedCount = localProducts.filter(p => p.isFeatured && p.id !== formData.id).length;
           if (currentFeaturedCount >= 6) {
               alert("Limit Reached: You can only have a maximum of 6 Featured Products.");
               return; 
@@ -82,15 +107,12 @@ const Products = ({ products = [], setProducts, siteConfig = {} }) => {
       setFormData({ ...formData, isFeatured: isChecked });
   };
 
-  // --- VARIANT LOGIC ---
   const addVariant = () => {
       if (!variantInput.name || !variantInput.options) return;
-      // Convert comma-separated string into a clean array ("S, M, L" -> ["S", "M", "L"])
       const optionsArray = variantInput.options.split(',').map(s => s.trim()).filter(s => s !== '');
-      
       const newVariant = { name: variantInput.name, options: optionsArray };
       setFormData({ ...formData, variants: [...(formData.variants || []), newVariant] });
-      setVariantInput({ name: '', options: '' }); // Reset input
+      setVariantInput({ name: '', options: '' }); 
   };
 
   const removeVariant = (idx) => {
@@ -98,17 +120,33 @@ const Products = ({ products = [], setProducts, siteConfig = {} }) => {
       setFormData({ ...formData, variants: updatedVariants });
   };
 
-  const handleSubmit = () => {
+  // --- FIREBASE: SAVE PRODUCT ---
+  const handleSubmit = async () => {
     if(!formData.name || !formData.price) return alert("Name and Price are required!");
+    setIsSaving(true);
 
-    if (isEditing) {
-      const updatedProducts = safeProducts.map(p => p.id === formData.id ? formData : p);
-      if(setProducts) setProducts(updatedProducts);
-    } else {
-      const newProduct = { ...formData, id: Date.now(), ordersCount: 0 };
-      if(setProducts) setProducts([newProduct, ...safeProducts]);
+    try {
+        const user = auth.currentUser;
+        const userId = user ? user.uid : 'ceo@ecosole.store';
+        
+        // Use existing ID if editing, otherwise generate a new string ID
+        const productId = isEditing ? formData.id : `prod_${Date.now()}`;
+        
+        const productRef = doc(db, `users/${userId}/products`, productId);
+        
+        // Remove the local ID from the data we save, since the document ID is the source of truth
+        const dataToSave = { ...formData };
+        delete dataToSave.id;
+
+        await setDoc(productRef, dataToSave, { merge: true });
+        
+        resetForm();
+    } catch (error) {
+        console.error("Error saving product:", error);
+        alert("Failed to save product.");
+    } finally {
+        setIsSaving(false);
     }
-    resetForm();
   };
 
   const handleEdit = (product) => {
@@ -123,16 +161,33 @@ const Products = ({ products = [], setProducts, siteConfig = {} }) => {
     setView('form');
   };
 
-  const handleDelete = (id) => {
+  // --- FIREBASE: DELETE PRODUCT ---
+  const handleDelete = async (id) => {
     if(window.confirm("Are you sure you want to delete this product?")) {
-        if(setProducts) setProducts(safeProducts.filter(p => p.id !== id));
+        try {
+            const user = auth.currentUser;
+            const userId = user ? user.uid : 'ceo@ecosole.store';
+            const productRef = doc(db, `users/${userId}/products`, id);
+            await deleteDoc(productRef);
+        } catch (error) {
+            console.error("Error deleting product:", error);
+            alert("Failed to delete product.");
+        }
     }
   };
 
-  const toggleStatus = (product) => {
-    const newStatus = product.status === 'active' ? 'sold-out' : 'active';
-    const updatedProducts = safeProducts.map(p => p.id === product.id ? { ...p, status: newStatus } : p);
-    if(setProducts) setProducts(updatedProducts);
+  // --- FIREBASE: TOGGLE STATUS ---
+  const toggleStatus = async (product) => {
+    try {
+        const user = auth.currentUser;
+        const userId = user ? user.uid : 'ceo@ecosole.store';
+        const newStatus = product.status === 'active' ? 'sold-out' : 'active';
+        
+        const productRef = doc(db, `users/${userId}/products`, product.id);
+        await setDoc(productRef, { status: newStatus }, { merge: true });
+    } catch (error) {
+        console.error("Error updating status:", error);
+    }
   };
 
   const resetForm = () => {
@@ -151,7 +206,7 @@ const Products = ({ products = [], setProducts, siteConfig = {} }) => {
             <FontAwesomeIcon icon={faBoxOpen} style={{color:'var(--primary)', marginRight:'10px'}}/>Product Catalog
           </h1>
           <p style={{color:'#64748b', margin: 0, fontSize: '14px'}}>
-            Active Listings: <strong style={{ color: '#0f172a' }}>{safeProducts.length}</strong>
+            Active Listings: <strong style={{ color: '#0f172a' }}>{localProducts.length}</strong>
           </p>
         </div>
         
@@ -272,8 +327,8 @@ const Products = ({ products = [], setProducts, siteConfig = {} }) => {
                 </div>
             </div>
 
-            <button className="btn btn-primary" style={{ width:'100%', marginTop:'30px', padding: '16px', fontSize: '16px', fontWeight: 'bold', borderRadius: '8px' }} onClick={handleSubmit}>
-                {isEditing ? 'Save Product Changes' : 'Publish Product to Store'}
+            <button className="btn btn-primary" disabled={isSaving} style={{ width:'100%', marginTop:'30px', padding: '16px', fontSize: '16px', fontWeight: 'bold', borderRadius: '8px' }} onClick={handleSubmit}>
+                {isSaving ? 'Saving...' : (isEditing ? 'Save Product Changes' : 'Publish Product to Store')}
             </button>
         </div>
       )}
@@ -281,7 +336,7 @@ const Products = ({ products = [], setProducts, siteConfig = {} }) => {
       {/* === VIEW 2: PRODUCT GRID === */}
       {view === 'grid' && (
         <div className="grid-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
-            {safeProducts.length === 0 && (
+            {localProducts.length === 0 && (
                 <div style={{ gridColumn:'1/-1', textAlign:'center', padding:'80px 20px', background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
                     <FontAwesomeIcon icon={faBoxOpen} size="3x" style={{ color:'#cbd5e1', marginBottom:'20px' }} />
                     <p style={{ fontSize: '16px', color: '#475569', fontWeight: 'bold' }}>Your catalog is empty.</p>
@@ -289,7 +344,7 @@ const Products = ({ products = [], setProducts, siteConfig = {} }) => {
                 </div>
             )}
 
-            {safeProducts.map(product => (
+            {localProducts.map(product => (
                 <div key={product.id} className="card" style={{ padding:0, position:'relative', overflow:'hidden', borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', background: '#fff' }}>
                     
                     {/* STATUS BADGE */}

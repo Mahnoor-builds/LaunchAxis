@@ -98,40 +98,57 @@ const ShopHome = ({ branding, products = [], addToCart, siteConfig = {}, cartCou
           ))}
         </section>
 
-        {/* === 2. DYNAMIC CATEGORY PILLS === */}
-        <section id="catalog" style={{ paddingTop: '80px', paddingBottom: '20px', maxWidth: '1400px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <h2 style={{ fontSize: '2.5rem', fontWeight: '900', margin: '0 0 20px 0', color: '#0f172a', letterSpacing: '-1px' }}>
-                    Shop by Category
-                </h2>
-                {categories.length > 0 ? (
-                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center', marginTop: '10px' }}>
-                        <button 
-                            onClick={() => { setActiveCategory('All'); setShowAllProducts(false); }}
-                            style={{ 
-                                padding: '10px 24px', borderRadius: '30px', fontWeight: '600', fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s',
-                                background: activeCategory === 'All' ? '#0f172a' : '#fff', 
-                                color: activeCategory === 'All' ? '#fff' : '#475569', border: '1px solid #cbd5e1'
-                            }}>
-                            <FontAwesomeIcon icon={faGrip} style={{ marginRight: '8px' }}/> All
-                        </button>
-                        {categories.map(cat => (
-                            <button 
-                                key={cat.id} 
-                                onClick={() => { setActiveCategory(cat.label); setShowAllProducts(false); }}
-                                style={{ 
-                                    padding: '10px 24px', borderRadius: '30px', fontWeight: '600', fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s',
-                                    background: activeCategory === cat.label ? '#0f172a' : '#fff', 
-                                    color: activeCategory === cat.label ? '#fff' : '#475569', border: '1px solid #cbd5e1'
-                                }}>
-                                {cat.label}
-                            </button>
-                        ))}
+        {/* === 2. DYNAMIC CIRCULAR CATEGORY CARDS === */}
+        <section id="catalog" style={{ paddingTop: '80px', paddingBottom: '30px', maxWidth: '1400px', margin: '0 auto', textAlign: 'center' }}>
+            <h2 style={{ fontSize: '2.5rem', fontWeight: '900', margin: '0 0 30px 0', color: '#0f172a', letterSpacing: '-1px' }}>
+                Shop by Category
+            </h2>
+            
+            {categories.length > 0 ? (
+                <div style={{ display: 'flex', gap: '30px', flexWrap: 'wrap', justifyContent: 'center', padding: '0 20px' }}>
+                    
+                    {/* "All" Circular Option */}
+                    <div 
+                        onClick={() => { setActiveCategory('All'); setShowAllProducts(false); }}
+                        style={{ cursor: 'pointer', textAlign: 'center', width: '110px' }}
+                    >
+                        <div style={{ 
+                            width: '100px', height: '100px', borderRadius: '50%', margin: '0 auto 12px auto', overflow: 'hidden', 
+                            border: activeCategory === 'All' ? `4px solid ${themeColor}` : '4px solid #e2e8f0',
+                            boxShadow: '0 10px 20px rgba(0,0,0,0.08)', transition: 'all 0.3s',
+                            background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold'
+                        }}>
+                            All
+                        </div>
+                        <span style={{ fontSize: '14px', fontWeight: '700', color: activeCategory === 'All' ? themeColor : '#0f172a' }}>All Products</span>
                     </div>
-                ) : (
-                    <p style={{ color: '#64748b' }}>Categories will appear here once added in the editor.</p>
-                )}
-            </div>
+
+                    {/* Mapped Categories with Images */}
+                    {categories.map(cat => (
+                        <div 
+                            key={cat.id} 
+                            onClick={() => { setActiveCategory(cat.label); setShowAllProducts(false); }}
+                            style={{ cursor: 'pointer', textAlign: 'center', width: '110px' }}
+                        >
+                            <div style={{ 
+                                width: '100px', height: '100px', borderRadius: '50%', margin: '0 auto 12px auto', overflow: 'hidden', 
+                                border: activeCategory === cat.label ? `4px solid ${themeColor}` : '4px solid #e2e8f0',
+                                boxShadow: '0 10px 20px rgba(0,0,0,0.08)', transition: 'all 0.3s',
+                                background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            }}>
+                                {cat.image ? (
+                                    <img src={cat.image} alt={cat.label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                ) : (
+                                    <span style={{ fontSize: '12px', color: '#94a3b8', padding: '5px', textAlign: 'center' }}>{cat.label}</span>
+                                )}
+                            </div>
+                            <span style={{ fontSize: '14px', fontWeight: '700', color: activeCategory === cat.label ? themeColor : '#0f172a' }}>{cat.label}</span>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <p style={{ color: '#64748b' }}>Categories will appear here once added in the website editor.</p>
+            )}
         </section>
 
         {/* === 3. FEATURED PRODUCTS GRID === */}

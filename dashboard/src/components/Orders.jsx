@@ -1,28 +1,73 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faCartShopping, faEye, faTruck, faCheck, faBox, faXmark, faPhone, faMapMarkerAlt 
 } from '@fortawesome/free-solid-svg-icons';
 
-const Orders = ({ orders, updateOrderStatus }) => {
-  const [filter, setFilter] = useState('All'); // All, Pending, Completed
-  const [selectedOrder, setSelectedOrder] = useState(null); // Controls the Popup Modal
+// --- FIREBASE IMPORTS ---
+import { collection, doc, setDoc, onSnapshot } from 'firebase/firestore';
+import { db, auth } from '../firebaseConfig';
+
+// Removed 'orders' and 'updateOrderStatus' props
+const Orders = () => {
+  const [filter, setFilter] = useState('All'); 
+  const [selectedOrder, setSelectedOrder] = useState(null); 
   const [trackingInput, setTrackingInput] = useState('');
+  const [localOrders, setLocalOrders] = useState([]); // State for live Firestore orders
+
+  // --- FIREBASE: LIVE SYNC ---
+  useEffect(() => {
+    const user = auth.currentUser;
+    const userId = user ? user.uid : 'ceo@ecosole.store';
+
+    const ordersRef = collection(db, `users/${userId}/orders`);
+    
+    // Listen for real-time updates to the orders subcollection
+    const unsubscribe = onSnapshot(ordersRef, (snapshot) => {
+      const liveOrders = [];
+      snapshot.forEach((doc) => {
+        liveOrders.push({ id: doc.id, ...doc.data() });
+      });
+      
+      // Sort orders so the newest ones appear at the top
+      liveOrders.sort((a, b) => b.timestamp - a.timestamp);
+      setLocalOrders(liveOrders);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // --- FILTER LOGIC ---
-  const filteredOrders = orders.filter(order => {
+  const filteredOrders = localOrders.filter(order => {
     if(filter === 'All') return true;
     if(filter === 'Pending') return order.status === 'Pending' || order.status === 'Shipped';
     if(filter === 'Completed') return order.status === 'Delivered';
     return true;
   });
 
-  // --- ACTIONS ---
-  const handleStatusChange = (newStatus) => {
+  // --- FIREBASE: UPDATE STATUS ---
+  const handleStatusChange = async (newStatus) => {
     if(selectedOrder) {
-      updateOrderStatus(selectedOrder.id, newStatus, trackingInput);
-      setSelectedOrder({ ...selectedOrder, status: newStatus, trackingId: trackingInput }); // Update local view
-      if(newStatus !== 'Shipped') setTrackingInput(''); // Reset tracking if not shipping
+      try {
+        const user = auth.currentUser;
+        const userId = user ? user.uid : 'ceo@ecosole.store';
+        
+        const orderRef = doc(db, `users/${userId}/orders`, selectedOrder.id);
+        
+        await setDoc(orderRef, { 
+            status: newStatus, 
+            trackingId: trackingInput 
+        }, { merge: true });
+
+        // Update local view immediately for a snappy UI
+        setSelectedOrder({ ...selectedOrder, status: newStatus, trackingId: trackingInput }); 
+        
+        if(newStatus !== 'Shipped') setTrackingInput('');
+
+      } catch (error) {
+        console.error("Error updating order status:", error);
+        alert("Failed to update order.");
+      }
     }
   };
 
@@ -180,7 +225,7 @@ const Orders = ({ orders, updateOrderStatus }) => {
                             placeholder="e.g. LEOPARDS-9928371" 
                             value={trackingInput}
                             onChange={(e) => setTrackingInput(e.target.value)}
-                            onBlur={() => handleStatusChange('Shipped')} // Save on click away
+                            onBlur={() => handleStatusChange('Shipped')}
                         />
                     </div>
                 )}

@@ -217,7 +217,24 @@
     </form>
   </div>
 
-  <script>
+  <script type="module">
+  // NOTE: If you are using Firebase modules, import your auth here. 
+  // Example: import { auth } from './firebaseConfig.js';
+  
+  // 1. THIS IS YOUR GATEKEEPER
+  // Replace this function with your actual code that shows your existing login popup
+  function triggerAuthPopup() {
+      // e.g., document.getElementById('loginModal').style.display = 'block';
+      alert("Authentication Required: Showing Login/Signup Popup Now...");
+  }
+
+  // 2. CHECK LOGIN STATUS
+  // Replace this with your actual Firebase auth check (e.g., auth.currentUser !== null)
+  function isUserLoggedIn() {
+      // Currently hardcoded to false so you can test the popup trigger
+      return false; 
+  }
+
   // Handle Form Submission
   document.getElementById("multiStepForm").addEventListener("submit", function (e) {
       // 1. Stop the page from refreshing instantly
@@ -250,10 +267,20 @@
             email
           };
 
-          // 5. Store in temporary browser memory
-          localStorage.setItem("launchAxisTempData", JSON.stringify(userData));
+          // ==========================================
+          // 5. THE NEW AUTHENTICATION INTERCEPTOR
+          // ==========================================
+          if (!isUserLoggedIn()) {
+              // Store the data temporarily so we don't lose their answers!
+              localStorage.setItem("pendingLaunchAxisData", JSON.stringify(userData));
+              
+              // Trigger your existing Firebase popup
+              triggerAuthPopup();
+              return; // Stop the function here. Do not go to loading screen yet!
+          }
 
-          // 6. Jump to the cinematic loading screen
+          // 6. If they ARE logged in, proceed normally
+          localStorage.setItem("launchAxisTempData", JSON.stringify(userData));
           window.location.href = "./loading.html";
 
       } catch (error) {
@@ -261,6 +288,20 @@
           alert("An error occurred. Open the developer console (Inspect -> Console) to see the details.");
       }
   });
+
+  // ==========================================
+  // 7. LISTENER FOR AFTER SUCCESSFUL LOGIN
+  // ==========================================
+  // Call this function right after your user successfully logs in via your popup
+  window.onSuccessfulLogin = function() {
+      const savedData = localStorage.getItem("pendingLaunchAxisData");
+      if (savedData) {
+          // Move the pending data to the active state and push them to the loading screen
+          localStorage.setItem("launchAxisTempData", savedData);
+          localStorage.removeItem("pendingLaunchAxisData");
+          window.location.href = "./loading.html";
+      }
+  }
   </script>
 </body>
 </html>
