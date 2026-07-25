@@ -318,9 +318,13 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig, products = [], add
                                 onChange={(e) => {
                                     const file = e.target.files[0];
                                     if (file) {
-                                        const imageUrl = URL.createObjectURL(file);
-                                        const updatedCats = currentCategories.map(c => c.id === cat.id ? { ...c, image: imageUrl } : c);
-                                        setSiteConfig({ ...siteConfig, categories: updatedCats });
+                                        const reader = new FileReader();
+                                        reader.onloadend = () => {
+                                            const base64String = reader.result;
+                                            const updatedCats = currentCategories.map(c => c.id === cat.id ? { ...c, image: base64String } : c);
+                                            setSiteConfig({ ...siteConfig, categories: updatedCats });
+                                        };
+                                        reader.readAsDataURL(file);
                                     }
                                 }} 
                             />

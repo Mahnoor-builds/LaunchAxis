@@ -17,9 +17,17 @@ const ShopCatalog = ({ branding, products = [], addToCart, siteConfig = {}, cart
 
   const categories = siteConfig.categories || [];
 
-  // Scroll to top when the catalog loads
+  // Scroll to top and check if the user clicked a specific category from the home page
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    // Check localStorage for a passed category filter
+    const savedCategory = localStorage.getItem('launchAxisStoreCategory');
+    if (savedCategory) {
+        setActiveCategory(savedCategory);
+        // Clean it up so it doesn't stay locked on that category forever!
+        localStorage.removeItem('launchAxisStoreCategory'); 
+    }
   }, []);
 
   // --- FILTERING LOGIC ---

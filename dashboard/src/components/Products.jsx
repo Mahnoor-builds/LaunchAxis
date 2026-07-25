@@ -89,10 +89,19 @@ const Products = ({ siteConfig = {} }) => {
   // --- ACTIONS ---
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    // Note: For full production, these should upload to Firebase Storage to get a permanent URL.
-    // We are currently using temporary blob URLs for testing.
-    const newImageUrls = files.map(file => URL.createObjectURL(file));
-    setFormData({ ...formData, images: [...(formData.images || []), ...newImageUrls] });
+    
+    // Convert each uploaded file into a permanent Base64 string
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result;
+        setFormData(prev => ({ 
+          ...prev, 
+          images: [...(prev.images || []), base64String] 
+        }));
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleFeaturedToggle = (e) => {
