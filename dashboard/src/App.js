@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { doc, getDoc, updateDoc, setDoc, collection, onSnapshot } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth'; // <-- NEW: Auth Listener
-import { db, auth } from './firebaseConfig'; // <-- NEW: Added auth import
+import { onAuthStateChanged } from 'firebase/auth';
+import { db, auth } from './firebaseConfig';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCog, faUserCircle } from '@fortawesome/free-solid-svg-icons';
 
@@ -61,10 +61,10 @@ const AdminPanel = ({
           {activeSection === 'branding' && features?.wantsBranding && <Branding branding={branding} setBranding={setBranding} />}
           {activeSection === 'website' && features?.wantsWebsite && <WebsiteEditor branding={branding} products={products} siteConfig={siteConfig} setSiteConfig={setSiteConfig} />}
           
-          {/* UPDATED: Products component now handles its own Firestore data */}
           {activeSection === 'products' && <Products siteConfig={siteConfig} />}
           
-          {activeSection === 'orders' && <Orders />}
+          {/* UPDATED: Orders now receives correct live orders and fulfillment trigger */}
+          {activeSection === 'orders' && <Orders orders={orders} updateOrderStatus={updateOrderStatus} />}
         </main>
       </div>
     </div>
@@ -93,7 +93,7 @@ function App() {
   const [inventory, setInventory] = useState([]);
   const [activeSection, setActiveSection] = useState('dashboard');
 
-  // --- UPDATED CART LOGIC (Firebase & Variant Ready) ---
+  // --- CART LOGIC ---
   const addToCart = (product) => {
     setCart(prevCart => {
       const existing = prevCart.find(item => item.cartId === product.cartId);
@@ -116,10 +116,11 @@ function App() {
   }));
 
   // =========================================
-  // 3. THE LIVE FIREBASE CONNECTION (UPDATED)
+  // 3. THE LIVE FIREBASE CONNECTION (FIXED)
   // =========================================
   useEffect(() => {
     let unsubscribeProducts = null;
+    let unsubscribeOrders = null;
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
       try {
@@ -152,13 +153,10 @@ function App() {
 
             if (liveData.accounts) setAccounts(liveData.accounts);
             if (liveData.transactions) setTransactions(liveData.transactions);
-            if (liveData.orders) setOrders(liveData.orders);
             if (liveData.inventory) setInventory(liveData.inventory); 
-        } else {
-            console.log("No store config found for this user yet.");
         }
 
-        // --- LIVE PRODUCTS SUBCOLLECTION LISTENER ---
+        // --- 1. LIVE PRODUCTS SUBCOLLECTION LISTENER ---
         const productsRef = collection(db, `users/${targetId}/products`);
         unsubscribeProducts = onSnapshot(productsRef, (snapshot) => {
             const liveProducts = [];
@@ -166,6 +164,16 @@ function App() {
                 liveProducts.push({ id: docSnap.id, ...docSnap.data() });
             });
             setProducts(liveProducts);
+        });
+
+        // --- 2. LIVE ORDERS SUBCOLLECTION LISTENER (NEW FIX) ---
+        const ordersRef = collection(db, `users/${targetId}/orders`);
+        unsubscribeOrders = onSnapshot(ordersRef, (snapshot) => {
+            const liveOrders = [];
+            snapshot.forEach((docSnap) => {
+                liveOrders.push({ id: docSnap.id, ...docSnap.data() });
+            });
+            setOrders(liveOrders);
         });
 
       } catch (error) {
@@ -178,6 +186,7 @@ function App() {
     return () => {
         unsubscribeAuth();
         if (unsubscribeProducts) unsubscribeProducts();
+        if (unsubscribeOrders) unsubscribeOrders();
     };
   }, []);
 
@@ -192,13 +201,35 @@ function App() {
   };
 
   // --- HELPERS ---
-  const updateOrderStatus = (id, status, trackId) => {
-    const updated = orders.map(o => o.id === id ? { ...o, status, trackingId: trackId } : o);
-    setOrders(updated);
-    syncToFirebase("orders", updated);
-    if(status === 'Delivered') {
-      const ord = orders.find(o => o.id === id);
-      if(ord) addTransaction({ date: new Date().toLocaleDateString(), desc: `Sale: Order #${id}`, amount: ord.amount, type: 'income', category: 'Sales', accountId: 1, accountName: 'Cash Register' });
+  const updateOrderStatus = async (id, status, trackId) => {
+    try {
+      let targetId = "ceo@ecosole.store"; 
+      if (auth.currentUser) targetId = auth.currentUser.uid;
+
+      // Update in subcollection directly
+      const orderRef = doc(db, `users/${targetId}/orders`, id);
+      await updateDoc(orderRef, { status, trackingId: trackId });
+
+      if (status === 'Delivered') {
+        const ord = orders.find(o => o.id === id);
+        if (ord) {
+          // NEW: Dynamic Account Routing!
+          // It looks for their first account. If they somehow deleted all accounts, it defaults safely.
+          const targetAccount = accounts.length > 0 ? accounts[0] : { id: 1, name: 'Cash Register' };
+
+          addTransaction({ 
+            date: new Date().toLocaleDateString(), 
+            desc: `Website Sale: Order #${id}`, 
+            amount: ord.amount, 
+            type: 'income', 
+            category: 'Website Sales', 
+            accountId: targetAccount.id, // Dynamically uses the user's actual account ID
+            accountName: targetAccount.name // Dynamically uses the user's actual account Name
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error updating order status:", error);
     }
   };
 
@@ -234,7 +265,6 @@ function App() {
   };
 
   const placeOrder = async (orderDetails) => {
-    // Generate a clean Order ID
     const orderId = `ord_${Math.floor(Math.random() * 100000)}`;
     
     const newOrder = {
@@ -246,19 +276,17 @@ function App() {
         amount: orderDetails.total,
         status: 'Pending',
         trackingId: '',
-        timestamp: Date.now() // Allows us to sort newest to oldest!
+        timestamp: Date.now()
     };
 
     try {
-        // Find the right user database
         let targetId = "ceo@ecosole.store"; 
         if (auth.currentUser) targetId = auth.currentUser.uid;
 
-        // Save directly to the subcollection!
+        // Save directly to subcollection
         const orderRef = doc(db, `users/${targetId}/orders`, orderId);
         await setDoc(orderRef, newOrder);
         
-        // Clear cart and show success
         setCart([]); 
         setIsCartOpen(false); 
         alert("Order Placed Successfully!");
@@ -288,7 +316,6 @@ function App() {
         } />
         <Route path="/checkout" element={<ShopCheckout cart={cart} branding={branding} onPlaceOrder={placeOrder} />} />
         
-        {/* === NEW CATALOG ROUTE === */}
         <Route path="/catalog" element={
           <>
             <ShopCartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} updateQty={updateQty} removeFromCart={removeFromCart} />
