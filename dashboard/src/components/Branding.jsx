@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faRobot, faPalette, faUpload, faWandMagicSparkles, 
   faImage, faFont, faBuilding, faFileSignature, faDesktop, faPenNib,
-  faGlobe, faSpinner, faCheckCircle, faTimesCircle, faLightbulb
+  faGlobe, faSpinner, faCheckCircle, faTimesCircle, faLightbulb, faEye
 } from '@fortawesome/free-solid-svg-icons';
 
 const Branding = ({ branding, setBranding }) => {
@@ -16,6 +16,8 @@ const Branding = ({ branding, setBranding }) => {
 
   // UX & Domain States
   const [nameKeyword, setNameKeyword] = useState(''); // TOP BOX: User explains business here once
+  const [logoPrompt, setLogoPrompt] = useState('');   // Clean UI input for Logo styling
+  const [isLogoModalOpen, setIsLogoModalOpen] = useState(false); // NEW: Modal state for logo inspection
   const [domainStatus, setDomainStatus] = useState('idle'); // idle, checking, available, taken, error
   const [domainName, setDomainName] = useState('');
   
@@ -40,7 +42,10 @@ const Branding = ({ branding, setBranding }) => {
 
   const handleLogoUpload = (e) => {
     const file = e.target.files[0];
-    if (file) setBranding(prev => ({ ...prev, logo: URL.createObjectURL(file) }));
+    if (file) {
+      setBranding(prev => ({ ...prev, logo: URL.createObjectURL(file) }));
+      setIsLogoModalOpen(true); // Open inspection modal right after manual upload too!
+    }
   };
 
   const handleContentImageUpload = (e) => {
@@ -48,7 +53,7 @@ const Branding = ({ branding, setBranding }) => {
     if (file) setContentImage(URL.createObjectURL(file));
   };
 
-  // Auto-format business name to a clean .com domain
+  // Auto-format business name to a clean .com domain when typed manually
   useEffect(() => {
     if (branding.name) {
       const formatted = branding.name.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com';
@@ -57,7 +62,7 @@ const Branding = ({ branding, setBranding }) => {
     }
   }, [branding.name]);
 
-  // Manual Domain Availability Checker
+  // Manual Domain Availability Checker via API-Ninjas WHOIS
   const checkDomainAvailability = async (domainToCheck = domainName) => {
     if (!domainToCheck) return false;
     setDomainStatus('checking');
@@ -77,13 +82,12 @@ const Branding = ({ branding, setBranding }) => {
   };
 
   // ==============================
-  // 2. REUSABLE GEMINI API HELPER (gemini-3.5-flash-lite)
+  // 2. REUSABLE GEMINI API HELPER
   // ==============================
   const callGemini = async (promptText) => {
     const geminiKey = process.env.REACT_APP_GEMINI_API_KEY;
     if (!geminiKey) throw new Error("REACT_APP_GEMINI_API_KEY is missing in your .env file.");
 
-    // Official active model string from Google AI Studio:
     const modelName = "gemini-3.5-flash-lite"; 
 
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`, {
@@ -102,11 +106,11 @@ const Branding = ({ branding, setBranding }) => {
   // 3. AI GENERATORS (SEPARATED NAME, SLOGAN, LOGO)
   // ==============================
 
-  // A. GENERATE BUSINESS NAME (+ Domain Verification Loop)
+  // A. GENERATE BUSINESS NAME (+ Multi-Domain Verification Loop)
   const generateNameOnly = async () => {
     const keyword = nameKeyword.trim();
     if (!keyword && !branding.name) {
-      return alert("Please describe your business in the top 'Business Explanation' box first!");
+      return alert("Please describe your business in Step 1 first!");
     }
     const topic = keyword || branding.name;
 
@@ -114,26 +118,35 @@ const Branding = ({ branding, setBranding }) => {
     setDomainStatus('checking');
 
     try {
-      const prompt = `Generate 5 modern, punchy, 1-word or 2-word brand names for a business specializing in: "${topic}". Return ONLY a valid JSON array of strings: ["Name1", "Name2", "Name3", "Name4", "Name5"]`;
+      const prompt = `Generate 10 modern, punchy, 1-word or 2-word brand names for an e-commerce store specializing in: "${topic}". Return ONLY a valid JSON array of strings: ["Name1", "Name2", "Name3", "Name4", "Name5", "Name6", "Name7", "Name8", "Name9", "Name10"]`;
       const rawText = await callGemini(prompt);
       const cleanedJson = rawText.replace(/```json|```/g, '').trim();
       const names = JSON.parse(cleanedJson);
 
       let foundAvailable = false;
+      const extensions = ['.com', '.store', '.co'];
+
       for (const testName of names) {
-        const testDomain = `${testName.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`;
-        const isFree = await checkDomainAvailability(testDomain);
-        if (isFree) {
-          setBranding(prev => ({ ...prev, name: testName }));
-          setDomainName(testDomain);
-          setDomainStatus('available');
-          foundAvailable = true;
-          break;
+        const cleanSlug = testName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        
+        for (const ext of extensions) {
+          const testDomain = `${cleanSlug}${ext}`;
+          const isFree = await checkDomainAvailability(testDomain);
+          
+          if (isFree) {
+            setBranding(prev => ({ ...prev, name: testName }));
+            setDomainName(testDomain);
+            setDomainStatus('available');
+            foundAvailable = true;
+            break;
+          }
         }
+        if (foundAvailable) break;
       }
 
       if (!foundAvailable && names.length > 0) {
         setBranding(prev => ({ ...prev, name: names[0] }));
+        setDomainName(`${names[0].toLowerCase().replace(/[^a-z0-9]/g, '')}.com`);
         setDomainStatus('taken');
       }
     } catch (error) {
@@ -160,16 +173,15 @@ const Branding = ({ branding, setBranding }) => {
       setBranding(prev => ({ ...prev, slogan: slogan.replace(/"/g, '').trim() }));
     } catch (error) {
       console.error("AI Slogan Gen Error:", error.message);
-      alert("AI Slogan generation failed: " + error.message);
+      alert("AI Tagline generation failed: " + error.message);
     } finally {
       setIsGenerating(prev => ({ ...prev, slogan: false }));
     }
   };
 
-  // C. GENERATE VECTOR SVG LOGO
+  // C. GENERATE BRAND LOGO (WITH AUTOMATIC MODAL INSPECTOR!)
   const generateLogo = async () => {
-    const desc = prompt("Describe the icon you want (e.g., 'minimalist mountain', 'modern geometric crown'):", nameKeyword || branding.name || "Brand icon");
-    if (!desc) return;
+    const desc = logoPrompt.trim() || nameKeyword || branding.name || "modern minimalist symbol";
 
     setIsGenerating(prev => ({ ...prev, logo: true }));
     try {
@@ -178,6 +190,7 @@ const Branding = ({ branding, setBranding }) => {
       const svgCode = rawSvg.replace(/```xml|```svg|```/g, '').trim();
       const encodedSvg = `data:image/svg+xml;utf8,${encodeURIComponent(svgCode)}`;
       setBranding(prev => ({ ...prev, logo: encodedSvg }));
+      setIsLogoModalOpen(true); // Automatically open the large view modal so they can confirm it!
     } catch (error) {
       console.error("AI Logo Error:", error.message);
       alert("AI Logo generation failed: " + error.message);
@@ -240,7 +253,7 @@ const Branding = ({ branding, setBranding }) => {
           {/* LEFT COLUMN: THE CONTROL ENGINE */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               
-            {/* 1. CORE IDENTITY CARD (UPGRADED UX) */}
+            {/* 1. CORE IDENTITY CARD */}
             <div className="card">
               <h3 style={{ margin: '0 0 16px 0', color: 'var(--text-dark)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <FontAwesomeIcon icon={faRobot} style={{ color: 'var(--neon-cyan)' }}/> Core Brand Identity
@@ -250,7 +263,7 @@ const Branding = ({ branding, setBranding }) => {
               <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '12px', borderRadius: '8px', marginBottom: '20px' }}>
                 <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: '#166534', fontWeight: '800' }}>
                   <FontAwesomeIcon icon={faLightbulb} style={{ marginRight: '6px' }} />
-                  Step 1: Explain Your Business / Product (For AI Brainstorming)
+                  Step 1: Explain Your Business or Product
                 </label>
                 <input 
                   type="text"
@@ -261,14 +274,14 @@ const Branding = ({ branding, setBranding }) => {
                   placeholder="e.g. all types of scents and perfumes" 
                 />
                 <p style={{ margin: 0, fontSize: '11px', color: '#15803d', lineHeight: '1.4' }}>
-                  Explain what you sell here once. Use the <strong>AI buttons below</strong> to generate brand names, slogans, and logos from this description!
+                  Explain what you sell here once. Use the <strong>AI buttons below</strong> to generate brand names, taglines, and logos from this description!
                 </p>
               </div>
 
               {/* STEP 2: BUSINESS NAME + SEPARATE AI NAME BUTTON */}
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)', fontWeight: '600' }}>
-                  Step 2: Business Name (Type your own OR generate with AI)
+                  Step 2: Business Name (Type your own or use AI)
                 </label>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <input 
@@ -283,16 +296,16 @@ const Branding = ({ branding, setBranding }) => {
                     style={{ padding: '0 14px', whiteSpace: 'nowrap', fontSize: '13px' }} 
                     onClick={generateNameOnly} 
                     disabled={isGenerating.name}
-                    title="Generate an available .com brand name from your explanation above"
+                    title="Generate an available brand name from your explanation above"
                   >
                     {isGenerating.name ? <FontAwesomeIcon icon={faSpinner} spin /> : <><FontAwesomeIcon icon={faWandMagicSparkles} /> AI Name</>}
                   </button>
                 </div>
               </div>
 
-              {/* REAL-TIME DOMAIN CHECKER (ONLY CHECKS THE BUSINESS NAME) */}
+              {/* REAL-TIME DOMAIN CHECKER */}
               <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', color: 'var(--text-dark)', fontWeight: 'bold' }}>Web Domain (.com)</label>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', color: 'var(--text-dark)', fontWeight: 'bold' }}>Web Domain Availability</label>
                 <div style={{ display: 'flex', gap: '10px', marginBottom: '8px' }}>
                   <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
                     <FontAwesomeIcon icon={faGlobe} style={{ position: 'absolute', left: '12px', color: '#94a3b8' }} />
@@ -314,8 +327,8 @@ const Branding = ({ branding, setBranding }) => {
                 </div>
                 
                 <div style={{ fontSize: '12px', minHeight: '16px', fontWeight: '600' }}>
-                  {domainStatus === 'taken' && <span style={{ color: '#ef4444' }}><FontAwesomeIcon icon={faTimesCircle} /> Taken. Try clicking "AI Name" for available alternatives.</span>}
-                  {domainStatus === 'available' && <span style={{ color: '#10b981' }}><FontAwesomeIcon icon={faCheckCircle} /> Available! Great choice.</span>}
+                  {domainStatus === 'taken' && <span style={{ color: '#ef4444' }}><FontAwesomeIcon icon={faTimesCircle} /> Taken. Click "AI Name" again for fresh available options.</span>}
+                  {domainStatus === 'available' && <span style={{ color: '#10b981' }}><FontAwesomeIcon icon={faCheckCircle} /> Available! Ready for registration ({domainName}).</span>}
                   {domainStatus === 'error' && <span style={{ color: '#f59e0b' }}>Could not connect to domain server.</span>}
                 </div>
               </div>
@@ -323,7 +336,7 @@ const Branding = ({ branding, setBranding }) => {
               {/* STEP 3: TAGLINE / SLOGAN + SEPARATE AI BUTTON */}
               <div>
                 <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)', fontWeight: '600' }}>
-                  Step 3: Tagline / Slogan
+                  Step 3: Brand Tagline
                 </label>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <input 
@@ -340,7 +353,7 @@ const Branding = ({ branding, setBranding }) => {
                     disabled={isGenerating.slogan}
                     title="Generate a catchy slogan for your business name"
                   >
-                    {isGenerating.slogan ? <FontAwesomeIcon icon={faSpinner} spin /> : <><FontAwesomeIcon icon={faWandMagicSparkles} /> AI Slogan</>}
+                    {isGenerating.slogan ? <FontAwesomeIcon icon={faSpinner} spin /> : <><FontAwesomeIcon icon={faWandMagicSparkles} /> AI Tagline</>}
                   </button>
                 </div>
               </div>
@@ -373,14 +386,52 @@ const Branding = ({ branding, setBranding }) => {
                 <FontAwesomeIcon icon={faUpload} /> Upload Custom Logo (PNG/JPG)
               </button>
 
-              <button 
-                className="btn btn-primary" 
-                style={{ width: '100%', padding: '10px', fontSize: '13px' }} 
-                onClick={generateLogo} 
-                disabled={isGenerating.logo}
-              >
-                {isGenerating.logo ? 'Generating Vector Icon...' : <><FontAwesomeIcon icon={faWandMagicSparkles} /> Auto-Generate SVG Vector Logo</>}
-              </button>
+              {/* UPGRADED: CLEAN UI INPUT FOR LOGO GENERATION + COMPACT INSPECTION BAR! */}
+              <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: 'var(--text-dark)', fontWeight: '700' }}>
+                  ✨ AI Brand Logo Engine
+                </label>
+                <input 
+                  type="text"
+                  className="input-neon"
+                  style={{ marginBottom: '10px', fontSize: '12px', background: '#fff' }}
+                  placeholder="Optional: Describe symbol (e.g. minimalist leaf, geometric crown)..."
+                  value={logoPrompt}
+                  onChange={(e) => setLogoPrompt(e.target.value)}
+                />
+                <button 
+                  className="btn btn-primary" 
+                  style={{ width: '100%', padding: '10px', fontSize: '13px' }} 
+                  onClick={generateLogo} 
+                  disabled={isGenerating.logo}
+                >
+                  {isGenerating.logo ? 'Designing Brand Logo...' : <><FontAwesomeIcon icon={faWandMagicSparkles} /> Generate Brand Logo with AI</>}
+                </button>
+
+                {/* COMPACT ACTIVE LOGO BADGE (TAKES ALMOST ZERO VERTICAL SPACE!) */}
+                {branding.logo && (
+                  <div 
+                    onClick={() => setIsLogoModalOpen(true)}
+                    style={{ 
+                      marginTop: '12px', padding: '8px 12px', background: '#fff', 
+                      border: '1px solid #cbd5e1', borderRadius: '6px', display: 'flex', 
+                      alignItems: 'center', gap: '10px', cursor: 'pointer',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                    }}
+                    title="Click to inspect full logo in popup"
+                  >
+                    <div style={{ width: '28px', height: '28px', borderRadius: '4px', background: primaryColor, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3px' }}>
+                      <img src={branding.logo} alt="Thumb" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
+                    </div>
+                    <span style={{ fontSize: '12px', fontWeight: '700', color: '#0f172a', flex: 1 }}>
+                      Logo Ready
+                    </span>
+                    <span style={{ fontSize: '11px', background: '#0f172a', color: '#fff', padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <FontAwesomeIcon icon={faEye} /> Inspect Full
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* 3. OFFICIAL COMPANY PROFILE */}
@@ -586,6 +637,55 @@ const Branding = ({ branding, setBranding }) => {
             }}>
               {isGenerating.text ? <span className="blink">AI is writing...</span> : generatedContent || 'Your professional AI-generated content will appear here.'}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================= */}
+      {/* NEW: DEDICATED LOGO INSPECTION MODAL    */}
+      {/* ======================================= */}
+      {isLogoModalOpen && branding.logo && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+        }}>
+          <div style={{
+            background: '#fff', width: '90%', maxWidth: '440px', borderRadius: '16px',
+            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', overflow: 'hidden',
+            padding: '24px', textAlign: 'center'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', color: '#0f172a' }}>Generated Brand Logo</h3>
+              <button onClick={() => setIsLogoModalOpen(false)} style={{ background: 'none', border: 'none', fontSize: '20px', color: '#64748b', cursor: 'pointer' }}>
+                <FontAwesomeIcon icon={faTimesCircle} />
+              </button>
+            </div>
+
+            {/* Preview container with primary accent background so white/bright icons render crisply */}
+            <div style={{
+              background: primaryColor, borderRadius: '12px', padding: '40px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              minHeight: '180px', marginBottom: '20px', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
+            }}>
+              <img src={branding.logo} alt="Full Logo" style={{ maxHeight: '140px', maxWidth: '100%', objectFit: 'contain', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.2))' }} />
+            </div>
+
+            <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 20px 0' }}>
+              This symbol is optimized for your storefront headers, invoices, and dark/light themes.
+            </p>
+
+            <button
+              onClick={() => setIsLogoModalOpen(false)}
+              style={{
+                width: '100%', background: '#0f172a', color: '#fff', border: 'none',
+                padding: '12px', borderRadius: '8px', fontWeight: '700', fontSize: '14px',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+              }}
+            >
+              <FontAwesomeIcon icon={faCheckCircle} />
+              Confirm & Keep Logo
+            </button>
           </div>
         </div>
       )}
