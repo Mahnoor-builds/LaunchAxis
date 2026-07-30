@@ -60,10 +60,7 @@ const AdminPanel = ({
           {activeSection === 'finance' && features?.wantsAccounting && <FinancePro transactions={transactions} accounts={accounts} addAccount={addAccount} updateAccount={updateAccount} inventory={inventory} addInventoryItem={addInventoryItem} updateInventoryItem={updateInventoryItem} branding={branding} addTransaction={addTransaction} />}
           {activeSection === 'branding' && features?.wantsBranding && <Branding branding={branding} setBranding={setBranding} />}
           {activeSection === 'website' && features?.wantsWebsite && <WebsiteEditor branding={branding} products={products} siteConfig={siteConfig} setSiteConfig={setSiteConfig} />}
-          
           {activeSection === 'products' && <Products siteConfig={siteConfig} />}
-          
-          {/* UPDATED: Orders now receives correct live orders and fulfillment trigger */}
           {activeSection === 'orders' && <Orders orders={orders} updateOrderStatus={updateOrderStatus} />}
         </main>
       </div>
@@ -116,7 +113,7 @@ function App() {
   }));
 
   // =========================================
-  // 3. THE LIVE FIREBASE CONNECTION (FIXED)
+  // 3. THE LIVE FIREBASE CONNECTION
   // =========================================
   useEffect(() => {
     let unsubscribeProducts = null;
@@ -166,7 +163,7 @@ function App() {
             setProducts(liveProducts);
         });
 
-        // --- 2. LIVE ORDERS SUBCOLLECTION LISTENER (NEW FIX) ---
+        // --- 2. LIVE ORDERS SUBCOLLECTION LISTENER ---
         const ordersRef = collection(db, `users/${targetId}/orders`);
         unsubscribeOrders = onSnapshot(ordersRef, (snapshot) => {
             const liveOrders = [];
@@ -200,34 +197,15 @@ function App() {
     }
   };
 
-  // --- HELPERS ---
+  // --- HELPERS (DECOUPLED FROM FINANCE) ---
   const updateOrderStatus = async (id, status, trackId) => {
     try {
       let targetId = "ceo@ecosole.store"; 
       if (auth.currentUser) targetId = auth.currentUser.uid;
 
-      // Update in subcollection directly
+      // Update order status in subcollection directly without touching Finance!
       const orderRef = doc(db, `users/${targetId}/orders`, id);
       await updateDoc(orderRef, { status, trackingId: trackId });
-
-      if (status === 'Delivered') {
-        const ord = orders.find(o => o.id === id);
-        if (ord) {
-          // NEW: Dynamic Account Routing!
-          // It looks for their first account. If they somehow deleted all accounts, it defaults safely.
-          const targetAccount = accounts.length > 0 ? accounts[0] : { id: 1, name: 'Cash Register' };
-
-          addTransaction({ 
-            date: new Date().toLocaleDateString(), 
-            desc: `Website Sale: Order #${id}`, 
-            amount: ord.amount, 
-            type: 'income', 
-            category: 'Website Sales', 
-            accountId: targetAccount.id, // Dynamically uses the user's actual account ID
-            accountName: targetAccount.name // Dynamically uses the user's actual account Name
-          });
-        }
-      }
     } catch (error) {
       console.error("Error updating order status:", error);
     }
@@ -264,11 +242,13 @@ function App() {
     syncToFirebase("inventory", updatedList);
   };
 
+  // --- UPDATED PLACE ORDER LOGIC (FULL NAME & EMAIL) ---
   const placeOrder = async (orderDetails) => {
     const orderId = `ord_${Math.floor(Math.random() * 100000)}`;
     
     const newOrder = {
-        customerName: `${orderDetails.customer.firstName} ${orderDetails.customer.lastName}`,
+        customerName: orderDetails.customer.fullName, // Clean single Full Name
+        email: orderDetails.customer.email,           // Stored for order notifications
         phone: orderDetails.customer.phone,
         address: `${orderDetails.customer.address}, ${orderDetails.customer.city}`,
         productName: orderDetails.items.map(i => i.name).join(', '),
@@ -314,7 +294,7 @@ function App() {
             features={userFeatures}
           />
         } />
-        <Route path="/checkout" element={<ShopCheckout cart={cart} branding={branding} onPlaceOrder={placeOrder} />} />
+        <Route path="/checkout" element={<ShopCheckout cart={cart} branding={branding} onPlaceOrder={placeOrder} siteConfig={siteConfig} />} />
         
         <Route path="/catalog" element={
           <>

@@ -1,203 +1,196 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faShieldHalved, faTruck, faMoneyBillWave, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { faShieldAlt, faArrowLeft, faTruck, faEnvelope } from '@fortawesome/free-solid-svg-icons';
 
 const ShopCheckout = ({ cart = [], branding, onPlaceOrder, siteConfig = {} }) => {
   const navigate = useNavigate();
-  const themeColor = siteConfig.themeColor || '#2dd4bf';
 
-  // If cart is empty, redirect back to home
-  useEffect(() => {
-    if (cart.length === 0) {
-      navigate('/');
-    }
-  }, [cart, navigate]);
-
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+  // CLEAN FORM STATE: Single Full Name + Email
+  const [customer, setCustomer] = useState({
+    fullName: '',
+    email: '',
     phone: '',
-    city: '',
     address: '',
-    paymentMethod: 'COD'
+    city: '',
+    notes: ''
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // --- CALCULATIONS ---
-  const subtotal = cart.reduce((sum, item) => sum + (parseInt(item.price) * item.qty), 0);
-  const shippingFee = subtotal >= 5000 ? 0 : 250; 
-  const total = subtotal + shippingFee;
+  // Dynamic calculations from siteConfig settings
+  const itemsTotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+  const freeShippingLimit = siteConfig.freeShippingThreshold || 5000;
+  const standardCodFee = siteConfig.codFee || 250;
+  
+  const isFreeShipping = itemsTotal >= freeShippingLimit;
+  const shippingFee = isFreeShipping ? 0 : standardCodFee;
+  const finalTotal = itemsTotal + shippingFee;
 
-  // --- FORM HANDLER ---
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    // Package the order details for the database
-    const orderDetails = {
-      customer: formData,
-      items: cart,
-      subtotal: subtotal,
-      shipping: shippingFee,
-      total: total,
-      date: new Date().toISOString()
-    };
-
-    // Simulate network delay for premium feel, then trigger the App.js function
-    setTimeout(() => {
-      onPlaceOrder(orderDetails);
-      setIsSubmitting(false);
-      navigate('/'); // Go back to store after successful order
-    }, 1500);
+  const handleChange = (e) => {
+    setCustomer({ ...customer, [e.target.name]: e.target.value });
   };
 
-  if (cart.length === 0) return null; // Prevent flash before redirect
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!customer.fullName || !customer.phone || !customer.address || !customer.city) {
+      alert("Please fill in all required delivery details.");
+      return;
+    }
+
+    setLoading(true);
+
+    const orderDetails = {
+      customer,
+      items: cart,
+      subtotal: itemsTotal,
+      shippingFee,
+      total: finalTotal,
+      paymentMethod: 'COD'
+    };
+
+    await onPlaceOrder(orderDetails);
+    setLoading(false);
+    navigate('/');
+  };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', fontFamily: "'Inter', sans-serif", color: '#0f172a' }}>
+    <div style={{ maxWidth: '800px', margin: '40px auto', padding: '0 20px', fontFamily: 'sans-serif' }}>
       
-      {/* HEADER */}
-      <header style={{ background: '#fff', padding: '24px 5%', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link to="/catalog" style={{ color: '#64748b', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600' }}>
-            <FontAwesomeIcon icon={faArrowLeft} /> Return to Store
-        </Link>
-        <div style={{ fontSize: '24px', fontWeight: '900', letterSpacing: '-1px' }}>
-            {branding?.name || 'Checkout'}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#10b981', fontSize: '13px', fontWeight: '700' }}>
-            <FontAwesomeIcon icon={faShieldHalved} /> Secure SSL
-        </div>
-      </header>
+      <button
+        onClick={() => navigate(-1)}
+        style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '14px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600' }}
+      >
+        <FontAwesomeIcon icon={faArrowLeft} /> Back to Store
+      </button>
 
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 5%', display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'flex-start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '30px', alignItems: 'start' }}>
         
-        {/* === LEFT COLUMN: CUSTOMER DETAILS === */}
-        <div style={{ flex: '1 1 600px' }}>
-            
-            <form onSubmit={handleSubmit} id="checkout-form">
-                
-                {/* 1. Delivery Information */}
-                <div style={{ background: '#fff', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', marginBottom: '24px' }}>
-                    <h2 style={{ margin: '0 0 24px 0', fontSize: '20px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <FontAwesomeIcon icon={faTruck} style={{ color: themeColor }} /> Delivery Information
-                    </h2>
-                    
-                    <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
-                        <div style={{ flex: 1 }}>
-                            <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '8px', color: '#475569' }}>First Name</label>
-                            <input required type="text" value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box' }} />
-                        </div>
-                        <div style={{ flex: 1 }}>
-                            <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '8px', color: '#475569' }}>Last Name</label>
-                            <input required type="text" value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box' }} />
-                        </div>
-                    </div>
+        {/* LEFT: DELIVERY FORM */}
+        <form onSubmit={handleSubmit} style={{ background: '#fff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+          <h2 style={{ margin: '0 0 20px 0', fontSize: '20px', color: '#0f172a' }}>Delivery Details</h2>
 
-                    <div style={{ marginBottom: '16px' }}>
-                        <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '8px', color: '#475569' }}>Active Mobile Number (WhatsApp preferred)</label>
-                        <input required type="tel" placeholder="03XX-XXXXXXX" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box' }} />
-                    </div>
+          {/* SINGLE FULL NAME INPUT */}
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>Full Name *</label>
+            <input
+              type="text"
+              name="fullName"
+              required
+              placeholder="e.g. Mahnoor Naveed"
+              value={customer.fullName}
+              onChange={handleChange}
+              style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', outline: 'none' }}
+            />
+          </div>
 
-                    <div style={{ marginBottom: '16px' }}>
-                        <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '8px', color: '#475569' }}>City</label>
-                        <input required type="text" placeholder="e.g. Lahore, Karachi, Islamabad" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', boxSizing: 'border-box' }} />
-                    </div>
+          {/* EMAIL ADDRESS FOR FUTURE AUTOMATION */}
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>
+              <FontAwesomeIcon icon={faEnvelope} style={{ marginRight: '5px' }} /> Email Address (For Order Updates) *
+            </label>
+            <input
+              type="email"
+              name="email"
+              required
+              placeholder="customer@example.com"
+              value={customer.email}
+              onChange={handleChange}
+              style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', outline: 'none' }}
+            />
+          </div>
 
-                    <div>
-                        <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '8px', color: '#475569' }}>Complete Street Address</label>
-                        <textarea required rows="3" placeholder="House number, street, area..." value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', resize: 'none', boxSizing: 'border-box' }} />
-                    </div>
-                </div>
-
-                {/* 2. Payment Method */}
-                <div style={{ background: '#fff', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                    <h2 style={{ margin: '0 0 24px 0', fontSize: '20px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <FontAwesomeIcon icon={faMoneyBillWave} style={{ color: themeColor }} /> Payment Method
-                    </h2>
-                    
-                    {/* Active COD Box */}
-                    <div style={{ border: `2px solid ${themeColor}`, background: '#f8fafc', padding: '20px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: themeColor, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '12px' }}>
-                                <FontAwesomeIcon icon={faCheckCircle} />
-                            </div>
-                            <div>
-                                <div style={{ fontWeight: '800', fontSize: '15px' }}>Cash on Delivery (COD)</div>
-                                <div style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>Pay with cash when your order arrives.</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Future Bank Transfer Box (Disabled) */}
-                    <div style={{ border: '1px solid #e2e8f0', padding: '20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '12px', marginTop: '12px', opacity: 0.5 }}>
-                        <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '2px solid #cbd5e1' }}></div>
-                        <div>
-                            <div style={{ fontWeight: '700', fontSize: '15px' }}>Bank Transfer / EasyPaisa</div>
-                            <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>Coming soon in store editor upgrades.</div>
-                        </div>
-                    </div>
-                </div>
-
-            </form>
-        </div>
-
-        {/* === RIGHT COLUMN: ORDER SUMMARY === */}
-        <div style={{ flex: '1 1 400px', position: 'sticky', top: '100px' }}>
-            <div style={{ background: '#0f172a', color: '#fff', padding: '32px', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
-                <h2 style={{ margin: '0 0 24px 0', fontSize: '20px', fontWeight: '800' }}>Order Summary</h2>
-                
-                <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '24px', paddingRight: '10px' }}>
-                    {cart.map(item => (
-                        <div key={item.cartId} style={{ display: 'flex', gap: '16px', marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                            <div style={{ width: '60px', height: '60px', background: '#1e293b', borderRadius: '8px', overflow: 'hidden', position: 'relative' }}>
-                                {item.images && item.images[0] && <img src={item.images[0]} alt="item" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
-                                <div style={{ position: 'absolute', top: '-5px', right: '-5px', background: themeColor, color: '#0f172a', width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '900' }}>
-                                    {item.qty}
-                                </div>
-                            </div>
-                            <div style={{ flex: 1 }}>
-                                <div style={{ fontSize: '14px', fontWeight: '700', marginBottom: '4px' }}>{item.name}</div>
-                                {item.selectedVariants && Object.keys(item.selectedVariants).length > 0 && (
-                                    <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>
-                                        {Object.entries(item.selectedVariants).map(([k, v]) => `${v}`).join(', ')}
-                                    </div>
-                                )}
-                                <div style={{ fontSize: '14px', fontWeight: '800', color: themeColor }}>PKR {(parseInt(item.price) * item.qty).toLocaleString()}</div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '14px', color: '#cbd5e1' }}>
-                    <span>Subtotal</span>
-                    <span>PKR {subtotal.toLocaleString()}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', fontSize: '14px', color: '#cbd5e1' }}>
-                    <span>Standard Shipping</span>
-                    <span>{shippingFee === 0 ? 'FREE' : `PKR ${shippingFee}`}</span>
-                </div>
-                
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)', marginBottom: '32px' }}>
-                    <span style={{ fontSize: '16px', fontWeight: '700' }}>Total to Pay</span>
-                    <span style={{ fontSize: '24px', fontWeight: '900', color: themeColor }}>PKR {total.toLocaleString()}</span>
-                </div>
-
-                <button 
-                    type="submit" 
-                    form="checkout-form"
-                    disabled={isSubmitting}
-                    style={{ 
-                        width: '100%', background: themeColor, color: '#0f172a', border: 'none', padding: '18px', 
-                        borderRadius: '12px', fontSize: '16px', fontWeight: '900', textTransform: 'uppercase', 
-                        cursor: isSubmitting ? 'not-allowed' : 'pointer', letterSpacing: '1px', opacity: isSubmitting ? 0.7 : 1 
-                    }}
-                >
-                    {isSubmitting ? 'Processing Order...' : 'Confirm Order via COD'}
-                </button>
+          {/* PHONE & CITY IN ONE ROW */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>Phone Number *</label>
+              <input
+                type="tel"
+                name="phone"
+                required
+                placeholder="0300-1234567"
+                value={customer.phone}
+                onChange={handleChange}
+                style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', outline: 'none' }}
+              />
             </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>City *</label>
+              <input
+                type="text"
+                name="city"
+                required
+                placeholder="Lahore / Karachi"
+                value={customer.city}
+                onChange={handleChange}
+                style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', outline: 'none' }}
+              />
+            </div>
+          </div>
+
+          {/* FULL STREET ADDRESS */}
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#475569', marginBottom: '6px' }}>Complete Street Address *</label>
+            <input
+              type="text"
+              name="address"
+              required
+              placeholder="House #, Street #, Sector/Area"
+              value={customer.address}
+              onChange={handleChange}
+              style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', outline: 'none' }}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: '100%', background: '#0f172a', color: '#fff', border: 'none', padding: '14px',
+              borderRadius: '8px', fontSize: '15px', fontWeight: '700', cursor: loading ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {loading ? 'Processing...' : `Confirm Order (PKR ${finalTotal.toLocaleString()})`}
+          </button>
+        </form>
+
+        {/* RIGHT: SUMMARY CARD */}
+        <div style={{ background: '#f8fafc', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+          <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', color: '#0f172a' }}>Order Summary</h3>
+          
+          <div style={{ maxHeight: '200px', overflowY: 'auto', marginBottom: '16px' }}>
+            {cart.map((item, idx) => (
+              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '10px' }}>
+                <span>{item.name} <strong>(x{item.qty})</strong></span>
+                <span>PKR {(item.price * item.qty).toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+
+          <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '16px 0' }} />
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '8px' }}>
+            <span>Subtotal</span>
+            <span>PKR {itemsTotal.toLocaleString()}</span>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '16px', color: isFreeShipping ? '#10b981' : '#0f172a' }}>
+            <span>COD Delivery</span>
+            <span>{isFreeShipping ? 'FREE' : `PKR ${shippingFee}`}</span>
+          </div>
+
+          <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '16px 0' }} />
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: '800', color: 'var(--brand-color, #2dd4bf)' }}>
+            <span>Total Payable</span>
+            <span>PKR {finalTotal.toLocaleString()}</span>
+          </div>
+          
+          <div style={{ marginTop: '20px', fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <FontAwesomeIcon icon={faShieldAlt} /> Cash on Delivery • Pay upon doorstep arrival
+          </div>
         </div>
+
       </div>
     </div>
   );
