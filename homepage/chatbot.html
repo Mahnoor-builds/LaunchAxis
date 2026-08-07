@@ -3,78 +3,127 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Kernel | LaunchAxis</title>
+  <title>Axis | LaunchAxis AI Co-Founder</title>
   <link rel="stylesheet" href="chatbot.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body>
 
+  <!-- Lovable-Inspired Cosmic Background Glow -->
   <div class="ambient-glow"></div>
+  <div class="ambient-glow-secondary"></div>
 
   <div class="chat-wrapper">
+    
+    <!-- HEADER -->
     <header class="chat-header">
       <div class="header-brand">
-        <i class="fa-solid fa-wand-magic-sparkles brand-icon"></i>
+        <div class="axis-avatar">
+          <i class="fa-solid fa-atom"></i>
+        </div>
         <div>
-          <h1>LaunchAxis AI Kernel</h1>
-          <p><span class="status-dot"></span> System Online & Ready</p>
+          <h1>AXIS <span class="badge-tag">AI CO-FOUNDER</span></h1>
+          <p><span class="status-dot"></span> <span id="userStatusLabel">LaunchAxis Neural Core Online</span></p>
         </div>
       </div>
-      <a href="index.html" class="close-btn"><i class="fa-solid fa-xmark"></i></a>
+      <a href="index.html" class="close-btn" title="Exit Axis"><i class="fa-solid fa-xmark"></i></a>
     </header>
 
+    <!-- CHAT BOX -->
     <main class="chat-box" id="chatBox">
-      <div class="message-row ai-row">
-        <div class="message-icon ai-icon">
-          <i class="fa-solid fa-bolt"></i>
-        </div>
-        <div class="message-bubble ai-message">
-          System Initialized. I am the LaunchAxis Kernel. Tell me about the business you want to build, and I will outline the exact architecture you need.
-        </div>
-      </div>
+      <!-- Welcome Message is injected dynamically by JS -->
     </main>
 
+    <!-- INPUT AREA -->
     <div class="chat-input-area">
       <form id="chatForm">
-        <input type="text" id="userInput" placeholder="Describe your startup idea..." autocomplete="off" required />
+        <input type="text" id="userInput" placeholder="Ask Axis anything about your startup or LaunchAxis..." autocomplete="off" required />
         <button type="submit" id="sendBtn">
-          <i class="fa-solid fa-paper-plane"></i>
+          <i class="fa-solid fa-arrow-up"></i>
         </button>
       </form>
     </div>
+
   </div>
 
-  <script>
-    // Fixed IDs to match exactly!
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+    // --- 1. FIREBASE CONFIG ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyCgW3AW6wuebd8nde-Udenu-3X6hPbLkhY",
+        authDomain: "launchaxis.firebaseapp.com",
+        projectId: "launchaxis",
+        storageBucket: "launchaxis.firebasestorage.app",
+        messagingSenderId: "986994724231",
+        appId: "1:986994724231:web:cf895161f7cf6c366a9722"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // --- 2. ELEMENTS & STATE ---
     const chatForm = document.getElementById("chatForm");
     const chatBox = document.getElementById("chatBox");
     const userInput = document.getElementById("userInput");
     const sendBtn = document.getElementById("sendBtn");
+    const userStatusLabel = document.getElementById("userStatusLabel");
 
+    let currentUserContext = null;
+
+    // --- 3. MEMORY INITIALIZATION ---
+    async function initAxisMemory() {
+      // Check if user has an active session
+      const savedEmail = localStorage.getItem("launchAxisUserEmail");
+      const tempData = localStorage.getItem("launchAxisTempData");
+
+      if (savedEmail) {
+        try {
+          const userDocRef = doc(db, "users", savedEmail);
+          const snap = await getDoc(userDocRef);
+          if (snap.exists()) {
+            currentUserContext = snap.data();
+            userStatusLabel.textContent = `Connected to ${currentUserContext.businessName || "Store"}`;
+            appendMessage("AI", `Welcome back. I am <b>Axis</b>, your LaunchAxis Co-Founder. I have your architecture for <b>${currentUserContext.businessName || "your store"}</b> loaded into memory. Where do you need strategic or technical assistance today?`);
+            return;
+          }
+        } catch (err) {
+          console.warn("Could not fetch user Firestore doc:", err);
+        }
+      } else if (tempData) {
+        try {
+          currentUserContext = JSON.parse(tempData);
+          userStatusLabel.textContent = `Onboarding: ${currentUserContext.businessName || "New Startup"}`;
+          appendMessage("AI", `Hello! I am <b>Axis</b>. I see you are currently setting up <b>${currentUserContext.businessName || "a new business"}</b>. How can I help refine your business explanation, branding, or dashboard setup?`);
+          return;
+        } catch (e) {
+          console.warn("Local temp data error");
+        }
+      }
+
+      // Guest Fallback
+      userStatusLabel.textContent = "Platform Guest Mode";
+      appendMessage("AI", "System Online. I am <b>Axis</b>, the LaunchAxis AI Co-Founder. Whether you need help outlining a startup idea, understanding how our Naming & Logo engines work, or managing e-commerce logistics, ask below.");
+    }
+
+    // --- 4. CHAT HANDLER ---
     chatForm.addEventListener("submit", async function (e) {
       e.preventDefault();
-
       const text = userInput.value.trim();
       if (!text) return;
 
-      // 1. Add User Message
       appendMessage("User", text);
       userInput.value = "";
-      
-      // Disable input while thinking
       userInput.disabled = true;
       sendBtn.disabled = true;
 
-      // 2. Add "Typing..." Indicator
-      appendMessage("AI", "<span class='typing-dots'>Analyzing business parameters<span>.</span><span>.</span><span>.</span></span>");
+      appendMessage("AI", "<span class='typing-dots'>Axis is thinking<span>.</span><span>.</span><span>.</span></span>");
 
-      // 3. Call Gemini API
-      const response = await getGeminiResponse(text); 
-      
-      // 4. Update the typing indicator with the real response
+      const response = await getGeminiResponse(text);
       updateLastMessage(response);
 
-      // Re-enable input
       userInput.disabled = false;
       sendBtn.disabled = false;
       userInput.focus();
@@ -82,12 +131,11 @@
 
     function appendMessage(sender, message) {
       const row = document.createElement("div");
-      row.classList.add("message-row");
-      row.classList.add(sender === "AI" ? "ai-row" : "user-row");
+      row.className = `message-row ${sender === "AI" ? "ai-row" : "user-row"}`;
 
       const iconHTML = sender === "AI" 
-        ? `<div class="message-icon ai-icon"><i class="fa-solid fa-bolt"></i></div>` 
-        : ``; // User doesn't need an icon
+        ? `<div class="message-icon ai-icon"><i class="fa-solid fa-atom"></i></div>` 
+        : ``;
 
       const bubbleClass = sender === "AI" ? "ai-message" : "user-message";
 
@@ -109,18 +157,27 @@
       }
     }
 
-    // === GEMINI API INTEGRATION ===
+    // --- 5. GEMINI API WITH SMART CONTEXT INJECTION ---
     async function getGeminiResponse(prompt) {
-      // ADD YOUR GEMINI API KEY HERE BEFORE LAUNCH
-      const apiKey = "YOUR_GEMINI_API_KEY"; 
+      const apiKey = "YOUR_GEMINI_API_KEY"; // Replace with your key
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
-      // Giving the AI a strict persona so it talks like a LaunchAxis Architect
-      const systemPrompt = "You are the LaunchAxis AI Kernel, an elite, professional business architect. You help users refine their startup ideas. Keep responses concise, professional, and highly strategic. Avoid using emojis.";
+      let systemPrompt = `You are Axis, the executive AI Co-Founder built into the LaunchAxis startup platform.
+Your persona: Highly strategic, technical, concise, professional, and supportive.
+Strict Formatting Rules: Never use emojis. Use Markdown bolding (**text**) for key terms and metrics. Keep paragraphs crisp.
+Platform Knowledge: LaunchAxis offers AI-driven Naming & Domain checks (.com, .store, .co), SVG Logo generation, EmailJS order receipts, and live Website/Ledger auto-syncing.`;
+
+      if (currentUserContext) {
+        systemPrompt += `\n\nCURRENT USER MEMORY:
+User's Business Name: ${currentUserContext.businessName || "Unknown"}
+Industry/Type: ${currentUserContext.businessType || "E-commerce"}
+Business Description: ${currentUserContext.businessDesc || "Not specified"}
+Address the user with awareness of their specific business context when relevant.`;
+      }
 
       const payload = {
         contents: [{
-          parts: [{ text: `${systemPrompt}\n\nUser: ${prompt}` }]
+          parts: [{ text: `${systemPrompt}\n\nUser Question: ${prompt}` }]
         }]
       };
 
@@ -132,21 +189,21 @@
         });
 
         const data = await response.json();
-        
-        // Extracting the text from Gemini's specific JSON structure
         if (data.candidates && data.candidates[0].content.parts[0].text) {
-            // We use replace to convert Markdown bolding (**) to HTML bolding (<b>) for the chat UI
             let cleanText = data.candidates[0].content.parts[0].text;
-            cleanText = cleanText.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>"); 
+            cleanText = cleanText.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
             return cleanText;
         } else {
-            return "Kernel error: Invalid response from neural network.";
+            return "Kernel error: Could not process neural response.";
         }
       } catch (error) {
         console.error("AI API error:", error);
-        return "Connection to LaunchAxis Kernel lost. Please try again.";
+        return "Connection to LaunchAxis Neural Core lost. Please check your network.";
       }
     }
+
+    // Initialize memory on load
+    initAxisMemory();
   </script>
 </body>
 </html>

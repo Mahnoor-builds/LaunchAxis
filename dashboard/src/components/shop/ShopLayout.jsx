@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingBag, faUser, faSearch, faArrowRight, faBars, faXmark, faBoxOpen, faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
-import { faFacebook, faInstagram, faTwitter } from '@fortawesome/free-brands-svg-icons';
 
 const ShopLayout = ({ children, branding, cartCount, siteConfig, openCart }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -44,11 +43,8 @@ const ShopLayout = ({ children, branding, cartCount, siteConfig, openCart }) => 
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } else if (link.startsWith('#')) {
-      // If clicking "About" but we are on the Catalog page, go Home first
       if (location.pathname !== '/') {
         navigate('/');
-        // Note: Realistically, you'd want to wait for render then scroll, 
-        // but navigating home is the safest fallback.
       } else {
         const element = document.getElementById(link.substring(1));
         if (element) element.scrollIntoView({ behavior: 'smooth' });
@@ -58,10 +54,24 @@ const ShopLayout = ({ children, branding, cartCount, siteConfig, openCart }) => 
     }
   };
 
+  // --- LIVE SEARCH SUBMIT HANDLER ---
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    console.log("Searching Firebase for:", searchQuery);
+    if (!searchQuery.trim()) return;
+
+    // 1. Store search query for catalog to pick up
+    localStorage.setItem('launchAxisSearchQuery', searchQuery.trim());
+    localStorage.setItem('launchAxisStoreCategory', 'All');
+
     setIsSearchOpen(false);
+    
+    // 2. Redirect to catalog or trigger custom refresh if already on catalog
+    if (location.pathname === '/catalog') {
+      window.dispatchEvent(new Event('launchAxisSearchTriggered'));
+    } else {
+      navigate('/catalog');
+    }
+    window.scrollTo(0, 0);
   };
 
   return (
@@ -165,9 +175,6 @@ const ShopLayout = ({ children, branding, cartCount, siteConfig, openCart }) => 
                         <button style={{ width: '100%', padding: '12px', background: '#0f172a', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '5px' }}>Sign In</button>
                         <button style={{ width: '100%', padding: '10px', background: 'transparent', color: '#475569', border: 'none', textAlign: 'left', cursor: 'pointer', borderRadius: '6px', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '10px' }} onMouseOver={(e) => e.currentTarget.style.background = '#f8fafc'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
                             <FontAwesomeIcon icon={faBoxOpen} /> Track My Orders
-                        </button>
-                        <button style={{ width: '100%', padding: '10px', background: 'transparent', color: '#475569', border: 'none', textAlign: 'left', cursor: 'pointer', borderRadius: '6px', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '10px' }} onMouseOver={(e) => e.currentTarget.style.background = '#f8fafc'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                            <FontAwesomeIcon icon={faRightFromBracket} /> Create Account
                         </button>
                     </div>
                 )}

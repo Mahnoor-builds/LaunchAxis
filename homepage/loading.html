@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Kernel Initialization | LaunchAxis</title>
   
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap)" rel="stylesheet">
+  <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css)" />
 
   <style>
     /* =========================================
@@ -33,7 +33,6 @@
       align-items: center;
       height: 100vh;
       overflow: hidden;
-      /* Subtle glowing background effect */
       background-image: radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.1), transparent 60%);
     }
 
@@ -160,7 +159,6 @@
     /* Keyframes */
     @keyframes spin { 100% { transform: rotate(360deg); } }
     @keyframes slideUp { to { transform: translateY(0); } }
-
   </style>
 </head>
 <body>
@@ -178,16 +176,15 @@
       <div class="progress-fill" id="progressFill"></div>
     </div>
 
-    <div class="terminal-window" id="terminalWindow">
-      </div>
+    <div class="terminal-window" id="terminalWindow"></div>
   </div>
 
   <script type="module">
-    // 1. Firebase Imports (These tell the code what initializeApp is)
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    // 1. Firebase Imports
+    import { initializeApp } from "[https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js](https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js)";
+    import { getFirestore, doc, setDoc, serverTimestamp } from "[https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js](https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js)";
 
-    // 2. Your Firebase Config (Paste your keys here!)
+    // 2. Your Firebase Config
     const firebaseConfig = {
         apiKey: "AIzaSyCgW3AW6wuebd8nde-Udenu-3X6hPbLkhY",
         authDomain: "launchaxis.firebaseapp.com",
@@ -237,21 +234,24 @@
         }
     }
 
-    // 5. The Real API Engine
+    // 5. Crash-Proof API Engine
     async function executeLaunchAxisKernel() {
         try {
-            // Grab data
+            // Retrieve temporary onboarding data
             const rawData = localStorage.getItem("launchAxisTempData");
-            if (!rawData) throw new Error("No startup data found.");
+            if (!rawData) throw new Error("No startup data found in localStorage.");
             const userData = JSON.parse(rawData);
 
-            // Define your AI inputs (Paste Gemini Key here!)
-            const geminiApiKey = "AQ.Ab8RN6L7T6tsHQTA6tdWldvN-Tn8tEBizhZcP0QYdp28YbYLbg";
-            const systemPrompt = "You are a professional business architect. Return ONLY valid JSON containing: businessName, tagline, targetAudience, and colorPalette (primary, secondary, accent hex codes).";
+            // PASTE YOUR FRESHLY REGENERATED GEMINI KEY BELOW
+            const geminiApiKey = "YOUR_NEW_GEMINI_API_KEY";
+            const modelName = "gemini-1.5-flash"; 
+
+            const systemPrompt = "You are a professional business architect. Return ONLY valid JSON containing: businessName, tagline, targetAudience, and colorPalette (primary, secondary, accent hex codes). Do not include markdown code block formatting.";
             const promptText = `Generate a business plan for: ${userData.businessName}. Description: ${userData.businessDesc}. Type: ${userData.businessType}.`;
 
-            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`;
-            // Fire the API Request
+            const geminiUrl = `[https://generativelanguage.googleapis.com/v1beta/models/$](https://generativelanguage.googleapis.com/v1beta/models/$){modelName}:generateContent?key=${geminiApiKey}`;
+            
+            // Fire API Request
             const response = await fetch(geminiUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -261,19 +261,23 @@
                 })
             });
 
-            if (!response.ok) throw new Error(`API rejected: ${response.status}`);
+            if (!response.ok) throw new Error(`API rejected request: HTTP ${response.status}`);
 
             const apiData = await response.json();
-            const generatedJSON = JSON.parse(apiData.candidates[0].content.parts[0].text);
+            
+            // Automatically strip markdown ```json wrappers before parsing
+            const rawText = apiData.candidates[0].content.parts[0].text;
+            const cleanedJson = rawText.replace(/```json|```/g, '').trim();
+            const generatedJSON = JSON.parse(cleanedJson);
 
-            // Merge Data
+            // Merge AI architecture with user startup data
             const finalDashboardData = {
                 ...userData,
                 aiArchitecture: generatedJSON,
                 createdAt: serverTimestamp()
             };
 
-            // Save to Firebase
+            // Save permanent record to Firestore
             await setDoc(doc(db, "users", userData.email), finalDashboardData);
 
             // Success Handling
@@ -287,12 +291,12 @@
             terminalWindow.appendChild(successLine);
 
             setTimeout(() => {
-                window.location.href = "http://localhost:3000/admin";
+                window.location.href = "/admin";
             }, 1500);
 
         } catch (error) {
             console.error("Kernel Failure:", error);
-            alert("LaunchAxis Kernel encountered an error. Check console.");
+            alert("LaunchAxis Kernel encountered an error: " + error.message);
         }
     }
 
@@ -300,7 +304,6 @@
     setTimeout(logNextStep, 500);
     console.log("Kernel Ignition Sequence Started...");
     executeLaunchAxisKernel();
-</script>
-
+  </script>
 </body>
 </html>

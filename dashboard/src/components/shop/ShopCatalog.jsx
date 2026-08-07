@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGrip, faStar, faFilter, faBoxOpen } from '@fortawesome/free-solid-svg-icons';
+import { faGrip, faStar, faFilter, faBoxOpen, faXmark, faSearch } from '@fortawesome/free-solid-svg-icons';
 import ShopLayout from './ShopLayout'; 
 import ShopProductModal from './ShopProductModal';
 
@@ -12,28 +12,52 @@ const ShopCatalog = ({ branding, products = [], addToCart, siteConfig = {}, cart
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
-  // Category State
+  // Category & Search States
   const [activeCategory, setActiveCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const categories = siteConfig.categories || [];
 
-  // Scroll to top and check if the user clicked a specific category from the home page
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    
-    // Check localStorage for a passed category filter
+  const loadSearchAndCategory = () => {
+    // 1. Check for Category
     const savedCategory = localStorage.getItem('launchAxisStoreCategory');
     if (savedCategory) {
         setActiveCategory(savedCategory);
-        // Clean it up so it doesn't stay locked on that category forever!
         localStorage.removeItem('launchAxisStoreCategory'); 
     }
+
+    // 2. Check for Search Query
+    const savedSearch = localStorage.getItem('launchAxisSearchQuery');
+    if (savedSearch) {
+        setSearchQuery(savedSearch);
+        localStorage.removeItem('launchAxisSearchQuery');
+    }
+  };
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    loadSearchAndCategory();
+
+    // Listener in case search is triggered while user is ALREADY on the Catalog page
+    const handleSearchEvent = () => loadSearchAndCategory();
+    window.addEventListener('launchAxisSearchTriggered', handleSearchEvent);
+    return () => window.removeEventListener('launchAxisSearchTriggered', handleSearchEvent);
   }, []);
 
-  // --- FILTERING LOGIC ---
-  const displayedProducts = products.filter(p => 
-      activeCategory === 'All' ? true : p.category === activeCategory
-  );
+  const clearSearch = () => {
+    setSearchQuery('');
+  };
+
+  // --- FILTERING LOGIC (CATEGORY + SEARCH QUERY) ---
+  const displayedProducts = products.filter(p => {
+    const matchesCategory = activeCategory === 'All' ? true : p.category === activeCategory;
+    
+    const matchesSearch = !searchQuery || 
+      (p.name && p.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    return matchesCategory && matchesSearch;
+  });
 
   const handleProductClick = (product) => {
     setSelectedProduct(product);
@@ -55,35 +79,49 @@ const ShopCatalog = ({ branding, products = [], addToCart, siteConfig = {}, cart
             </p>
         </div>
 
-        {/* === CATEGORY FILTERS === */}
+        {/* === CATEGORY FILTERS & ACTIVE SEARCH BADGE === */}
         <section style={{ padding: '40px 5% 20px 5%', maxWidth: '1400px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap', justifyContent: 'center', background: '#fff', padding: '20px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
-                <div style={{ fontWeight: '700', color: '#64748b', marginRight: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <FontAwesomeIcon icon={faFilter} /> Filter:
-                </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', background: '#fff', padding: '20px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
                 
-                <button 
-                    onClick={() => setActiveCategory('All')}
-                    style={{ 
-                        padding: '10px 24px', borderRadius: '30px', fontWeight: '600', fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s',
-                        background: activeCategory === 'All' ? '#0f172a' : '#f1f5f9', 
-                        color: activeCategory === 'All' ? '#fff' : '#475569', border: 'none'
-                    }}>
-                    <FontAwesomeIcon icon={faGrip} style={{ marginRight: '8px' }}/> All
-                </button>
-                
-                {categories.map(cat => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                    <div style={{ fontWeight: '700', color: '#64748b', marginRight: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <FontAwesomeIcon icon={faFilter} /> Filter:
+                    </div>
+                    
                     <button 
-                        key={cat.id} 
-                        onClick={() => setActiveCategory(cat.label)}
+                        onClick={() => setActiveCategory('All')}
                         style={{ 
                             padding: '10px 24px', borderRadius: '30px', fontWeight: '600', fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s',
-                            background: activeCategory === cat.label ? '#0f172a' : '#f1f5f9', 
-                            color: activeCategory === cat.label ? '#fff' : '#475569', border: 'none'
+                            background: activeCategory === 'All' ? '#0f172a' : '#f1f5f9', 
+                            color: activeCategory === 'All' ? '#fff' : '#475569', border: 'none'
                         }}>
-                        {cat.label}
+                        <FontAwesomeIcon icon={faGrip} style={{ marginRight: '8px' }}/> All
                     </button>
-                ))}
+                    
+                    {categories.map(cat => (
+                        <button 
+                            key={cat.id} 
+                            onClick={() => setActiveCategory(cat.label)}
+                            style={{ 
+                                padding: '10px 24px', borderRadius: '30px', fontWeight: '600', fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s',
+                                background: activeCategory === cat.label ? '#0f172a' : '#f1f5f9', 
+                                color: activeCategory === cat.label ? '#fff' : '#475569', border: 'none'
+                            }}>
+                            {cat.label}
+                        </button>
+                    ))}
+                </div>
+
+                {/* ACTIVE SEARCH TAG */}
+                {searchQuery && (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', background: '#f1f5f9', padding: '8px 16px', borderRadius: '30px', width: 'fit-content', margin: '0 auto', fontSize: '13px', color: '#0f172a' }}>
+                        <FontAwesomeIcon icon={faSearch} style={{ color: themeColor }} />
+                        <span>Showing results for: <strong>"{searchQuery}"</strong></span>
+                        <button onClick={clearSearch} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', marginLeft: '5px' }}>
+                            <FontAwesomeIcon icon={faXmark} />
+                        </button>
+                    </div>
+                )}
             </div>
         </section>
 
@@ -99,7 +137,14 @@ const ShopCatalog = ({ branding, products = [], addToCart, siteConfig = {}, cart
                 <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '80px 20px', background: '#fff', borderRadius: '16px', border: '2px dashed #cbd5e1' }}>
                     <FontAwesomeIcon icon={faBoxOpen} style={{ fontSize: '40px', color: '#cbd5e1', marginBottom: '15px' }} />
                     <p style={{ color: '#0f172a', fontSize: '18px', fontWeight: '700', margin: '0 0 5px 0' }}>No products found.</p>
-                    <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>Try selecting a different category.</p>
+                    <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>
+                      {searchQuery ? `No matches found for "${searchQuery}". Try clearing your search.` : 'Try selecting a different category.'}
+                    </p>
+                    {searchQuery && (
+                        <button onClick={clearSearch} style={{ marginTop: '15px', background: '#0f172a', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+                            Clear Search Filter
+                        </button>
+                    )}
                 </div>
             ) : (
                 displayedProducts.map(product => {
@@ -125,9 +170,14 @@ const ShopCatalog = ({ branding, products = [], addToCart, siteConfig = {}, cart
                                     SOLD OUT
                                 </div>
                             )}
-                            {product.isFeatured && !isSoldOut && (
-                                <div style={{ position: 'absolute', top: '20px', left: '20px', background: '#fff', color: '#0f172a', padding: '6px 12px', borderRadius: '30px', fontSize: '11px', fontWeight: '800', zIndex: 11, boxShadow: '0 4px 10px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                    <FontAwesomeIcon icon={faStar} style={{ color: '#eab308' }} /> FEATURED
+                            {product.promoBadge && !isSoldOut && (
+                                <div style={{ position: 'absolute', top: '20px', left: '20px', background: '#0f172a', color: '#fff', padding: '5px 12px', borderRadius: '2px', fontSize: '10px', fontWeight: '700', zIndex: 11, letterSpacing: '1px', textTransform: 'uppercase' }}>
+                                    {product.promoBadge}
+                                </div>
+                            )}
+                            {!product.promoBadge && product.isFeatured && !isSoldOut && (
+                                <div style={{ position: 'absolute', top: '20px', left: '20px', background: '#0f172a', color: '#fff', padding: '5px 12px', borderRadius: '2px', fontSize: '10px', fontWeight: '700', zIndex: 11, letterSpacing: '1px', textTransform: 'uppercase' }}>
+                                    BEST SELLER
                                 </div>
                             )}
 
@@ -150,7 +200,7 @@ const ShopCatalog = ({ branding, products = [], addToCart, siteConfig = {}, cart
                                 </div>
                                 <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '700', color: '#0f172a' }}>{product.name}</h3>
                                 <p style={{ margin: '0', color: themeColor, fontWeight: '800', fontSize: '18px' }}>
-                                    PKR {product.price.toLocaleString()}
+                                    PKR {Number(product.price || 0).toLocaleString()}
                                 </p>
                             </div>
                         </div>
@@ -162,7 +212,6 @@ const ShopCatalog = ({ branding, products = [], addToCart, siteConfig = {}, cart
 
       </div>
 
-      {/* RE-USE THE SAME MODAL */}
       <ShopProductModal 
         product={selectedProduct}
         isOpen={isModalOpen}

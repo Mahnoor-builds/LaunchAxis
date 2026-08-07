@@ -1077,3 +1077,92 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* --- WIDGET BASE STYLES --- */
+  .axis-floating-widget {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(10, 10, 14, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 240, 255, 0.35);
+    border-radius: 50px;
+    padding: 10px 18px 10px 12px;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(139, 92, 246, 0.25);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .axis-floating-widget:hover {
+    transform: translateY(-4px) scale(1.03);
+    border-color: #00f0ff;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.85), 0 0 30px rgba(0, 240, 255, 0.45);
+  }
+
+  /* --- COSMIC ATOM ICON & PULSE --- */
+  .axis-widget-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(0, 240, 255, 0.2));
+    border: 1px solid rgba(139, 92, 246, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00f0ff;
+    font-size: 1.1rem;
+    position: relative;
+  }
+
+  .axis-pulse-ring {
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid #00f0ff;
+    opacity: 0;
+    animation: cosmicPulse 2.5s infinite ease-out;
+    pointer-events: none;
+  }
+
+  /* --- TEXT LABEL --- */
+  .axis-widget-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  @keyframes cosmicPulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(1.8); opacity: 0; }
+  }
+
+  /* --- MOBILE RESPONSIVENESS (< 640px) --- */
+  @media (max-width: 640px) {
+    .axis-floating-widget {
+      bottom: 18px;
+      right: 18px;
+      padding: 12px;
+      border-radius: 50%;
+    }
+    .axis-widget-label {
+      display: none; /* Collapses to pure icon on phone screens */
+    }
+    .axis-widget-icon {
+      width: 40px;
+      height: 40px;
+      font-size: 1.25rem;
+    }
+    .axis-pulse-ring {
+      width: 40px;
+      height: 40px;
+    }
+  }

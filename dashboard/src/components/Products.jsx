@@ -2,15 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faBoxOpen, faPlus, faPenToSquare, faTrash, faCloudArrowUp, 
-  faImages, faBan, faCheckCircle, faCartShopping, faStar, faTags,
-  faToggleOn, faToggleOff, faLayerGroup
+  faImages, faBan, faCheckCircle, faTags,
+  faToggleOn, faToggleOff, faLayerGroup, faAward
 } from '@fortawesome/free-solid-svg-icons';
 
 // --- FIREBASE IMPORTS ---
 import { collection, doc, setDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import { db, auth } from '../firebaseConfig';
 
-// --- SUB-COMPONENT: INFINITE IMAGE SLIDER (Crash-Proofed) ---
+// --- SUB-COMPONENT: INFINITE IMAGE SLIDER ---
 const ProductImageSlider = ({ images = [] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const safeImages = Array.isArray(images) ? images : [];
@@ -36,7 +36,6 @@ const ProductImageSlider = ({ images = [] }) => {
             <FontAwesomeIcon icon={faImages} size="2x" />
         </div>
       )}
-      {/* DOTS INDICATOR */}
       {safeImages.length > 1 && (
         <div style={{position:'absolute', bottom:'10px', left:'0', right:'0', display:'flex', justifyContent:'center', gap:'6px'}}>
             {safeImages.map((_, idx) => (
@@ -49,18 +48,17 @@ const ProductImageSlider = ({ images = [] }) => {
 };
 
 // --- MAIN COMPONENT ---
-// Removed products/setProducts props; state is now handled locally via Firestore
 const Products = ({ siteConfig = {} }) => {
   const [view, setView] = useState('grid'); 
   const [isEditing, setIsEditing] = useState(false);
-  const [localProducts, setLocalProducts] = useState([]); // State for Firestore data
+  const [localProducts, setLocalProducts] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
   
-  // FORM STATE
+  // FORM STATE (+ Added promoBadge field)
   const [formData, setFormData] = useState({
     id: null, name: '', price: '', description: '', status: 'active', 
     images: [], ordersCount: 0, category: 'Uncategorized', isFeatured: false,
-    variants: [] 
+    promoBadge: '', variants: [] 
   });
 
   const [variantInput, setVariantInput] = useState({ name: '', options: '' });
@@ -69,11 +67,10 @@ const Products = ({ siteConfig = {} }) => {
   // --- FIREBASE: LIVE SYNC ---
   useEffect(() => {
     const user = auth.currentUser;
-    const userId = user ? user.uid : 'ceo@ecosole.store'; // Matching the App.js fallback
+    const userId = user ? user.uid : 'ceo@ecosole.store';
 
     const productsRef = collection(db, `users/${userId}/products`);
     
-    // Listen for real-time updates to the subcollection
     const unsubscribe = onSnapshot(productsRef, (snapshot) => {
       const liveProducts = [];
       snapshot.forEach((doc) => {
@@ -82,15 +79,12 @@ const Products = ({ siteConfig = {} }) => {
       setLocalProducts(liveProducts);
     });
 
-    return () => unsubscribe(); // Cleanup listener on unmount
+    return () => unsubscribe();
   }, []);
-
 
   // --- ACTIONS ---
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    
-    // Convert each uploaded file into a permanent Base64 string
     files.forEach(file => {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -109,7 +103,7 @@ const Products = ({ siteConfig = {} }) => {
       if (isChecked) {
           const currentFeaturedCount = localProducts.filter(p => p.isFeatured && p.id !== formData.id).length;
           if (currentFeaturedCount >= 6) {
-              alert("Limit Reached: You can only have a maximum of 6 Featured Products.");
+              alert("Limit Reached: You can only have a maximum of 6 Best Seller items.");
               return; 
           }
       }
@@ -129,7 +123,6 @@ const Products = ({ siteConfig = {} }) => {
       setFormData({ ...formData, variants: updatedVariants });
   };
 
-  // --- FIREBASE: SAVE PRODUCT ---
   const handleSubmit = async () => {
     if(!formData.name || !formData.price) return alert("Name and Price are required!");
     setIsSaving(true);
@@ -137,18 +130,13 @@ const Products = ({ siteConfig = {} }) => {
     try {
         const user = auth.currentUser;
         const userId = user ? user.uid : 'ceo@ecosole.store';
-        
-        // Use existing ID if editing, otherwise generate a new string ID
         const productId = isEditing ? formData.id : `prod_${Date.now()}`;
-        
         const productRef = doc(db, `users/${userId}/products`, productId);
         
-        // Remove the local ID from the data we save, since the document ID is the source of truth
         const dataToSave = { ...formData };
         delete dataToSave.id;
 
         await setDoc(productRef, dataToSave, { merge: true });
-        
         resetForm();
     } catch (error) {
         console.error("Error saving product:", error);
@@ -163,6 +151,7 @@ const Products = ({ siteConfig = {} }) => {
         ...product,
         category: product.category || 'Uncategorized',
         isFeatured: product.isFeatured || false,
+        promoBadge: product.promoBadge || '',
         variants: product.variants || [],
         images: product.images || []
     });
@@ -170,7 +159,6 @@ const Products = ({ siteConfig = {} }) => {
     setView('form');
   };
 
-  // --- FIREBASE: DELETE PRODUCT ---
   const handleDelete = async (id) => {
     if(window.confirm("Are you sure you want to delete this product?")) {
         try {
@@ -185,7 +173,6 @@ const Products = ({ siteConfig = {} }) => {
     }
   };
 
-  // --- FIREBASE: TOGGLE STATUS ---
   const toggleStatus = async (product) => {
     try {
         const user = auth.currentUser;
@@ -200,7 +187,7 @@ const Products = ({ siteConfig = {} }) => {
   };
 
   const resetForm = () => {
-    setFormData({ id: null, name: '', price: '', description: '', status: 'active', images: [], ordersCount: 0, category: 'Uncategorized', isFeatured: false, variants: [] });
+    setFormData({ id: null, name: '', price: '', description: '', status: 'active', images: [], ordersCount: 0, category: 'Uncategorized', isFeatured: false, promoBadge: '', variants: [] });
     setIsEditing(false);
     setView('grid');
   };
@@ -267,15 +254,25 @@ const Products = ({ siteConfig = {} }) => {
                                 ))}
                             </select>
                         </div>
+                        <div style={{ flex: 1 }}>
+                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold', color: '#0f172a' }}>Promo Badge Label</label>
+                            <select className="input-neon" style={{ padding: '14px', marginBottom: 0, width: '100%', boxSizing: 'border-box' }} value={formData.promoBadge} onChange={e=>setFormData({...formData, promoBadge:e.target.value})}>
+                                <option value="">No Badge</option>
+                                <option value="BEST SELLER">BEST SELLER</option>
+                                <option value="NEW ARRIVAL">NEW ARRIVAL</option>
+                                <option value="SALE">SALE</option>
+                                <option value="LIMITED EDITION">LIMITED EDITION</option>
+                            </select>
+                        </div>
                     </div>
 
-                    {/* FEATURED TOGGLE */}
+                    {/* EDITORIAL BEST SELLER TOGGLE (NO STARS) */}
                     <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
                         <div>
                             <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <FontAwesomeIcon icon={faStar} style={{ color: '#eab308' }} /> Feature on Homepage
+                                <FontAwesomeIcon icon={faAward} style={{ color: '#0f172a' }} /> Feature in "Best Sellers" Section
                             </div>
-                            <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>Display this item in the top 6 featured section.</div>
+                            <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>Displays this item in the top curated Best Sellers showcase.</div>
                         </div>
                         <div onClick={(e) => handleFeaturedToggle({ target: { checked: !formData.isFeatured } })} style={{ cursor: 'pointer', color: formData.isFeatured ? 'var(--primary)' : '#cbd5e1' }}>
                             <FontAwesomeIcon icon={formData.isFeatured ? faToggleOn : faToggleOff} size="2x" />
@@ -307,13 +304,12 @@ const Products = ({ siteConfig = {} }) => {
                         </div>
                     )}
 
-                    {/* NEW: DYNAMIC VARIANT BUILDER */}
+                    {/* DYNAMIC VARIANT BUILDER */}
                     <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '20px' }}>
                         <h4 style={{ margin: '0 0 15px 0', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <FontAwesomeIcon icon={faLayerGroup} style={{ color: 'var(--primary)' }}/> Product Options (Variants)
                         </h4>
                         
-                        {/* List Existing Variants */}
                         {(formData.variants || []).map((v, idx) => (
                             <div key={idx} style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div>
@@ -324,7 +320,6 @@ const Products = ({ siteConfig = {} }) => {
                             </div>
                         ))}
 
-                        {/* Add New Variant */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '15px' }}>
                             <input className="input-neon" style={{ padding: '10px', margin: 0 }} placeholder="Option Name (e.g., Size, Color, Material)" value={variantInput.name} onChange={e => setVariantInput({...variantInput, name: e.target.value})} />
                             <input className="input-neon" style={{ padding: '10px', margin: 0 }} placeholder="Values (e.g., Small, Medium, Large)" value={variantInput.options} onChange={e => setVariantInput({...variantInput, options: e.target.value})} />
@@ -361,10 +356,10 @@ const Products = ({ siteConfig = {} }) => {
                         {product.status === 'active' ? 'IN STOCK' : 'SOLD OUT'}
                     </div>
 
-                    {/* FEATURED STAR */}
+                    {/* EDITORIAL BEST SELLER LABEL (NO STARS) */}
                     {product.isFeatured && (
-                        <div style={{ position:'absolute', top:'12px', left:'12px', zIndex:10, background: '#fff', padding: '6px 10px', borderRadius: '30px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                            <FontAwesomeIcon icon={faStar} style={{ color: '#eab308', fontSize: '12px' }} />
+                        <div style={{ position:'absolute', top:'12px', left:'12px', zIndex:10, background: '#0f172a', color: '#fff', padding: '5px 10px', borderRadius: '4px', fontSize: '10px', fontWeight: '700', letterSpacing: '0.5px' }}>
+                            BEST SELLER
                         </div>
                     )}
 
