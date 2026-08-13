@@ -49,14 +49,13 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    /* Replaced the ugly grid with a random, organic star pattern */
     background-image: url("data:image/svg+xml,%3Csvg width='400' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='43' cy='85' r='1.5' fill='%23ffffff' opacity='0.8'/%3E%3Ccircle cx='212' cy='189' r='1' fill='%23ffffff' opacity='0.5'/%3E%3Ccircle cx='378' cy='35' r='2' fill='%23ffffff' opacity='0.9'/%3E%3Ccircle cx='156' cy='380' r='1' fill='%23ffffff' opacity='0.3'/%3E%3Ccircle cx='345' cy='234' r='1.5' fill='%23ffffff' opacity='0.7'/%3E%3Ccircle cx='89' cy='276' r='1' fill='%23ffffff' opacity='0.6'/%3E%3Ccircle cx='280' cy='90' r='2' fill='%23ffffff' opacity='0.4'/%3E%3Ccircle cx='10' cy='320' r='1' fill='%23ffffff' opacity='0.8'/%3E%3C/svg%3E");
     background-size: 400px 400px;
     opacity: 0.7;
     pointer-events: none;
     z-index: -1;
 }
-/* Floating Space Assets Animations */
+
 @keyframes floatY {
     0%, 100% { transform: translateY(0px) rotate(0deg); }
     50% { transform: translateY(-15px) rotate(2deg); }
@@ -85,7 +84,6 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* View Timeline Bindings for modern browsers */
 .bento-card:nth-child(odd), .showcase-card {
     view-timeline-name: --item-scroll;
     view-timeline-axis: block;
@@ -111,6 +109,67 @@ body {
     animation-fill-mode: both;
     animation-timeline: --item-scroll;
     animation-range: entry 5% cover 25%;
+}
+
+/* ==========================================================================
+   NAVBAR DROPDOWN LOGIC
+   ========================================================================== */
+.dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 150%; /* Pushes it just below the navbar */
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: rgba(10, 15, 30, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-glass);
+    border-radius: 12px;
+    padding: 12px;
+    min-width: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 20px rgba(45, 212, 191, 0.1);
+}
+
+/* Hover effect to show the menu */
+.dropdown-wrapper:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.dropdown-menu a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 14px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s ease;
+}
+
+.dropdown-menu a i {
+    color: var(--neon-cyan);
+    font-size: 14px;
+    width: 16px;
+    text-align: center;
+}
+
+.dropdown-menu a:hover {
+    background: rgba(45, 212, 191, 0.1);
+    color: var(--text-primary);
 }
 
 /* ==========================================================================
@@ -263,9 +322,6 @@ body {
     margin-bottom: 40px;
 }
 
-/* ==========================================================================
-   DYNAMIC TERMINAL CAPSULE
-   ========================================================================== */
 .terminal-capsule {
     display: flex;
     align-items: center;
@@ -287,7 +343,7 @@ body {
 .terminal-text-wrapper {
     flex: 1;
     text-align: left;
-    font-family: monospace; /* Gives it that command-line feel */
+    font-family: monospace;
     font-size: 15px;
     color: var(--text-primary);
     white-space: nowrap;
@@ -312,26 +368,6 @@ body {
 @keyframes blink {
     0%, 100% { opacity: 1; }
     50% { opacity: 0; }
-}
-
-.cockpit-input-capsule:focus-within {
-    border-color: var(--neon-cyan);
-    box-shadow: 0 0 25px rgba(45, 212, 191, 0.15);
-}
-
-.input-magic-icon {
-    color: var(--neon-cyan);
-    font-size: 16px;
-    margin-right: 12px;
-}
-
-.main-idea-field {
-    flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: var(--text-primary);
-    font-size: 15px;
 }
 
 .btn-launch-rocket {
@@ -386,7 +422,6 @@ body {
     background: rgba(45, 212, 191, 0.02);
 }
 
-/* Space Decorative Floaters */
 .cosmic-floater-saturn {
     position: absolute;
     left: 8%;
@@ -406,6 +441,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-wrap: wrap;
     gap: 48px;
     padding: 32px 24px;
     border-top: 1px solid rgba(255,255,255,0.03);
@@ -511,7 +547,6 @@ body {
     margin-bottom: 32px;
 }
 
-/* Simulated Operating Canvas Components */
 .mockup-frame-box {
     flex: 1;
     background: #090d16;
@@ -889,7 +924,7 @@ body {
     font-size: 14px;
     color: var(--text-muted);
     line-height: 1.6;
-    display: none; /* Can be multiplexed to show using state triggers later */
+    display: none;
 }
 
 .faq-row.active .faq-answer {
@@ -942,6 +977,7 @@ body {
     justify-content: center;
     align-items: center;
     gap: 16px;
+    flex-wrap: wrap;
 }
 
 .btn-final-launch {
@@ -1052,34 +1088,9 @@ body {
 }
 
 /* ==========================================================================
-   14. SYSTEM ADAPTIVE MEDIA RESPONSIVENESS
+   14. FLOATING AXIS WIDGET (COSMIC INTEGRATION)
    ========================================================================== */
-@media (max-width: 968px) {
-    .bento-grid-container, .showcase-card, .pricing-cards-wrapper, .footer-matrix-grid {
-        grid-template-columns: 1fr;
-    }
-    .steps-horizontal-matrix {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    .hero-main-title {
-        font-size: 44px;
-    }
-    .glass-navbar {
-        width: 95%;
-    }
-    .nav-menu {
-        display: none; /* Simplification layer for mobile view scopes */
-    }
-}
-
-@media (max-width: 480px) {
-    .steps-horizontal-matrix {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* --- WIDGET BASE STYLES --- */
-  .axis-floating-widget {
+.axis-floating-widget {
     position: fixed;
     bottom: 24px;
     right: 24px;
@@ -1096,16 +1107,15 @@ body {
     cursor: pointer;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(139, 92, 246, 0.25);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  }
+}
 
-  .axis-floating-widget:hover {
+.axis-floating-widget:hover {
     transform: translateY(-4px) scale(1.03);
     border-color: #00f0ff;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.85), 0 0 30px rgba(0, 240, 255, 0.45);
-  }
+}
 
-  /* --- COSMIC ATOM ICON & PULSE --- */
-  .axis-widget-icon {
+.axis-widget-icon {
     width: 36px;
     height: 36px;
     border-radius: 50%;
@@ -1117,9 +1127,9 @@ body {
     color: #00f0ff;
     font-size: 1.1rem;
     position: relative;
-  }
+}
 
-  .axis-pulse-ring {
+.axis-pulse-ring {
     position: absolute;
     width: 36px;
     height: 36px;
@@ -1128,41 +1138,210 @@ body {
     opacity: 0;
     animation: cosmicPulse 2.5s infinite ease-out;
     pointer-events: none;
-  }
+}
 
-  /* --- TEXT LABEL --- */
-  .axis-widget-label {
+.axis-widget-label {
     font-family: 'Inter', sans-serif;
     font-size: 0.85rem;
     font-weight: 700;
     color: #ffffff;
     letter-spacing: 0.5px;
     white-space: nowrap;
-  }
+}
 
-  @keyframes cosmicPulse {
+@keyframes cosmicPulse {
     0% { transform: scale(1); opacity: 0.8; }
     100% { transform: scale(1.8); opacity: 0; }
-  }
+}
 
-  /* --- MOBILE RESPONSIVENESS (< 640px) --- */
-  @media (max-width: 640px) {
+/* ==========================================================================
+   15. SYSTEM ADAPTIVE MEDIA RESPONSIVENESS (PRO-LEVEL MOBILE UPGRADE)
+   ========================================================================== */
+
+/* Tablet Optimization (Max: 968px) */
+@media (max-width: 968px) {
+    .bento-grid-container, .showcase-card, .pricing-cards-wrapper, .footer-matrix-grid {
+        grid-template-columns: 1fr;
+    }
+    .large-preview-window {
+        min-height: 400px;
+    }
+    .steps-horizontal-matrix {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .hero-main-title {
+        font-size: clamp(40px, 8vw, 48px);
+    }
+    .glass-navbar {
+        width: 95%;
+        padding: 0 16px;
+    }
+    .nav-menu {
+        display: none; 
+    }
+    .hero-visual {
+        display: none; 
+    }
+    .axis-bento-card {
+        flex-direction: column-reverse;
+        text-align: center;
+        padding: 32px !important;
+    }
+    .axis-bento-card > div:last-child {
+        margin: 0 auto; 
+    }
+    .axis-bento-card .cta-button-cluster, .axis-bento-card > div:first-child > div {
+        justify-content: center;
+    }
+}
+
+/* Mobile & Small Screen Perfection (Max: 640px) */
+@media (max-width: 640px) {
+    /* Hero & Layout Fixes */
+    .hero-section {
+        padding: 120px 16px 60px;
+    }
+    
+    .hero-main-title {
+        font-size: clamp(32px, 8vw, 38px);
+        letter-spacing: -1px;
+        margin-bottom: 16px;
+    }
+
+    .hero-description {
+        font-size: 14px;
+        margin-bottom: 32px;
+        padding: 0 8px;
+    }
+
+    /* 🚨 TYPEWRITER & TERMINAL LAYOUT SHIFT FIX 🚨 */
+    .terminal-capsule {
+        flex-direction: column;
+        border-radius: 16px;
+        padding: 20px 16px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        gap: 16px;
+        /* Prevents the box from growing/shrinking during typing */
+        min-height: 120px; 
+    }
+
+    .terminal-text-wrapper {
+        width: 100%;
+        text-align: center;
+        font-size: 13px;
+        /* Force text to truncate instead of wrapping and pushing elements */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: clip; 
+    }
+    
+    .terminal-indicator {
+        margin: 0;
+        margin-bottom: -8px; /* Pulls the icon closer to the text */
+    }
+
+    .btn-launch-rocket {
+        width: 100%;
+        justify-content: center;
+        padding: 14px;
+        font-size: 14px;
+        margin-top: auto; /* Forces the button to stay anchored to the bottom */
+    }
+
+    /* Feature Pills Layout */
+    .suggestion-tray {
+        gap: 8px;
+    }
+    .suggestion-pill {
+        font-size: 11px;
+        padding: 6px 12px;
+    }
+
+    /* General Section Adjustments */
+    .trust-value-strip {
+        gap: 16px;
+        padding: 24px 16px;
+        flex-direction: column;
+    }
+
+    .section-divider-title {
+        padding: 60px 16px 32px;
+    }
+    
+    .section-divider-title h2 {
+        font-size: 26px;
+    }
+
+    .bento-card {
+        padding: 20px;
+    }
+
+    .large-preview-window h3 {
+        font-size: 18px;
+        margin-bottom: 20px;
+    }
+
+    .mockup-frame-box {
+        min-height: 200px;
+    }
+
+    .showcase-content-pane {
+        padding: 32px 20px;
+    }
+    
+    .showcase-content-pane h3 {
+        font-size: 22px;
+    }
+
+    .steps-horizontal-matrix {
+        grid-template-columns: 1fr;
+    }
+
+    .price-tier-card {
+        padding: 32px 20px;
+    }
+    
+    .popular-tier-highlight {
+        padding: 44px 20px 32px;
+    }
+
+    .countdown-box-card {
+        padding: 40px 16px;
+    }
+
+    .countdown-box-card h3 {
+        font-size: 26px;
+    }
+
+    .cta-button-cluster {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-final-launch, .btn-final-demo, .axis-trigger-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 14px;
+        font-size: 14px;
+    }
+
+    /* Axis Floating Widget Constraint */
     .axis-floating-widget {
-      bottom: 18px;
-      right: 18px;
-      padding: 12px;
-      border-radius: 50%;
+        bottom: 16px;
+        right: 16px;
+        padding: 12px;
+        border-radius: 50%;
     }
+    
     .axis-widget-label {
-      display: none; /* Collapses to pure icon on phone screens */
+        display: none; 
     }
-    .axis-widget-icon {
-      width: 40px;
-      height: 40px;
-      font-size: 1.25rem;
+    
+    .axis-widget-icon, .axis-pulse-ring {
+        width: 44px;
+        height: 44px;
+        font-size: 1.35rem;
     }
-    .axis-pulse-ring {
-      width: 40px;
-      height: 40px;
-    }
-  }
+}
