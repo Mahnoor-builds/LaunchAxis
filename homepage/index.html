@@ -60,7 +60,8 @@
             <a href="#pricing" class="nav-link">Pricing</a>
         </div>
         
-        <div class="nav-actions">
+        <!-- SECURE AUTHENTICATION CONTAINER -->
+        <div class="nav-actions" id="navAuthActions">
             <a href="auth.html" class="login-link">Signup</a>
             <a href="start-building.html" class="btn-pill-cta" style="text-decoration: none;">Start building &rarr;</a>
         </div>
@@ -500,6 +501,74 @@
                 this.disabled = true;
             });
         }
+    </script>
+
+    <!-- 4. FIREBASE SDKS FOR DYNAMIC AUTH STATE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCgW3AW6wuebd8nde-Udenu-3X6hPbLkhY",
+            authDomain: "launchaxis.firebaseapp.com",
+            projectId: "launchaxis",
+            storageBucket: "launchaxis.firebasestorage.app",
+            messagingSenderId: "986994724231",
+            appId: "1:986994724231:web:cf895161f7cf6c366a9722"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const navContainer = document.getElementById("navAuthActions");
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const email = user.email || "Founder";
+                const initial = email.charAt(0).toUpperCase();
+
+                // Render Logged-In Profile Hub Button
+                navContainer.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <a href="/admin" style="
+                            display: flex; 
+                            align-items: center; 
+                            gap: 10px; 
+                            background: rgba(45, 212, 191, 0.1); 
+                            border: 1px solid rgba(45, 212, 191, 0.3); 
+                            padding: 6px 16px 6px 8px; 
+                            border-radius: 100px; 
+                            text-decoration: none; 
+                            color: #f8fafc;
+                            font-size: 13px;
+                            font-weight: 600;
+                            transition: all 0.2s ease;
+                        ">
+                            <div style="
+                                width: 28px; 
+                                height: 28px; 
+                                border-radius: 50%; 
+                                background: #2dd4bf; 
+                                color: #030712; 
+                                display: flex; 
+                                align-items: center; 
+                                justify-content: center; 
+                                font-weight: 800; 
+                                font-size: 12px;
+                            ">
+                                ${initial}
+                            </div>
+                            <span>Founder Hub &rarr;</span>
+                        </a>
+                    </div>
+                `;
+            } else {
+                // Render Default Guest State
+                navContainer.innerHTML = `
+                    <a href="auth.html" class="login-link">Signup</a>
+                    <a href="start-building.html" class="btn-pill-cta" style="text-decoration: none;">Start building &rarr;</a>
+                `;
+            }
+        });
     </script>
 </body>
 </html>

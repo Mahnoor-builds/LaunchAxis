@@ -2,7 +2,8 @@ import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faRocket, faChartPie, faWallet, 
-  faGlobe, faBoxOpen, faCartShopping, faWandMagicSparkles 
+  faGlobe, faBoxOpen, faCartShopping, faWandMagicSparkles,
+  faGear // Added gear icon
 } from '@fortawesome/free-solid-svg-icons';
 
 const Sidebar = ({ activeSection, setActiveSection, branding }) => {
@@ -17,7 +18,8 @@ const Sidebar = ({ activeSection, setActiveSection, branding }) => {
   ];
 
   return (
-    <aside className="sidebar">
+    <aside className="sidebar" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      
       {/* BRANDING HEADER */}
       <div className="brand" style={{ padding: '0 24px 32px', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '20px', fontWeight: 'bold', color: '#f8fafc' }}>
         {branding.logo ? (
@@ -29,7 +31,7 @@ const Sidebar = ({ activeSection, setActiveSection, branding }) => {
       </div>
 
       {/* NAVIGATION ITEMS */}
-      <nav>
+      <nav style={{ flex: 1 }}>
         {navItems.map((item) => (
           <div 
             key={item.id}
@@ -41,6 +43,20 @@ const Sidebar = ({ activeSection, setActiveSection, branding }) => {
           </div>
         ))}
       </nav>
+
+      {/* BOTTOM SETTINGS LINK */}
+      <div style={{ padding: '0 16px 24px' }}>
+        <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', marginBottom: '16px' }}></div>
+        <div 
+            className={`nav-item ${activeSection === 'settings' ? 'active' : ''}`}
+            onClick={() => setActiveSection('settings')}
+            style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '8px', cursor: 'pointer', color: activeSection === 'settings' ? '#2dd4bf' : '#94a3b8', background: activeSection === 'settings' ? 'rgba(45, 212, 191, 0.1)' : 'transparent' }}
+          >
+            <FontAwesomeIcon icon={faGear} style={{ width: '20px' }} />
+            Settings
+        </div>
+      </div>
+
     </aside>
   );
 };

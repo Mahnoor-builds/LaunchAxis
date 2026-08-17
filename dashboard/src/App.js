@@ -14,6 +14,8 @@ import Branding from './components/Branding';
 import WebsiteEditor from './components/WebsiteEditor';
 import Products from './components/Products';
 import Orders from './components/Orders';
+import Settings from './components/Settings'; // <-- Imported the new Settings Component
+import ProfileHub from './components/ProfileHub';
 
 // SHOP COMPONENTS
 import ShopHome from './components/shop/ShopHome';
@@ -50,8 +52,14 @@ const AdminPanel = ({
             <p>System Overview for <span className="highlight-cyan">{branding.name}</span></p>
           </div>
           <div className="topbar-actions">
-            <button className="icon-btn" title="Settings"><FontAwesomeIcon icon={faCog} /></button>
-            <button className="icon-btn profile-btn" title="Account Profile"><FontAwesomeIcon icon={faUserCircle} /></button>
+            {/* Topbar Settings Icon links to Settings tab now too */}
+            <button className="icon-btn" title="Settings" onClick={() => setActiveSection('settings')}>
+              <FontAwesomeIcon icon={faCog} />
+            </button>
+            {/* THE FIX: Added onClick to this button! */}
+            <button className="icon-btn profile-btn" title="Account Profile" onClick={() => setActiveSection('profile')}>
+              <FontAwesomeIcon icon={faUserCircle} />
+            </button>
           </div>
         </header>
 
@@ -62,6 +70,10 @@ const AdminPanel = ({
           {activeSection === 'website' && features?.wantsWebsite && <WebsiteEditor branding={branding} products={products} siteConfig={siteConfig} setSiteConfig={setSiteConfig} />}
           {activeSection === 'products' && <Products siteConfig={siteConfig} />}
           {activeSection === 'orders' && <Orders orders={orders} updateOrderStatus={updateOrderStatus} />}
+          
+          {/* --> Renders the Settings component when selected <-- */}
+          {activeSection === 'settings' && <Settings />} 
+          {activeSection === 'profile' && <ProfileHub branding={branding} setActiveSection={setActiveSection} />}
         </main>
       </div>
     </div>
@@ -203,7 +215,6 @@ function App() {
       let targetId = "ceo@ecosole.store"; 
       if (auth.currentUser) targetId = auth.currentUser.uid;
 
-      // Update order status in subcollection directly without touching Finance!
       const orderRef = doc(db, `users/${targetId}/orders`, id);
       await updateDoc(orderRef, { status, trackingId: trackId });
     } catch (error) {
@@ -242,13 +253,13 @@ function App() {
     syncToFirebase("inventory", updatedList);
   };
 
-  // --- UPDATED PLACE ORDER LOGIC (FULL NAME & EMAIL) ---
+  // --- UPDATED PLACE ORDER LOGIC ---
   const placeOrder = async (orderDetails) => {
     const orderId = `ord_${Math.floor(Math.random() * 100000)}`;
     
     const newOrder = {
-        customerName: orderDetails.customer.fullName, // Clean single Full Name
-        email: orderDetails.customer.email,           // Stored for order notifications
+        customerName: orderDetails.customer.fullName, 
+        email: orderDetails.customer.email,           
         phone: orderDetails.customer.phone,
         address: `${orderDetails.customer.address}, ${orderDetails.customer.city}`,
         productName: orderDetails.items.map(i => i.name).join(', '),
@@ -263,7 +274,6 @@ function App() {
         let targetId = "ceo@ecosole.store"; 
         if (auth.currentUser) targetId = auth.currentUser.uid;
 
-        // Save directly to subcollection
         const orderRef = doc(db, `users/${targetId}/orders`, orderId);
         await setDoc(orderRef, newOrder);
         
