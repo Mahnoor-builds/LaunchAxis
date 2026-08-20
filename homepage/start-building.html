@@ -3,305 +3,244 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Start Building – LaunchAxis</title>
+  <title>Initialize Workspace | LaunchAxis</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
     :root {
-      --bg-dark: #09090b;
-      --card-bg: #18181b;
-      --border-color: #27272a;
+      --bg-dark: #030712;
+      --card-bg: rgba(10, 10, 14, 0.7);
+      --border-color: rgba(255, 255, 255, 0.08);
       --neon-teal: #2dd4bf;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
     }
 
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
     body {
-      margin: 0;
-      font-family: 'Inter', 'Segoe UI', sans-serif;
-      background-color: var(--bg-dark);
-      color: var(--text-main);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 2rem;
+      background-color: var(--bg-dark); color: var(--text-main);
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh; padding: 2rem 1rem; position: relative; overflow-x: hidden;
     }
+
+    /* Cosmic Background */
+    .space-ambient-glow { position: fixed; top: -10%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(45, 212, 191, 0.1) 0%, transparent 60%); z-index: -1; }
+    .space-ambient-glow-2 { position: fixed; bottom: -10%; right: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 60%); z-index: -1; }
+    .cosmic-dust-overlay { position: fixed; inset: 0; background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 50px 50px; opacity: 0.03; z-index: -1; }
 
     .form-container {
-      background-color: var(--card-bg);
-      padding: 3rem;
-      border-radius: 16px;
-      border: 1px solid var(--border-color);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-      max-width: 900px;
-      width: 100%;
+      background: var(--card-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      padding: clamp(2rem, 5vw, 3rem); border-radius: 20px; border: 1px solid var(--border-color);
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+      max-width: 800px; width: 100%; animation: fadeIn 0.5s ease;
     }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    .header-text {
-      text-align: center;
-      margin-bottom: 2.5rem;
-    }
+    .header-text { text-align: center; margin-bottom: 2.5rem; }
+    .header-text h2 { font-size: clamp(1.8rem, 4vw, 2.2rem); font-weight: 800; margin: 0 0 8px 0; letter-spacing: -0.5px; }
+    .header-text p { color: var(--neon-teal); margin: 0; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; font-size: 0.85rem; }
 
-    .header-text h2 {
-      color: var(--text-main);
-      font-size: 2rem;
-      font-weight: 800;
-      margin: 0 0 10px 0;
-      letter-spacing: -1px;
-    }
-
-    .header-text p {
-      color: var(--neon-teal);
-      margin: 0;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      font-size: 0.9rem;
-    }
-
-    /* Grid Layout for Single Page */
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 30px;
-    }
-
-    @media (max-width: 768px) {
-      .form-grid {
-        grid-template-columns: 1fr; /* Stacks on mobile */
-      }
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .full-width {
-      grid-column: 1 / -1;
-    }
-
-    label {
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      margin-bottom: 0.5rem;
-    }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
+    
+    .full-width { grid-column: 1 / -1; }
+    .form-group { display: flex; flex-direction: column; }
+    label.field-label { font-weight: 700; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
 
     input[type="text"], input[type="email"], textarea {
-      width: 100%;
-      padding: 0.8rem 1rem;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      background-color: #000;
-      color: var(--text-main);
-      font-size: 1rem;
-      transition: border 0.3s, box-shadow 0.3s;
-      box-sizing: border-box;
+      width: 100%; padding: 0.9rem 1rem; border-radius: 10px;
+      border: 1px solid #1e293b; background-color: #0f172a;
+      color: var(--text-main); font-size: 0.95rem; transition: all 0.2s ease; resize: vertical;
     }
+    input:focus, textarea:focus { outline: none; border-color: var(--neon-teal); background-color: #020617; box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.15); }
 
-    input[type="text"]:focus, input[type="email"]:focus, textarea:focus {
-      outline: none;
-      border-color: var(--neon-teal);
-      box-shadow: 0 0 10px rgba(45, 212, 191, 0.2);
-    }
-
-    .selection-group {
-      background: #000;
-      padding: 1rem;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-    }
-
-    .selection-group label {
-      display: flex;
-      align-items: center;
-      color: var(--text-main);
-      font-size: 0.95rem;
-      cursor: pointer;
-      margin-bottom: 0.8rem;
-    }
-
-    .selection-group label:last-child {
-      margin-bottom: 0;
-    }
-
-    input[type="checkbox"], input[type="radio"] {
-      accent-color: var(--neon-teal);
-      width: 18px;
-      height: 18px;
-      margin-right: 10px;
-      cursor: pointer;
-    }
+    .selection-group { background: #0f172a; padding: 1rem; border-radius: 10px; border: 1px solid #1e293b; display: flex; flex-direction: column; gap: 12px; }
+    .selection-group.row-layout { flex-direction: row; flex-wrap: wrap; gap: 20px; }
+    .radio-label { display: flex; align-items: center; font-size: 0.9rem; font-weight: 600; cursor: pointer; color: #e2e8f0; transition: color 0.2s; }
+    .radio-label:hover { color: var(--neon-teal); }
+    input[type="checkbox"], input[type="radio"] { accent-color: var(--neon-teal); width: 16px; height: 16px; margin-right: 10px; cursor: pointer; }
 
     .submit-btn {
-      background-color: var(--neon-teal);
-      color: #000;
-      font-weight: 800;
-      font-size: 1.1rem;
-      border: none;
-      padding: 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 1.5rem;
-      transition: all 0.3s ease;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      box-shadow: 0 4px 15px rgba(45, 212, 191, 0.3);
+      background: linear-gradient(135deg, #00f0ff, #8B5CF6); color: #000;
+      font-weight: 800; font-size: 1rem; border: none; padding: 1.1rem; border-radius: 10px;
+      cursor: pointer; margin-top: 1rem; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 10px;
     }
+    .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0, 240, 255, 0.25); }
 
-    .submit-btn:hover {
-      background-color: #14b8a6;
-      box-shadow: 0 6px 20px rgba(45, 212, 191, 0.5);
-      transform: translateY(-2px);
+    /* =========================================
+       CUSTOM AUTHENTICATION MODAL POPUP
+       ========================================= */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px);
+      display: none; justify-content: center; align-items: center; z-index: 1000;
+      opacity: 0; transition: opacity 0.3s ease;
     }
+    .modal-overlay.active { display: flex; opacity: 1; }
+
+    .modal-card {
+      background: rgba(10, 10, 14, 0.9); border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px; padding: 2.5rem; max-width: 400px; width: 90%;
+      text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+      transform: translateY(20px); transition: transform 0.3s ease;
+    }
+    .modal-overlay.active .modal-card { transform: translateY(0); }
+
+    .modal-icon { width: 60px; height: 60px; background: rgba(45, 212, 191, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: var(--neon-teal); margin: 0 auto 1.5rem; border: 1px solid rgba(45, 212, 191, 0.3); }
+    .modal-card h3 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; color: #fff; }
+    .modal-card p { font-size: 0.9rem; color: #94a3b8; margin-bottom: 2rem; line-height: 1.5; }
+
+    .modal-btn-primary { display: block; width: 100%; background: #2dd4bf; color: #020617; font-weight: 800; padding: 0.9rem; border-radius: 8px; text-decoration: none; margin-bottom: 12px; transition: background 0.2s; }
+    .modal-btn-primary:hover { background: #14b8a6; }
+    
+    .modal-btn-secondary { display: block; width: 100%; background: transparent; color: #f8fafc; border: 1px solid #334155; font-weight: 700; padding: 0.9rem; border-radius: 8px; text-decoration: none; transition: background 0.2s; margin-bottom: 1rem; }
+    .modal-btn-secondary:hover { background: #1e293b; }
+
+    .close-modal { background: none; border: none; color: #64748b; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-decoration: underline; }
+    .close-modal:hover { color: #f8fafc; }
   </style>
 </head>
 <body>
+  <div class="space-ambient-glow"></div>
+  <div class="space-ambient-glow-2"></div>
+  <div class="cosmic-dust-overlay"></div>
+
   <div class="form-container">
     <div class="header-text">
-      <h2>Initialize Your Business</h2>
-      <p>System Setup & Architecture</p>
+      <h2>Architect Your Infrastructure</h2>
+      <p><i class="fa-solid fa-microchip"></i> System Setup & Parameter Input</p>
     </div>
 
     <form id="multiStepForm">
       <div class="form-grid">
         
         <div class="form-group">
-          <label for="businessName">Business Name</label>
-          <input type="text" id="businessName" name="businessName" placeholder="e.g. Neon Studios" />
+          <label class="field-label" for="businessName">Business / Brand Name</label>
+          <input type="text" id="businessName" name="businessName" placeholder="Leave blank for AI generation" />
         </div>
 
         <div class="form-group">
-          <label for="email">Admin Email Address</label>
-          <input type="email" id="email" name="email" required placeholder="admin@example.com" />
+          <label class="field-label" for="email">Admin Email Address</label>
+          <input type="email" id="email" name="email" required placeholder="ceo@startup.com" />
         </div>
 
         <div class="form-group full-width">
-          <label for="businessDesc">Core Business Description</label>
-          <textarea id="businessDesc" name="businessDesc" rows="2" placeholder="Briefly describe your products, services, and target audience..."></textarea>
+          <label class="field-label" for="businessDesc">Product or Service Description</label>
+          <textarea id="businessDesc" name="businessDesc" rows="3" required placeholder="Describe exactly what you sell or the services you provide. Who is your target customer?"></textarea>
         </div>
 
         <div class="form-group">
-          <label>Primary Offering</label>
+          <label class="field-label">Primary Offering Type</label>
           <div class="selection-group">
-            <label><input type="radio" name="businessType" value="Products" required /> Digital / Physical Products</label>
-            <label><input type="radio" name="businessType" value="Services" /> Service Based</label>
+            <label class="radio-label"><input type="radio" name="businessType" value="ecommerce" required /> Physical / Digital Products</label>
+            <label class="radio-label"><input type="radio" name="businessType" value="service" /> Service / Agency Work</label>
           </div>
         </div>
 
         <div class="form-group">
-          <label>Your Current Status</label>
+          <label class="field-label">Founder Profile</label>
           <div class="selection-group">
-            <label><input type="radio" name="userType" value="Student with Startup Idea" required /> Student Startup</label>
-            <label><input type="radio" name="userType" value="Freelancer" /> Freelancer</label>
-            <label><input type="radio" name="userType" value="Existing Business Owner" /> Established Business</label>
+            <label class="radio-label"><input type="radio" name="userType" value="Startup Founder" required /> Startup Founder</label>
+            <label class="radio-label"><input type="radio" name="userType" value="Freelancer" /> Freelancer</label>
+            <label class="radio-label"><input type="radio" name="userType" value="Student" /> Student</label>
+            <label class="radio-label"><input type="radio" name="userType" value="Small Business Owner" /> Small Business Owner</label>
           </div>
         </div>
 
         <div class="form-group full-width">
-          <label>AI Generation Requirements</label>
-          <div class="selection-group" style="display: flex; gap: 20px; flex-wrap: wrap;">
-            <label><input type="checkbox" name="needs" value="Logo & Branding Kit" /> Brand Identity Kit</label>
-            <label><input type="checkbox" name="needs" value="Business Website" /> E-Commerce Storefront</label>
-            <label><input type="checkbox" name="needs" value="Accounting Setup" /> Finance & Accounting Dashboard</label>
+          <label class="field-label">Modules to Activate</label>
+          <div class="selection-group row-layout">
+            <label class="radio-label"><input type="checkbox" name="needs" value="wantsBranding" checked /> Brand Identity Kit</label>
+            <label class="radio-label"><input type="checkbox" name="needs" value="wantsWebsite" checked /> Website / Storefront</label>
+            <label class="radio-label"><input type="checkbox" name="needs" value="wantsAccounting" checked /> Finance Ledger Dashboard</label>
           </div>
         </div>
 
-        <div class="form-group full-width">
-          <label for="details">Additional Directives (Optional)</label>
-          <textarea id="details" name="details" rows="2" placeholder="Specify color preferences, specific features, or target demographics..."></textarea>
-        </div>
-
-        <button type="submit" class="submit-btn full-width">Initialize Setup</button>
+        <button type="submit" class="submit-btn full-width">Initialize Kernel Sequence <i class="fa-solid fa-rocket"></i></button>
       </div>
     </form>
   </div>
 
+  <!-- CUSTOM AUTHENTICATION MODAL -->
+  <div id="authModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-icon"><i class="fa-solid fa-lock"></i></div>
+      <h3>Authentication Required</h3>
+      <p>You need a secure LaunchAxis account to save and deploy your business infrastructure.</p>
+      <a href="auth.html" class="modal-btn-primary">Create Free Account</a>
+      <a href="login.html" class="modal-btn-secondary">Log in to existing account</a>
+      <button class="close-modal" id="closeModalBtn">Cancel & Go Back</button>
+    </div>
+  </div>
+
+  <!-- FIREBASE & LOGIC SCRIPT -->
   <script type="module">
-  // NOTE: If you are using Firebase modules, import your auth here. 
-  // Example: import { auth } from './firebaseConfig.js';
-  
-  // 1. THIS IS YOUR GATEKEEPER
-  // Replace this function with your actual code that shows your existing login popup
-  function triggerAuthPopup() {
-      // e.g., document.getElementById('loginModal').style.display = 'block';
-      alert("Authentication Required: Showing Login/Signup Popup Now...");
-  }
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-  // 2. CHECK LOGIN STATUS
-  // Replace this with your actual Firebase auth check (e.g., auth.currentUser !== null)
-  function isUserLoggedIn() {
-      // Currently hardcoded to false so you can test the popup trigger
-      return false; 
-  }
+    // 1. FIREBASE CONFIG
+    const firebaseConfig = {
+      apiKey: "AIzaSyCgW3AW6wuebd8nde-Udenu-3X6hPbLkhY",
+      authDomain: "launchaxis.firebaseapp.com",
+      projectId: "launchaxis",
+      storageBucket: "launchaxis.firebasestorage.app",
+      messagingSenderId: "986994724231",
+      appId: "1:986994724231:web:cf895161f7cf6c366a9722"
+    };
 
-  // Handle Form Submission
-  document.getElementById("multiStepForm").addEventListener("submit", function (e) {
-      // 1. Stop the page from refreshing instantly
-      e.preventDefault();
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    let currentUser = null;
 
-      try {
-          // 2. Gather the form inputs
-          const businessName = document.getElementById("businessName").value.trim();
-          const businessDesc = document.getElementById("businessDesc").value.trim();
-          const businessType = document.querySelector("input[name='businessType']:checked")?.value || "";
-          const needs = [...document.querySelectorAll("input[name='needs']:checked")].map(cb => cb.value);
-          const userType = document.querySelector("input[name='userType']:checked")?.value || "";
-          const details = document.getElementById("details").value.trim();
-          const email = document.getElementById("email").value.trim();
+    // Track real login state
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+    });
 
-          // 3. Validation Check
-          if (!email || !businessType) {
-            alert("Please fill all required fields.");
-            return;
-          }
+    // 2. MODAL CONTROLS
+    const authModal = document.getElementById("authModal");
+    document.getElementById("closeModalBtn").addEventListener("click", () => {
+        authModal.classList.remove("active");
+    });
 
-          // 4. Package data for the AI Kernel
-          const userData = {
-            businessName: businessName || "Auto-Generate", 
-            businessDesc,
-            businessType,
-            preferences: needs,
-            userType,
-            extraDetails: details,
-            email
-          };
+    // 3. FORM SUBMISSION
+    document.getElementById("multiStepForm").addEventListener("submit", function (e) {
+        e.preventDefault();
 
-          // ==========================================
-          // 5. THE NEW AUTHENTICATION INTERCEPTOR
-          // ==========================================
-          if (!isUserLoggedIn()) {
-              // Store the data temporarily so we don't lose their answers!
-              localStorage.setItem("pendingLaunchAxisData", JSON.stringify(userData));
-              
-              // Trigger your existing Firebase popup
-              triggerAuthPopup();
-              return; // Stop the function here. Do not go to loading screen yet!
-          }
+        try {
+            const businessName = document.getElementById("businessName").value.trim();
+            const businessDesc = document.getElementById("businessDesc").value.trim();
+            const businessType = document.querySelector("input[name='businessType']:checked")?.value || "";
+            const userType = document.querySelector("input[name='userType']:checked")?.value || "";
+            const email = document.getElementById("email").value.trim();
+            
+            const checkedModules = [...document.querySelectorAll("input[name='needs']:checked")].map(cb => cb.value);
+            const features = {
+                wantsBranding: checkedModules.includes("wantsBranding"),
+                wantsWebsite: checkedModules.includes("wantsWebsite"),
+                wantsAccounting: checkedModules.includes("wantsAccounting")
+            };
 
-          // 6. If they ARE logged in, proceed normally
-          localStorage.setItem("launchAxisTempData", JSON.stringify(userData));
-          window.location.href = "./loading.html";
+            const userData = { businessName: businessName || "Auto-Generate", businessDesc, businessType, userType, features, email };
 
-      } catch (error) {
-          console.error("Form collection failed:", error);
-          alert("An error occurred. Open the developer console (Inspect -> Console) to see the details.");
-      }
-  });
+            // SECURE GATEWAY CHECK
+            if (!currentUser) {
+                // Not logged in! Save to pending and show custom modal.
+                localStorage.setItem("pendingLaunchAxisData", JSON.stringify(userData));
+                authModal.classList.add("active");
+            } else {
+                // Logged in! Proceed directly to the Loading screen.
+                localStorage.setItem("launchAxisTempData", JSON.stringify(userData));
+                window.location.href = "./loading.html";
+            }
 
-  // ==========================================
-  // 7. LISTENER FOR AFTER SUCCESSFUL LOGIN
-  // ==========================================
-  // Call this function right after your user successfully logs in via your popup
-  window.onSuccessfulLogin = function() {
-      const savedData = localStorage.getItem("pendingLaunchAxisData");
-      if (savedData) {
-          // Move the pending data to the active state and push them to the loading screen
-          localStorage.setItem("launchAxisTempData", savedData);
-          localStorage.removeItem("pendingLaunchAxisData");
-          window.location.href = "./loading.html";
-      }
-  }
+        } catch (error) {
+            console.error("Form collection failed:", error);
+            alert("An error occurred. Please check your inputs.");
+        }
+    });
   </script>
 </body>
 </html>

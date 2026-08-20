@@ -3,243 +3,308 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sign Up | LaunchAxis Kernel</title>
+  <title>Sign Up | LaunchAxis</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
 
     body {
-      background-color: #050505;
+      background-color: #030712; /* Deep dark background */
       color: #FFFFFF;
+      min-height: 100vh;
       display: flex;
+      overflow-x: hidden;
+    }
+
+    /* --- SPLIT LAYOUT --- */
+    .split-layout {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* --- LEFT: FORM SIDE --- */
+    .form-side {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
-      /* Subtle glowing background effect */
-      background-image: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.15), transparent 50%);
-    }
-
-    .auth-wrapper {
-      width: 100%;
-      max-width: 420px;
       padding: 2rem;
+      background: #030712;
+      position: relative;
+      z-index: 10;
     }
 
-    /* Premium Glass Card */
-    .glass-card {
-      background: rgba(10, 10, 10, 0.6);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
-      padding: 3rem 2.5rem;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-      text-align: center;
-    }
-
-    .brand-header img {
-      width: 48px;
-      margin-bottom: 1rem;
-    }
-
-    .brand-header h1 {
-      font-size: 1.5rem;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      margin-bottom: 0.5rem;
-    }
-
-    .brand-header p {
-      color: #888888;
-      font-size: 0.9rem;
-      margin-bottom: 2rem;
-    }
-
-    /* Input Fields */
-    .input-group {
-      margin-bottom: 1rem;
-      text-align: left;
-    }
-
-    input[type="text"],
-    input[type="email"],
-    input[type="password"] {
+    .form-container {
       width: 100%;
-      padding: 0.85rem 1rem;
-      background-color: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      color: #FFFFFF;
-      font-size: 0.95rem;
-      transition: all 0.3s ease;
+      max-width: 400px;
+      animation: fadeIn 0.6s ease;
     }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    input::placeholder { color: #555555; }
-
-    input:focus {
-      outline: none;
-      border-color: #8B5CF6; /* Vercel Purple glow */
-      background-color: rgba(139, 92, 246, 0.05);
-      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+    .brand-logo {
+      font-size: 1.25rem; font-weight: 800; color: #fff; margin-bottom: 2rem;
+      display: flex; align-items: center; gap: 8px;
     }
+    .brand-logo i { color: #2dd4bf; }
 
-    /* Buttons */
-    .btn-primary {
-      width: 100%;
-      background-color: #FFFFFF;
-      color: #000000;
-      font-weight: 600;
-      border: none;
-      padding: 0.85rem;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 0.5rem;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
+    .form-header h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 0.5rem; color: #f8fafc; }
+    .form-header p { color: #94a3b8; font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.5; }
 
-    .btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+    /* Google Button */
+    .google-btn {
+      width: 100%; background-color: #fff; color: #0f172a;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      border: 1px solid #e2e8f0; padding: 0.85rem; border-radius: 8px;
+      font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s ease;
+      margin-bottom: 1.5rem;
     }
+    .google-btn:hover { background-color: #f8fafc; box-shadow: 0 4px 12px rgba(255,255,255,0.1); }
+    .google-btn img { width: 20px; height: 20px; }
 
     /* Divider */
     .divider {
-      display: flex;
-      align-items: center;
-      text-align: center;
-      margin: 1.5rem 0;
-      color: #555555;
-      font-size: 0.85rem;
+      display: flex; align-items: center; text-align: center; margin-bottom: 1.5rem;
+      color: #475569; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
     }
-    .divider::before, .divider::after {
-      content: '';
-      flex: 1;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .divider:not(:empty)::before { margin-right: .5em; }
-    .divider:not(:empty)::after { margin-left: .5em; }
+    .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #1e293b; }
+    .divider:not(:empty)::before { margin-right: 1em; } 
+    .divider:not(:empty)::after { margin-left: 1em; }
 
-    /* Google Button Upgrade */
-    .google-btn {
-      width: 100%;
-      background-color: rgba(255, 255, 255, 0.05);
-      color: #FFFFFF;
+    /* Inputs */
+    .input-group { margin-bottom: 1.2rem; }
+    .input-group label { display: block; font-size: 0.75rem; font-weight: 700; color: #94a3b8; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    
+    input[type="text"], input[type="email"], input[type="password"] {
+      width: 100%; padding: 0.85rem 1rem;
+      background-color: #0f172a; border: 1px solid #1e293b;
+      border-radius: 8px; color: #f8fafc; font-size: 0.95rem; transition: all 0.2s ease;
+    }
+    input:focus { outline: none; border-color: #2dd4bf; background-color: #020617; box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.15); }
+    input::placeholder { color: #475569; }
+
+    /* Password Rules */
+    .password-rules {
+      list-style: none; margin-top: 0.75rem; padding: 0;
+      font-size: 0.8rem; color: #64748b;
+    }
+    .password-rules li { margin-bottom: 0.3rem; display: flex; align-items: center; gap: 6px; }
+    .password-rules i { font-size: 0.7rem; color: #475569; }
+    .error-msg { color: #ef4444; font-size: 0.85rem; margin-top: 0.5rem; display: none; font-weight: 500; }
+
+    /* Submit Button */
+    .btn-primary {
+      width: 100%; background: #2dd4bf; color: #020617;
+      font-weight: 800; border: none; padding: 0.9rem; border-radius: 8px; font-size: 1rem;
+      cursor: pointer; margin-top: 0.5rem; transition: all 0.2s ease;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-primary:hover:not(:disabled) { background: #14b8a6; transform: translateY(-1px); box-shadow: 0 10px 20px rgba(45, 212, 191, 0.2); }
+    .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+    .auth-footer { margin-top: 2rem; font-size: 0.9rem; color: #94a3b8; text-align: center; }
+    .auth-footer a { color: #2dd4bf; text-decoration: none; font-weight: 600; transition: color 0.2s ease; }
+    .auth-footer a:hover { color: #f8fafc; text-decoration: underline; }
+
+    /* --- RIGHT: VISUAL SIDE --- */
+    .visual-side {
+      flex: 1.2;
+      background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+      position: relative;
       display: flex;
-      align-items: center;
+      flex-direction: column;
       justify-content: center;
-      gap: 0.6rem;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 0.85rem;
-      border-radius: 8px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
+      align-items: center;
+      padding: 4rem;
+      overflow: hidden;
+      border-left: 1px solid rgba(255,255,255,0.05);
     }
 
-    .google-btn:hover {
-      background-color: rgba(255, 255, 255, 0.1);
+    .cosmic-overlay { position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 40px 40px; opacity: 0.5; }
+    
+    /* Glowing Planet CSS Art */
+    .planet {
+      width: 300px; height: 300px; border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #2dd4bf, #0f172a 70%);
+      box-shadow: 0 0 60px rgba(45, 212, 191, 0.2), inset -20px -20px 40px rgba(0,0,0,0.5);
+      position: relative; z-index: 2; margin-bottom: 3rem;
+      animation: floatY 8s ease-in-out infinite;
     }
-
-    .google-btn img {
-      width: 20px;
-      height: 20px;
+    .planet-ring {
+      position: absolute; top: 50%; left: 50%; width: 450px; height: 120px;
+      border: 2px solid rgba(45, 212, 191, 0.3); border-radius: 50%;
+      transform: translate(-50%, -50%) rotate(-20deg); z-index: 1;
     }
+    @keyframes floatY { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
 
-    /* Footer Links */
-    .auth-footer {
-      margin-top: 2rem;
-      font-size: 0.9rem;
-      color: #888888;
-    }
+    .visual-content { position: relative; z-index: 10; text-align: center; max-width: 500px; }
+    .visual-content h2 { font-size: 2.2rem; font-weight: 800; color: #fff; margin-bottom: 1rem; letter-spacing: -0.5px; }
+    .visual-content p { font-size: 1.1rem; color: #94a3b8; line-height: 1.6; }
 
-    .auth-footer a {
-      color: #38BDF8; /* Cyan accent */
-      text-decoration: none;
-      font-weight: 500;
-      transition: color 0.2s ease;
-    }
-
-    .auth-footer a:hover {
-      color: #0ea5e9;
+    /* Responsiveness */
+    @media (max-width: 968px) {
+      .visual-side { display: none; }
+      .form-side { padding: 1.5rem; }
     }
   </style>
 </head>
 <body>
 
-  <div class="auth-wrapper">
-    <div class="glass-card">
-      
-      <div class="brand-header">
-        <img src="images/mainlogo.png" alt="LaunchAxis Logo" onerror="this.style.display='none'" />
-        <h1>Create Account</h1>
-        <p>Architect your startup in minutes.</p>
+  <div class="split-layout">
+    
+    <!-- LEFT PANEL: FORM -->
+    <div class="form-side">
+      <div class="form-container">
+        
+        <div class="brand-logo">
+          <i class="fa-solid fa-rocket"></i> LaunchAxis
+        </div>
+
+        <div class="form-header">
+          <h1>Sign up for LaunchAxis</h1>
+          <p>Create your founder profile to access the AI builder.</p>
+        </div>
+
+        <!-- Google Auth Prioritized -->
+        <button class="google-btn" id="googleSignIn">
+          <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" />
+          Continue with Google
+        </button>
+
+        <div class="divider">Or register with email</div>
+
+        <form id="signupForm">
+          <div class="input-group">
+            <label>Full Name</label>
+            <input type="text" id="fullName" placeholder="e.g. Mahnoor Naveed" required />
+          </div>
+          
+          <div class="input-group">
+            <label>Email Address</label>
+            <input type="email" id="email" placeholder="ceo@startup.com" required />
+          </div>
+          
+          <div class="input-group">
+            <label>Secure Password</label>
+            <input type="password" id="password" placeholder="Create a password" required />
+            <ul class="password-rules">
+              <li><i class="fa-solid fa-circle"></i> Minimum 8 characters</li>
+              <li><i class="fa-solid fa-circle"></i> At least 1 uppercase letter</li>
+              <li><i class="fa-solid fa-circle"></i> At least 1 number and 1 symbol</li>
+            </ul>
+          </div>
+          
+          <div class="input-group">
+            <label>Confirm Password</label>
+            <input type="password" id="confirmPassword" placeholder="Repeat your password" required />
+            <div class="error-msg" id="passwordError">Passwords do not match or are too weak.</div>
+          </div>
+          
+          <button type="submit" class="btn-primary" id="signupBtn">Initialize Workspace <i class="fa-solid fa-arrow-right"></i></button>
+        </form>
+
+        <div class="auth-footer">
+          Already have an account? <a href="login.html">Log in here</a>
+        </div>
       </div>
-
-      <form id="signupForm">
-        <div class="input-group">
-          <input type="text" id="fullName" placeholder="Full Name" required />
-        </div>
-        <div class="input-group">
-          <input type="email" id="email" placeholder="Email Address" required />
-        </div>
-        <div class="input-group">
-          <input type="password" id="password" placeholder="Password" required />
-        </div>
-        <button type="submit" class="btn-primary">Initialize Workspace</button>
-      </form>
-
-      <div class="divider">OR</div>
-
-      <button class="google-btn" id="googleSignIn">
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" />
-        Continue with Google
-      </button>
-
-      <div class="auth-footer">
-        Already have an account? <a href="login.html">Login here</a>
-      </div>
-
     </div>
+
+    <!-- RIGHT PANEL: VISUALS -->
+    <div class="visual-side">
+      <div class="cosmic-overlay"></div>
+      
+      <div class="planet">
+        <div class="planet-ring"></div>
+      </div>
+
+      <div class="visual-content">
+        <h2>From idea to orbit.</h2>
+        <p>Join a global network of founders. LaunchAxis automatically architects your brand, web storefront, and financial ledger in minutes.</p>
+      </div>
+    </div>
+
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, updateProfile } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-    // 1. PASTE YOUR CONFIG HERE (Put your real keys back in!)
     const firebaseConfig = {
-    apiKey: "AIzaSyCgW3AW6wuebd8nde-Udenu-3X6hPbLkhY",
-    authDomain: "launchaxis.firebaseapp.com",
-    projectId: "launchaxis",
-    storageBucket: "launchaxis.firebasestorage.app",
-    messagingSenderId: "986994724231",
-    appId: "1:986994724231:web:cf895161f7cf6c366a9722"
-  };
+      apiKey: "AIzaSyCgW3AW6wuebd8nde-Udenu-3X6hPbLkhY",
+      authDomain: "launchaxis.firebaseapp.com",
+      projectId: "launchaxis",
+      storageBucket: "launchaxis.firebasestorage.app",
+      messagingSenderId: "986994724231",
+      appId: "1:986994724231:web:cf895161f7cf6c366a9722"
+    };
 
-    // 2. INITIALIZE FIREBASE
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    
+    // Strong Password Validation
+    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-    // 3. EMAIL & PASSWORD SIGNUP LOGIC
-    document.getElementById("signupForm").addEventListener("submit", function (e) {
+    document.getElementById("signupForm").addEventListener("submit", async function (e) {
       e.preventDefault();
       
+      const fullName = document.getElementById("fullName").value.trim();
       const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+      const errorMsg = document.getElementById("passwordError");
+      const btn = document.getElementById("signupBtn");
 
-      createUserWithEmailAndPassword(auth, email, password)
-        .then(() => {
-          window.location.href = "index.html";
-        })
-        .catch(error => alert("Signup failed: " + error.message));
+      if (password !== confirmPassword) {
+        errorMsg.textContent = "Passwords do not match.";
+        errorMsg.style.display = "block";
+        return;
+      }
+      if (!strongPasswordRegex.test(password)) {
+        errorMsg.textContent = "Password does not meet the secure requirements above.";
+        errorMsg.style.display = "block";
+        return;
+      }
+      errorMsg.style.display = "none";
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Initializing...';
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(userCredential.user, { displayName: fullName });
+        
+        // --- SMART REDIRECT LOGIC ---
+        if (localStorage.getItem("pendingLaunchAxisData")) {
+            localStorage.setItem("launchAxisTempData", localStorage.getItem("pendingLaunchAxisData"));
+            localStorage.removeItem("pendingLaunchAxisData");
+            window.location.href = "loading.html";
+        } else {
+            window.location.href = "index.html"; 
+        }
+
+      } catch (error) {
+        alert("Startup Sequence Failed: " + error.message);
+        btn.disabled = false;
+        btn.innerHTML = 'Initialize Workspace <i class="fa-solid fa-arrow-right"></i>';
+      }
     });
 
-    // 4. GOOGLE SIGNUP LOGIC
     document.getElementById("googleSignIn").addEventListener("click", function () {
       const provider = new GoogleAuthProvider();
       signInWithPopup(auth, provider)
-        .then(() => window.location.href = "index.html")
+        .then(() => {
+            // --- SMART REDIRECT LOGIC FOR GOOGLE ---
+            if (localStorage.getItem("pendingLaunchAxisData")) {
+                localStorage.setItem("launchAxisTempData", localStorage.getItem("pendingLaunchAxisData"));
+                localStorage.removeItem("pendingLaunchAxisData");
+                window.location.href = "loading.html";
+            } else {
+                window.location.href = "index.html"; 
+            }
+        })
         .catch(error => alert("Google Sign-In failed: " + error.message));
     });
   </script>

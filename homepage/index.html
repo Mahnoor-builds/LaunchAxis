@@ -503,11 +503,12 @@
         }
     </script>
 
-    <!-- 4. FIREBASE SDKS FOR DYNAMIC AUTH STATE -->
+    <!-- FIREBASE AUTH LISTENER FOR HOMEPAGE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
+        // 1. YOUR FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyCgW3AW6wuebd8nde-Udenu-3X6hPbLkhY",
             authDomain: "launchaxis.firebaseapp.com",
@@ -521,12 +522,14 @@
         const auth = getAuth(app);
         const navContainer = document.getElementById("navAuthActions");
 
+        // 2. LISTEN FOR LOGIN STATE
         onAuthStateChanged(auth, (user) => {
             if (user) {
+                // Get the first letter of their email for their Avatar (e.g., Mahnoor -> M)
                 const email = user.email || "Founder";
                 const initial = email.charAt(0).toUpperCase();
 
-                // Render Logged-In Profile Hub Button
+                // Replace the Signup buttons with the Profile Hub button
                 navContainer.innerHTML = `
                     <div style="display: flex; align-items: center; gap: 12px;">
                         <a href="/admin" style="
@@ -542,7 +545,10 @@
                             font-size: 13px;
                             font-weight: 600;
                             transition: all 0.2s ease;
-                        ">
+                        "
+                        onmouseover="this.style.background='rgba(45, 212, 191, 0.2)'"
+                        onmouseout="this.style.background='rgba(45, 212, 191, 0.1)'"
+                        >
                             <div style="
                                 width: 28px; 
                                 height: 28px; 
@@ -562,7 +568,7 @@
                     </div>
                 `;
             } else {
-                // Render Default Guest State
+                // If they are logged out, show the default Guest buttons
                 navContainer.innerHTML = `
                     <a href="auth.html" class="login-link">Signup</a>
                     <a href="start-building.html" class="btn-pill-cta" style="text-decoration: none;">Start building &rarr;</a>
