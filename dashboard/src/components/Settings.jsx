@@ -13,8 +13,7 @@ import { sendPasswordResetEmail } from 'firebase/auth';
 import { db, auth } from '../firebaseConfig';
 
 const Settings = ({ branding, siteConfig, setSiteConfig }) => {
-  const isService = branding?.industry === 'service';
-
+  const isService = true;
   const [activeTab, setActiveTab] = useState('profile');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);

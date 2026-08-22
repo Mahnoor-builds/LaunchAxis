@@ -11,8 +11,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { db, auth } from '../firebaseConfig';
 
 const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
-  const isService = branding?.industry === 'service';
-
+  const isService = true;
   // Navigation Tabs
   const [activeTab, setActiveTab] = useState('hero_about'); 
   const [activeSubSection, setActiveSubSection] = useState('hero');
@@ -28,6 +27,8 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
 
   // --- CORE LINKS LOGIC ---
   let baseMenu = siteConfig.menuItems || [];
+  
+  // Tag core links
   baseMenu = baseMenu.map(item => {
     if (['#home', '#catalog', '#about', '#services', '#contact'].includes(item.link)) {
       return { ...item, isCore: true };
@@ -37,10 +38,22 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
 
   const hasHome = baseMenu.some(i => i.link === '#home');
   const hasCatalog = baseMenu.some(i => i.link === '#catalog');
+  const hasServices = baseMenu.some(i => i.link === '#services');
   const hasAbout = baseMenu.some(i => i.link === '#about');
+  const hasContact = baseMenu.some(i => i.link === '#contact');
   
   if (!hasHome) baseMenu.unshift({ id: 'core-home', label: 'Home', link: '#home', isCore: true });
-  if (!isService && !hasCatalog) baseMenu.splice(1, 0, { id: 'core-catalog', label: 'Catalog', link: '#catalog', isCore: true });
+  
+  // Dynamic switch based on industry
+  if (isService) {
+    if (!hasServices) baseMenu.splice(1, 0, { id: 'core-services', label: 'Services', link: '#services', isCore: true });
+    if (!hasContact) baseMenu.push({ id: 'core-contact', label: 'Contact', link: '#contact', isCore: true });
+    baseMenu = baseMenu.filter(item => item.link !== '#catalog'); // Remove catalog
+  } else {
+    if (!hasCatalog) baseMenu.splice(1, 0, { id: 'core-catalog', label: 'Catalog', link: '#catalog', isCore: true });
+    baseMenu = baseMenu.filter(item => item.link !== '#services' && item.link !== '#contact'); // Remove service links
+  }
+  
   if (!hasAbout) baseMenu.push({ id: 'core-about', label: 'About', link: '#about', isCore: true });
 
   const currentMenu = baseMenu;
@@ -410,10 +423,10 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
               <FontAwesomeIcon icon={faBars} style={{ color: 'var(--brand-color, #2dd4bf)' }} /> Header Menu Links
             </h3>
             <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '24px', marginTop: 0 }}>
-              Rename labels to match your brand. Core system routes are securely locked.
+              Rename labels to match your brand. Adding custom links is currently disabled to maintain layout stability.
             </p>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {currentMenu.map(item => (
                 <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '12px 16px', borderRadius: '8px', border: '1px solid #e2e8f0', gap: '12px' }}>
                   <input 
@@ -421,20 +434,9 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
                     onChange={(e) => updateMenuLabel(item.id, e.target.value)}
                     style={{ border: 'none', background: 'transparent', fontSize: '15px', color: '#334155', fontWeight: 'bold', outline: 'none', flex: 1 }}
                   />
-                  {item.isCore ? (
-                    <FontAwesomeIcon icon={faLock} style={{ color: '#cbd5e1', fontSize: '15px' }} title="System Core Link" />
-                  ) : (
-                    <FontAwesomeIcon icon={faTrash} style={{ cursor: 'pointer', color: '#ef4444', fontSize: '16px' }} onClick={() => removeMenuItem(item.id)} />
-                  )}
+                  <FontAwesomeIcon icon={faLock} style={{ color: '#cbd5e1', fontSize: '15px' }} title="System Core Link" />
                 </div>
               ))}
-            </div>
-
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <input placeholder="Add custom link label..." value={newLink.label} onChange={(e) => setNewLink({ ...newLink, label: e.target.value })} style={{...inputStyle, marginTop: 0}} />
-              <button onClick={addMenuItem} style={{ background: '#0f172a', color: '#fff', border: 'none', borderRadius: '8px', padding: '0 24px', cursor: 'pointer', fontWeight: 'bold' }}>
-                <FontAwesomeIcon icon={faPlus} /> Add
-              </button>
             </div>
           </div>
         )}

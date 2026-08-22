@@ -8,7 +8,7 @@ import {
 
 const Sidebar = ({ activeSection, setActiveSection, branding, features }) => {
   // Check if the account belongs to a Service/Freelancer business
-  const isService = branding?.industry === 'service';
+  const isService = true;
 
   // Base navigation list
   const navItems = [

@@ -16,12 +16,15 @@ import Products from './components/Products';
 import Orders from './components/Orders';
 import Settings from './components/Settings'; // <-- Imported the new Settings Component
 import ProfileHub from './components/ProfileHub';
+import Projects from './components/Projects';
+import Leads from './components/Leads';
 
 // SHOP COMPONENTS
 import ShopHome from './components/shop/ShopHome';
 import ShopCheckout from './components/shop/ShopCheckout';
 import ShopCartDrawer from './components/shop/ShopCartDrawer';
 import ShopCatalog from './components/shop/ShopCatalog'; 
+import ServiceTemplate from './components/templates/ServiceTemplate';
 import './App.css'; 
 
 // =========================================
@@ -69,6 +72,8 @@ const AdminPanel = ({
           {activeSection === 'branding' && features?.wantsBranding && <Branding branding={branding} setBranding={setBranding} />}
           {activeSection === 'website' && features?.wantsWebsite && <WebsiteEditor branding={branding} products={products} siteConfig={siteConfig} setSiteConfig={setSiteConfig} />}
           {activeSection === 'products' && <Products siteConfig={siteConfig} />}
+          {activeSection === 'projects' && <Projects />}
+          {activeSection === 'leads' && <Leads />}
           {activeSection === 'orders' && <Orders orders={orders} updateOrderStatus={updateOrderStatus} />}
           {activeSection === 'settings' && <Settings branding="{branding}" setSiteConfig="{setSiteConfig}" siteConfig="{siteConfig}"/>} 
         </main>
@@ -98,6 +103,7 @@ function App() {
   
   const [inventory, setInventory] = useState([]);
   const [activeSection, setActiveSection] = useState('dashboard');
+  const isService = true; // Temporary hardcode for testing
 
   // --- CART LOGIC ---
   const addToCart = (product) => {
@@ -315,10 +321,18 @@ function App() {
         } />
 
         <Route path="/" element={
-          <>
-            <ShopCartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} updateQty={updateQty} removeFromCart={removeFromCart} />
-            <ShopHome branding={branding} products={products} cartCount={cart.reduce((sum, item) => sum + item.qty, 0)} addToCart={addToCart} siteConfig={siteConfig} openCart={() => setIsCartOpen(true)} />
-          </>
+          isService ? (
+             <ServiceTemplate 
+                branding={branding} 
+                siteConfig={siteConfig} 
+                projects={[]} // We will connect the live DB projects here later
+             />
+          ) : (
+            <>
+              <ShopCartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} updateQty={updateQty} removeFromCart={removeFromCart} />
+              <ShopHome branding={branding} products={products} cartCount={cart.reduce((sum, item) => sum + item.qty, 0)} addToCart={addToCart} siteConfig={siteConfig} openCart={() => setIsCartOpen(true)} />
+            </>
+          )
         } />
       </Routes>
     </Router>
