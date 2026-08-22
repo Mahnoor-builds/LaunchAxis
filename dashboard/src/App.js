@@ -52,12 +52,12 @@ const AdminPanel = ({
             <p>System Overview for <span className="highlight-cyan">{branding.name}</span></p>
           </div>
           <div className="topbar-actions">
-            {/* Topbar Settings Icon links to Settings tab now too */}
+            {/* Topbar Settings Icon */}
             <button className="icon-btn" title="Settings" onClick={() => setActiveSection('settings')}>
               <FontAwesomeIcon icon={faCog} />
             </button>
-            {/* THE FIX: Added onClick to this button! */}
-            <button className="icon-btn profile-btn" title="Account Profile" onClick={() => setActiveSection('profile')}>
+            {/* Topbar Profile Hub Icon */}
+            <button className="icon-btn profile-btn" title="Account Profile" onClick={() => window.location.href = '/profile'}>
               <FontAwesomeIcon icon={faUserCircle} />
             </button>
           </div>
@@ -70,10 +70,7 @@ const AdminPanel = ({
           {activeSection === 'website' && features?.wantsWebsite && <WebsiteEditor branding={branding} products={products} siteConfig={siteConfig} setSiteConfig={setSiteConfig} />}
           {activeSection === 'products' && <Products siteConfig={siteConfig} />}
           {activeSection === 'orders' && <Orders orders={orders} updateOrderStatus={updateOrderStatus} />}
-          
-          {/* --> Renders the Settings component when selected <-- */}
-          {activeSection === 'settings' && <Settings />} 
-          {activeSection === 'profile' && <ProfileHub branding={branding} setActiveSection={setActiveSection} />}
+          {activeSection === 'settings' && <Settings branding="{branding}" setSiteConfig="{setSiteConfig}" siteConfig="{siteConfig}"/>} 
         </main>
       </div>
     </div>
@@ -304,6 +301,10 @@ function App() {
             features={userFeatures}
           />
         } />
+        
+        {/* --- NEW: STANDALONE PROFILE HUB ROUTE --- */}
+        <Route path="/profile" element={<ProfileHub branding={branding} />} />
+
         <Route path="/checkout" element={<ShopCheckout cart={cart} branding={branding} onPlaceOrder={placeOrder} siteConfig={siteConfig} />} />
         
         <Route path="/catalog" element={
