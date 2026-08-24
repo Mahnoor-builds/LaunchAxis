@@ -4,7 +4,7 @@ import {
   faUserShield, faBuilding, faEnvelopeOpenText, faScaleBalanced, 
   faCreditCard, faGears, faLock, faSave, faDownload, faToggleOn, 
   faToggleOff, faKey, faCircleExclamation, faWandMagicSparkles,
-  faGlobe
+  faGlobe, faShieldAlt
 } from '@fortawesome/free-solid-svg-icons';
 
 // --- FIREBASE SECURITY IMPORTS ---
@@ -13,7 +13,7 @@ import { sendPasswordResetEmail } from 'firebase/auth';
 import { db, auth } from '../firebaseConfig';
 
 const Settings = ({ branding, siteConfig, setSiteConfig }) => {
-  const isService = true;
+  const isService = true; // Temporary testing toggle
   const [activeTab, setActiveTab] = useState('profile');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -25,7 +25,7 @@ const Settings = ({ branding, siteConfig, setSiteConfig }) => {
     businessProfile: { registeredName: '', ntnNumber: '', billingPhone: '', billingEmail: '', physicalAddress: '', statementFooterNote: '' },
     notifications: { 
       sendOrderConfirmation: true, sendDispatchTracking: true, defaultCourier: 'Trax Logistics',
-      forwardLeadsToEmail: true, leadNotificationEmail: '' // For Services
+      forwardLeadsToEmail: true, leadNotificationEmail: '' 
     },
     policies: { privacyPolicy: '', termsOfService: '', refundPolicy: '', shippingPolicy: '', serviceAgreement: '' },
     operations: { maintenanceMode: false, currency: 'PKR' }
@@ -83,7 +83,6 @@ const Settings = ({ branding, siteConfig, setSiteConfig }) => {
       if (!user) throw new Error("Unauthorized: No active session.");
       
       const userRef = doc(db, "users", user.uid);
-      // Save both Settings AND SiteConfig (for the publish toggle)
       await setDoc(userRef, { settings, siteConfig }, { merge: true });
       
       alert("✨ System configuration secured and updated successfully.");
@@ -174,13 +173,13 @@ const Settings = ({ branding, siteConfig, setSiteConfig }) => {
         {/* RIGHT CONTENT AREA */}
         <div style={{ flex: 1, maxWidth: '800px', paddingBottom: '40px' }}>
           
-          {/* 1. PROFILE SECUIRTY */}
+          {/* 1. PROFILE SECURITY */}
           {activeTab === 'profile' && (
             <div style={cardStyle} className="fade-in">
               <h3 style={{ margin: '0 0 20px', color: '#0f172a', fontSize: '18px' }}>Executive Profile</h3>
               
               <label style={{...labelStyle, marginTop: 0}}>Owner Full Name</label>
-              <input type="text" value={settings.profile.fullName} onChange={(e) => handleNestedChange('profile', 'fullName', e.target.value)} style={inputStyle} placeholder="Mahnoor Naveed" />
+              <input type="text" value={settings.profile.fullName} onChange={(e) => handleNestedChange('profile', 'fullName', e.target.value)} style={inputStyle} placeholder="Full Name" />
               
               <label style={labelStyle}>Primary Identity (Read-Only)</label>
               <div style={{ display: 'flex', gap: '12px', marginTop: '6px' }}>
@@ -238,7 +237,6 @@ const Settings = ({ branding, siteConfig, setSiteConfig }) => {
               <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '24px' }}>Manage how the system communicates with you and your clients.</p>
 
               {isService ? (
-                // SERVICE EMAIL SETTINGS
                 <>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
                     <div>
@@ -256,7 +254,6 @@ const Settings = ({ branding, siteConfig, setSiteConfig }) => {
                   )}
                 </>
               ) : (
-                // E-COMMERCE EMAIL SETTINGS
                 <>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '12px' }}>
                     <div>
@@ -287,7 +284,7 @@ const Settings = ({ branding, siteConfig, setSiteConfig }) => {
             </div>
           )}
 
-          {/* 4. LEGAL & POLICIES (DYNAMIC SPLIT) */}
+          {/* 4. LEGAL & POLICIES */}
           {activeTab === 'policies' && (
             <div style={cardStyle} className="fade-in">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
@@ -317,7 +314,7 @@ const Settings = ({ branding, siteConfig, setSiteConfig }) => {
             </div>
           )}
 
-          {/* 5. OPERATIONS & PUBLISHING */}
+          {/* 5. OPERATIONS & PUBLISHING (WITH LEGAL WARNING) */}
           {activeTab === 'operations' && (
             <div className="fade-in">
               
@@ -338,6 +335,17 @@ const Settings = ({ branding, siteConfig, setSiteConfig }) => {
                     style={{ cursor: 'pointer', color: siteConfig.isPublished ? '#10b981' : '#cbd5e1' }} 
                     onClick={() => handleSiteConfigToggle('isPublished')} 
                   />
+                </div>
+
+                {/* --- NEW LEGAL COMPLIANCE WARNING --- */}
+                <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', padding: '16px', borderRadius: '8px', display: 'flex', gap: '12px', marginTop: '16px' }}>
+                  <FontAwesomeIcon icon={faShieldAlt} style={{ color: '#dc2626', marginTop: '4px' }} />
+                  <div>
+                    <div style={{ fontWeight: '800', color: '#991b1b', fontSize: '13px' }}>Mandatory Legal Compliance</div>
+                    <div style={{ fontSize: '12px', color: '#7f1d1d', marginTop: '4px', lineHeight: '1.5' }}>
+                      Before publishing, you must draft your <strong>Privacy Policy</strong> and <strong>Terms of Service</strong> in the Legal tab. LaunchAxis is not liable for illegal operations, missing policies, or platform misuse.
+                    </div>
+                  </div>
                 </div>
               </div>
 

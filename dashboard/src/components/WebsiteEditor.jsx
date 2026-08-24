@@ -3,20 +3,20 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faGlobe, faToggleOn, faToggleOff, faTrash, faPlus,
   faEnvelope, faBars, faPalette, faFont, faHeading, faMagic, faTags, faLock, faUpload,
-  faSave, faLink, faExternalLinkAlt, faExclamationTriangle, faShareAlt, faTruck, faImage, faUsers, faCheckCircle
+  faSave, faLink, faExternalLinkAlt, faShareAlt, faTruck, faImage, faUsers, faCheckCircle, faBriefcase, faScaleBalanced
 } from '@fortawesome/free-solid-svg-icons';
 
-// --- FIREBASE IMPORTS ---
 import { doc, setDoc } from 'firebase/firestore';
 import { db, auth } from '../firebaseConfig';
 
 const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
-  const isService = true;
+  // TEMPORARY FAKE SCENARIO FOR TESTING SERVICE UI
+  const isService = true; // Change back to: branding?.industry === 'service' when done testing
+
   // Navigation Tabs
   const [activeTab, setActiveTab] = useState('hero_about'); 
   const [activeSubSection, setActiveSubSection] = useState('hero');
   
-  const [newLink, setNewLink] = useState({ label: '', link: '' });
   const [newCategory, setNewCategory] = useState('');
   const [newTeamMember, setNewTeamMember] = useState({ name: '', role: '', bio: '' });
   const [newStrength, setNewStrength] = useState({ title: '', desc: '', icon: 'fa-check' });
@@ -25,10 +25,8 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [isSearchingImage, setIsSearchingImage] = useState(false);
 
-  // --- CORE LINKS LOGIC ---
+  // --- CORE LINKS LOGIC (Locked Down for Stability) ---
   let baseMenu = siteConfig.menuItems || [];
-  
-  // Tag core links
   baseMenu = baseMenu.map(item => {
     if (['#home', '#catalog', '#about', '#services', '#contact'].includes(item.link)) {
       return { ...item, isCore: true };
@@ -44,14 +42,13 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
   
   if (!hasHome) baseMenu.unshift({ id: 'core-home', label: 'Home', link: '#home', isCore: true });
   
-  // Dynamic switch based on industry
   if (isService) {
     if (!hasServices) baseMenu.splice(1, 0, { id: 'core-services', label: 'Services', link: '#services', isCore: true });
     if (!hasContact) baseMenu.push({ id: 'core-contact', label: 'Contact', link: '#contact', isCore: true });
-    baseMenu = baseMenu.filter(item => item.link !== '#catalog'); // Remove catalog
+    baseMenu = baseMenu.filter(item => item.link !== '#catalog');
   } else {
     if (!hasCatalog) baseMenu.splice(1, 0, { id: 'core-catalog', label: 'Catalog', link: '#catalog', isCore: true });
-    baseMenu = baseMenu.filter(item => item.link !== '#services' && item.link !== '#contact'); // Remove service links
+    baseMenu = baseMenu.filter(item => item.link !== '#services' && item.link !== '#contact');
   }
   
   if (!hasAbout) baseMenu.push({ id: 'core-about', label: 'About', link: '#about', isCore: true });
@@ -60,7 +57,7 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
 
   useEffect(() => {
     setSiteConfig(prev => ({ ...prev, menuItems: currentMenu }));
-  }, []);
+  }, []); // Run once on mount
 
   const sanitizeInput = (text) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#x27;");
 
@@ -130,7 +127,6 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
     }
   };
 
-  // --- VIEW LIVE STORE LOGIC (Requires 'isPublished' to be true from Settings) ---
   const currentSubdomain = siteConfig.subdomain || 'yourstore';
   const liveUrl = `https://${currentSubdomain}.launchaxis.com`;
 
@@ -147,15 +143,27 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
     setSiteConfig({ ...siteConfig, menuItems: updatedMenu });
   };
 
-  const addMenuItem = () => {
-    if (!newLink.label.trim()) return;
-    const item = { id: Date.now(), label: sanitizeInput(newLink.label.trim()).substring(0, 20), link: sanitizeInput(newLink.link.trim() || '#').substring(0, 100), isCore: false };
-    setSiteConfig({ ...siteConfig, menuItems: [...currentMenu, item] });
-    setNewLink({ label: '', link: '' });
+  // --- SERVICE CATEGORIES HANDLERS ---
+  const addServiceCategory = () => {
+    const title = document.getElementById('srv-title').value;
+    const desc = document.getElementById('srv-desc').value;
+    if (title && desc) {
+      setSiteConfig({
+        ...siteConfig, 
+        services: [...(siteConfig.services || []), { title: sanitizeInput(title), desc: sanitizeInput(desc), icon: 'fa-check-circle' }]
+      });
+      document.getElementById('srv-title').value = '';
+      document.getElementById('srv-desc').value = '';
+    } else {
+      alert("Please provide both a title and a description.");
+    }
   };
 
-  const removeMenuItem = (id) => setSiteConfig({ ...siteConfig, menuItems: currentMenu.filter(item => item.id !== id || item.isCore) });
+  const removeServiceCategory = (index) => {
+    setSiteConfig({...siteConfig, services: (siteConfig.services || []).filter((_, i) => i !== index)});
+  };
 
+  // --- ARRAY HANDLERS ---
   const addCategory = () => {
     if (!newCategory.trim()) return;
     const currentCategories = siteConfig.categories || [];
@@ -163,7 +171,6 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
     setSiteConfig({ ...siteConfig, categories: [...currentCategories, { id: Date.now(), label: sanitizeInput(newCategory.trim()).substring(0, 20), image: '' }] });
     setNewCategory('');
   };
-
   const removeCategory = (id) => setSiteConfig({ ...siteConfig, categories: (siteConfig.categories || []).filter(cat => cat.id !== id) });
 
   const addTeamMember = () => {
@@ -207,6 +214,7 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
     { id: 'hero_about', label: 'Hero & Bio', icon: faPalette },
     { id: 'navbar', label: 'Navbar', icon: faBars },
     ...(isService ? [
+      { id: 'services', label: 'Service Types', icon: faBriefcase },
       { id: 'team', label: 'Leadership', icon: faUsers },
       { id: 'strengths', label: 'Why Choose Us', icon: faCheckCircle }
     ] : [
@@ -219,7 +227,7 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
   return (
     <div style={{ height: 'calc(100vh - 40px)', display: 'flex', flexDirection: 'column', padding: '0 20px 20px', boxSizing: 'border-box', overflowY: 'auto' }}>
       
-      {/* HEADER WITH ACTION BUTTONS (Centered Max Width) */}
+      {/* HEADER WITH ACTION BUTTONS */}
       <div style={{ maxWidth: '800px', width: '100%', margin: '0 auto', padding: '20px 0', flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
         <div>
           <h1 style={{ fontSize: '26px', margin: 0, display: 'flex', alignItems: 'center', gap: '10px', color: '#0f172a', fontWeight: '800' }}>
@@ -423,7 +431,7 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
               <FontAwesomeIcon icon={faBars} style={{ color: 'var(--brand-color, #2dd4bf)' }} /> Header Menu Links
             </h3>
             <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '24px', marginTop: 0 }}>
-              Rename labels to match your brand. Adding custom links is currently disabled to maintain layout stability.
+              Rename labels to match your brand. Layout structure is locked to ensure visual stability.
             </p>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -441,7 +449,34 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
           </div>
         )}
 
-        {/* TAB 3 (SERVICE): LEADERSHIP TEAM CONFIG */}
+        {/* TAB 3 (SERVICE): SERVICE CATEGORIES */}
+        {isService && activeTab === 'services' && (
+          <div style={cardStyle}>
+            <h3 style={{ fontSize: '18px', margin: '0 0 14px', color: '#0f172a' }}>Service Categories</h3>
+            <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '24px' }}>Define the core services you offer. You will assign projects to these categories in your dashboard.</p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+              {(siteConfig.services || []).map((srv, idx) => (
+                <div key={idx} style={{ padding: '16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <strong style={{ display: 'block', color: '#0f172a', fontSize: '15px' }}>{srv.title}</strong>
+                    <span style={{ fontSize: '13px', color: '#64748b' }}>{srv.desc}</span>
+                  </div>
+                  <FontAwesomeIcon icon={faTrash} style={{ cursor: 'pointer', color: '#ef4444', fontSize: '18px' }} onClick={() => removeServiceCategory(idx)} />
+                </div>
+              ))}
+            </div>
+
+            <div style={{ background: '#f1f5f9', padding: '20px', borderRadius: '12px' }}>
+              <h4 style={{ margin: '0 0 12px', fontSize: '14px', color: '#334155' }}>Add New Service</h4>
+              <input placeholder="Service Title (e.g., Visa Consulting)" id="srv-title" style={{...inputStyle, marginTop: 0, marginBottom: '8px'}} />
+              <textarea placeholder="Short Description" rows="2" id="srv-desc" style={{...inputStyle, marginTop: 0, resize: 'none'}} />
+              <button onClick={addServiceCategory} style={{ background: '#0f172a', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px', fontWeight: 'bold', cursor: 'pointer', marginTop: '12px', width: '100%' }}>Add Category</button>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4 (SERVICE): LEADERSHIP TEAM CONFIG */}
         {isService && activeTab === 'team' && (
           <div style={cardStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
@@ -478,7 +513,7 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
           </div>
         )}
 
-        {/* TAB 4 (SERVICE): WHY CHOOSE US (MAX 6) */}
+        {/* TAB 5 (SERVICE): WHY CHOOSE US (MAX 6) */}
         {isService && activeTab === 'strengths' && (
           <div style={cardStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
@@ -514,7 +549,7 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
           </div>
         )}
 
-        {/* TAB 5 (ECOMMERCE): CATEGORIES */}
+        {/* TAB 6 (ECOMMERCE): CATEGORIES */}
         {!isService && activeTab === 'categories' && (
           <div style={cardStyle}>
             <h3 style={{ fontSize: '18px', margin: '0 0 8px', display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a' }}>
@@ -568,10 +603,18 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
           </div>
         )}
 
-        {/* TAB 6: FOOTER & SOCIALS */}
+        {/* TAB 7: FOOTER & SOCIALS (POLICIES REMOVED) */}
         {activeTab === 'footer' && (
           <div style={cardStyle}>
             <h3 style={{ fontSize: '18px', margin: '0 0 16px', color: '#0f172a' }}>Social Media & Links</h3>
+            
+            <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', padding: '12px 16px', borderRadius: '8px', marginBottom: '20px', display: 'flex', gap: '10px' }}>
+              <FontAwesomeIcon icon={faScaleBalanced} style={{ color: '#dc2626', marginTop: '4px' }} />
+              <div>
+                <strong style={{ fontSize: '13px', color: '#991b1b', display: 'block' }}>Legal Policies Relocated</strong>
+                <span style={{ fontSize: '12px', color: '#7f1d1d' }}>Privacy Policy and Terms of Service are now strictly managed from your main <strong>Settings</strong> panel for legal compliance. They will auto-populate in your footer once configured.</span>
+              </div>
+            </div>
             
             <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#475569', marginBottom: '8px' }}>Instagram URL</label>
             <input type="text" value={siteConfig.socials?.instagram || ''} onChange={(e) => handleTextChange('socials', 'instagram', e.target.value, 150)} placeholder="https://instagram.com/..." style={{ ...inputStyle, marginTop: 0, marginBottom: '20px' }} />
@@ -581,37 +624,6 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
 
             <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#475569', marginBottom: '8px' }}>LinkedIn URL</label>
             <input type="text" value={siteConfig.socials?.linkedin || ''} onChange={(e) => handleTextChange('socials', 'linkedin', e.target.value, 150)} placeholder="https://linkedin.com/..." style={{ ...inputStyle, marginTop: 0 }} />
-          </div>
-        )}
-
-        {/* TAB 7 (ECOMMERCE): DELIVERY & ANNOUNCEMENT */}
-        {!isService && activeTab === 'delivery' && (
-          <div>
-            <div style={cardStyle}>
-              <h3 style={{ fontSize: '18px', margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a' }}>
-                <FontAwesomeIcon icon={faTruck} style={{ color: 'var(--brand-color, #2dd4bf)' }} /> Cash on Delivery & Free Shipping
-              </h3>
-              
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#475569', marginBottom: '8px' }}>Standard COD Delivery Fee (PKR)</label>
-              <input type="number" value={siteConfig.codFee || 250} onChange={(e) => handleTextChange('global', 'codFee', Number(e.target.value), 10)} style={{ ...inputStyle, marginTop: 0, marginBottom: '20px' }} />
-
-              <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#475569', marginBottom: '8px' }}>Free Delivery Threshold (PKR)</label>
-              <input type="number" value={siteConfig.freeShippingThreshold || 5000} onChange={(e) => handleTextChange('global', 'freeShippingThreshold', Number(e.target.value), 10)} style={{ ...inputStyle, marginTop: 0 }} />
-            </div>
-
-            <div style={cardStyle}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ fontSize: '18px', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a' }}>
-                  <FontAwesomeIcon icon={faEnvelope} style={{ color: 'var(--brand-color, #2dd4bf)' }} /> Announcement Bar
-                </h3>
-                <div onClick={() => handleToggle('showAnnouncement')} style={{ cursor: 'pointer', color: siteConfig.showAnnouncement ? '#10b981' : '#cbd5e1' }}>
-                  <FontAwesomeIcon icon={siteConfig.showAnnouncement ? faToggleOn : faToggleOff} size="2x" />
-                </div>
-              </div>
-              {siteConfig.showAnnouncement && (
-                <input type="text" placeholder="e.g. Special offer available this month!" value={siteConfig.announcementText || ''} onChange={(e) => handleTextChange('global', 'announcementText', e.target.value, 120)} style={{...inputStyle, marginTop: '20px'}} />
-              )}
-            </div>
           </div>
         )}
 
