@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { doc, getDoc, updateDoc, setDoc, collection, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, setDoc, collection, onSnapshot, addDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from './firebaseConfig';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -14,7 +14,7 @@ import Branding from './components/Branding';
 import WebsiteEditor from './components/WebsiteEditor';
 import Products from './components/Products';
 import Orders from './components/Orders';
-import Settings from './components/Settings'; // <-- Imported the new Settings Component
+import Settings from './components/Settings'; 
 import ProfileHub from './components/ProfileHub';
 import Projects from './components/Projects';
 import Leads from './components/Leads';
@@ -55,11 +55,9 @@ const AdminPanel = ({
             <p>System Overview for <span className="highlight-cyan">{branding.name}</span></p>
           </div>
           <div className="topbar-actions">
-            {/* Topbar Settings Icon */}
             <button className="icon-btn" title="Settings" onClick={() => setActiveSection('settings')}>
               <FontAwesomeIcon icon={faCog} />
             </button>
-            {/* Topbar Profile Hub Icon */}
             <button className="icon-btn profile-btn" title="Account Profile" onClick={() => window.location.href = '/profile'}>
               <FontAwesomeIcon icon={faUserCircle} />
             </button>
@@ -75,7 +73,7 @@ const AdminPanel = ({
           {activeSection === 'projects' && <Projects />}
           {activeSection === 'leads' && <Leads />}
           {activeSection === 'orders' && <Orders orders={orders} updateOrderStatus={updateOrderStatus} />}
-          {activeSection === 'settings' && <Settings branding="{branding}" setSiteConfig="{setSiteConfig}" siteConfig="{siteConfig}"/>} 
+          {activeSection === 'settings' && <Settings branding={branding} setSiteConfig={setSiteConfig} siteConfig={siteConfig}/>} 
         </main>
       </div>
     </div>
@@ -94,6 +92,7 @@ function App() {
   const [siteConfig, setSiteConfig] = useState({ themeColor: '#2dd4bf', showHero: true, notificationEmail: 'orders@launchaxis.com', supportEmail: 'help@launchaxis.com', socials: { facebook: '', instagram: '' }, menuItems: [{ id: 1, label: 'Home', link: '#home' }, { id: 2, label: 'Catalog', link: '#catalog' }, { id: 3, label: 'About', link: '#about' }] });
   
   const [products, setProducts] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false); 
   const [orders, setOrders] = useState([]);
@@ -133,6 +132,7 @@ function App() {
   useEffect(() => {
     let unsubscribeProducts = null;
     let unsubscribeOrders = null;
+    let unsubscribeProjects = null;
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
       try {
@@ -188,6 +188,16 @@ function App() {
             setOrders(liveOrders);
         });
 
+        // --- 3. LIVE PROJECTS SUBCOLLECTION LISTENER ---
+        const projectsRef = collection(db, `users/${targetId}/projects`);
+        unsubscribeProjects = onSnapshot(projectsRef, (snapshot) => {
+            const liveProjects = [];
+            snapshot.forEach((docSnap) => {
+                liveProjects.push({ id: docSnap.id, ...docSnap.data() });
+            });
+            setProjects(liveProjects);
+        });
+
       } catch (error) {
           console.error("Firebase Sync Error:", error);
       } finally {
@@ -199,6 +209,7 @@ function App() {
         unsubscribeAuth();
         if (unsubscribeProducts) unsubscribeProducts();
         if (unsubscribeOrders) unsubscribeOrders();
+        if (unsubscribeProjects) unsubscribeProjects();
     };
   }, []);
 
@@ -256,6 +267,24 @@ function App() {
     syncToFirebase("inventory", updatedList);
   };
 
+  // --- LEAD SUBMISSION LOGIC ---
+  const handleSubmitLead = async (leadData) => {
+    try {
+      let targetId = "ceo@ecosole.store"; 
+      if (auth.currentUser) targetId = auth.currentUser.uid;
+
+      await addDoc(collection(db, `users/${targetId}/leads`), {
+        ...leadData,
+        status: 'New',
+        timestamp: Date.now()
+      });
+      alert("Thank you! Your inquiry has been submitted.");
+    } catch (error) {
+      console.error("Error saving lead:", error);
+      alert("Failed to submit inquiry.");
+    }
+  };
+
   // --- UPDATED PLACE ORDER LOGIC ---
   const placeOrder = async (orderDetails) => {
     const orderId = `ord_${Math.floor(Math.random() * 100000)}`;
@@ -308,7 +337,6 @@ function App() {
           />
         } />
         
-        {/* --- NEW: STANDALONE PROFILE HUB ROUTE --- */}
         <Route path="/profile" element={<ProfileHub branding={branding} />} />
 
         <Route path="/checkout" element={<ShopCheckout cart={cart} branding={branding} onPlaceOrder={placeOrder} siteConfig={siteConfig} />} />
@@ -325,7 +353,8 @@ function App() {
              <ServiceTemplate 
                 branding={branding} 
                 siteConfig={siteConfig} 
-                projects={[]} // We will connect the live DB projects here later
+                projects={projects} 
+                onSubmitLead={handleSubmitLead} 
              />
           ) : (
             <>

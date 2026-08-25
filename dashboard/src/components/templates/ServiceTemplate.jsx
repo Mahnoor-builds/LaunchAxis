@@ -1,15 +1,16 @@
 import React, { useState, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPhone, faEnvelope, faMapMarkerAlt, faTimes, faArrowRight, faCheckCircle, faImages, faImage } from '@fortawesome/free-solid-svg-icons';
+import { faPhone, faEnvelope, faMapMarkerAlt, faTimes, faArrowRight, faCheckCircle, faImages, faImage, faBars } from '@fortawesome/free-solid-svg-icons';
 import { faFacebookF, faInstagram, faLinkedinIn } from '@fortawesome/free-brands-svg-icons';
 
 const ServiceTemplate = ({ branding, siteConfig, projects = [], onSubmitLead }) => {
   const contactRef = useRef(null);
   
-  // States for Lead Form, Legal Modals, and Projects Viewer
+  // States for Lead Form, Legal Modals, Projects Viewer, and Mobile Nav
   const [leadForm, setLeadForm] = useState({ name: '', phone: '', email: '', details: '', service: '' });
   const [activePolicy, setActivePolicy] = useState(null); 
   const [viewingProjects, setViewingProjects] = useState(null); 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Pre-fill Unsplash Images if none provided
   const heroImg = siteConfig?.heroImage || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1920&q=80';
@@ -21,8 +22,16 @@ const ServiceTemplate = ({ branding, siteConfig, projects = [], onSubmitLead }) 
   const heroTitle = siteConfig?.heroTitle || `Premium Solutions by ${branding?.name || 'Us'}`;
   const heroSub = siteConfig?.heroSubtitle || "Delivering reliable expertise and seamless project execution.";
   const aboutText = siteConfig?.aboutText || "We deliver high-performance solutions optimized for client success.";
-  const menuItems = siteConfig?.menuItems || [{ label: 'Home', link: '#home' }, { label: 'Services', link: '#services' }, { label: 'About', link: '#about' }, { label: 'Contact', link: '#contact' }];
   const team = siteConfig?.teamMembers || [];
+  
+  // Smart Menu Override: Forces "Catalog" to become "Services" for safety
+  const rawMenuItems = siteConfig?.menuItems || [{ label: 'Home', link: '#home' }, { label: 'Services', link: '#services' }, { label: 'About', link: '#about' }, { label: 'Contact', link: '#contact' }];
+  const menuItems = rawMenuItems.map(item => {
+    if (item.link === '#catalog' || item.label.toLowerCase() === 'catalog') {
+      return { ...item, label: 'Services', link: '#services' };
+    }
+    return item;
+  });
   
   // Map to Service Categories (Fallback if empty)
   const services = siteConfig?.services?.length > 0 ? siteConfig.services : [
@@ -51,7 +60,7 @@ const ServiceTemplate = ({ branding, siteConfig, projects = [], onSubmitLead }) 
   return (
     <div className="service-template-wrapper" style={{ '--brand-color': themeColor }}>
       
-      {/* SCOPED CSS */}
+      {/* SCOPED CSS INCLUDING MOBILE RESPONSIVENESS */}
       <style>{`
         .service-template-wrapper { font-family: 'Inter', sans-serif; color: #334155; background: #fff; line-height: 1.6; overflow-x: hidden; }
         .st-container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
@@ -62,13 +71,16 @@ const ServiceTemplate = ({ branding, siteConfig, projects = [], onSubmitLead }) 
         
         /* Centered Navbar */
         .st-navbar { position: sticky; top: 0; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 100; padding: 16px 0; }
-        .st-nav-content { display: flex; align-items: center; justify-content: space-between; }
+        .st-nav-content { display: flex; align-items: center; justify-content: space-between; position: relative; }
         .st-logo { font-size: 24px; font-weight: 900; color: #0f172a; text-decoration: none; flex: 1; }
-        .st-nav-links { display: flex; gap: 30px; flex: 2; justify-content: center; }
+        .st-nav-links { display: flex; gap: 30px; flex: 2; justify-content: center; transition: all 0.3s ease; }
         .st-nav-links a { text-decoration: none; color: #475569; font-weight: 600; font-size: 15px; transition: color 0.2s; }
         .st-nav-links a:hover { color: var(--brand-color); }
         .st-nav-spacer { flex: 1; }
         
+        /* Mobile Menu Button */
+        .st-mobile-btn { display: none; background: none; border: none; font-size: 24px; color: #0f172a; cursor: pointer; padding: 5px; }
+
         /* Hero */
         .st-hero { min-height: 80vh; display: flex; align-items: center; text-align: center; color: #fff; background-size: cover; background-position: center; position: relative; }
         .st-hero-overlay { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(15,23,42,0.6) 100%); }
@@ -104,15 +116,40 @@ const ServiceTemplate = ({ branding, siteConfig, projects = [], onSubmitLead }) 
         .st-social-btn:hover { background: var(--brand-color); }
         .st-footer-link { color: #94a3b8; text-decoration: none; display: block; margin-bottom: 12px; transition: color 0.2s; cursor: pointer; background: none; border: none; padding: 0; font-size: 15px; text-align: left; }
         .st-footer-link:hover { color: var(--brand-color); }
+
+        /* --- MOBILE MEDIA QUERIES --- */
+        @media (max-width: 768px) {
+          .st-mobile-btn { display: block; }
+          .st-nav-spacer { display: none; }
+          .st-nav-links {
+            position: absolute; top: 100%; left: 0; right: 0;
+            background: #fff; flex-direction: column; gap: 0;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            max-height: 0; overflow: hidden; opacity: 0;
+          }
+          .st-nav-links.open { max-height: 400px; opacity: 1; padding: 10px 0; border-top: 1px solid #e2e8f0; }
+          .st-nav-links a { padding: 16px 20px; border-bottom: 1px solid #f1f5f9; display: block; text-align: center; }
+          .st-nav-links a:last-child { border-bottom: none; }
+          
+          .st-hero h1 { font-size: 38px; }
+          .st-hero p { font-size: 16px; }
+          .st-section { padding: 60px 0; }
+          .st-title { font-size: 30px; }
+        }
       `}</style>
 
       {/* 1. NAVBAR */}
       <nav className="st-navbar">
         <div className="st-container st-nav-content">
           <a href="#home" className="st-logo">{branding?.name || 'BrandName'}</a>
-          <div className="st-nav-links">
+          
+          <button className="st-mobile-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            <FontAwesomeIcon icon={isMobileMenuOpen ? faTimes : faBars} />
+          </button>
+
+          <div className={`st-nav-links ${isMobileMenuOpen ? 'open' : ''}`}>
             {menuItems.map((item, idx) => (
-              <a key={idx} href={item.link}>{item.label}</a>
+              <a key={idx} href={item.link} onClick={() => setIsMobileMenuOpen(false)}>{item.label}</a>
             ))}
           </div>
           <div className="st-nav-spacer"></div>
