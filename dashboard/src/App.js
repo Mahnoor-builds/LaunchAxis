@@ -4,8 +4,7 @@ import { doc, getDoc, updateDoc, setDoc, collection, onSnapshot, addDoc } from '
 import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from './firebaseConfig';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCog, faUserCircle } from '@fortawesome/free-solid-svg-icons';
-
+import { faCog, faUserCircle, faBars } from '@fortawesome/free-solid-svg-icons'; // Ensure faBars is imported at the top!
 // ADMIN COMPONENTS
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -41,19 +40,32 @@ const AdminPanel = ({
   siteConfig, setSiteConfig,
   features 
 }) => {
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
   return (
     <div className="app-container split-theme" style={{ '--brand-color': siteConfig.themeColor }}>
       <Sidebar 
-        activeSection={activeSection} setActiveSection={setActiveSection}
-        branding={branding} features={features} 
+        activeSection={activeSection} 
+        setActiveSection={setActiveSection}
+        branding={branding} 
+        features={features} 
+        isMobileOpen={isMobileOpen}
+        setIsMobileOpen={setIsMobileOpen}
       />
       
       <div className="admin-main-wrapper">
         <header className="admin-topbar">
-          <div className="topbar-greeting">
-            <h2>Welcome back, CEO</h2>
-            <p>System Overview for <span className="highlight-cyan">{branding.name}</span></p>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            {/* Hamburger Button for Mobile */}
+            <button className="mobile-menu-btn" onClick={() => setIsMobileOpen(true)}>
+              <FontAwesomeIcon icon={faBars} />
+            </button>
+            <div className="topbar-greeting">
+              <h2>Welcome back, CEO</h2>
+              <p>System Overview for <span className="highlight-cyan">{branding?.name}</span></p>
+            </div>
           </div>
+          
           <div className="topbar-actions">
             <button className="icon-btn" title="Settings" onClick={() => setActiveSection('settings')}>
               <FontAwesomeIcon icon={faCog} />
@@ -76,6 +88,8 @@ const AdminPanel = ({
           {activeSection === 'settings' && <Settings branding={branding} setSiteConfig={setSiteConfig} siteConfig={siteConfig}/>} 
         </main>
       </div>
+      
+      {/* <AxisChatbot branding={branding} /> */} 
     </div>
   );
 };

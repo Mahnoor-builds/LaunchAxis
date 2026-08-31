@@ -19,6 +19,13 @@ body {
   background-color: var(--bg-canvas);
 }
 
+/* Enable native-feeling momentum scrolling on mobile devices */
+.main-content {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+
 /* ==========================================================================
    2. DASHBOARD SHELL LAYOUT
    ========================================================================== */
@@ -188,7 +195,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ==========================================================================
-   6. DASHBOARD RESPONSIVE BREAKPOINTS
+   6. DASHBOARD RESPONSIVE BREAKPOINTS (Mobile Drawer)
    ========================================================================== */
 @media (max-width: 1024px) {
   .sidebar { width: 80px; padding: 24px 0; }
@@ -197,21 +204,63 @@ input:focus, select:focus, textarea:focus {
   .grid-4 { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* Hide hamburger button on desktop */
+.mobile-menu-btn { display: none; }
+.sidebar-overlay { display: none; }
+
 @media (max-width: 768px) {
   .app-container.split-theme { flex-direction: column; }
-  .sidebar {
-    width: 100%; height: auto; flex-direction: row;
-    justify-content: space-between; align-items: center;
-    padding: 12px 24px; border-right: none;
+  
+  /* Show hamburger button on mobile */
+  .mobile-menu-btn {
+    display: flex;
+    background: none;
+    border: none;
+    color: var(--text-dark);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 8px;
+    margin-right: 12px;
   }
-  .brand { padding: 0 !important; margin: 0; }
-  .brand span { display: none; }
-  .sidebar nav { display: flex; gap: 8px; }
-  .nav-item { padding: 8px 12px; border-left: none; border-bottom: 3px solid transparent; border-radius: 4px; }
-  .nav-item.active { border-left: none; border-bottom: 3px solid var(--neon-cyan); }
-  .admin-topbar { padding: 0 20px; height: 64px; }
+
+  /* Darken background when drawer is open */
+  .sidebar-overlay.open {
+    display: block;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 998;
+  }
+
+  /* The Slide-Out Drawer */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh !important;
+    width: 280px !important;
+    z-index: 999;
+    flex-direction: column;
+    padding: 24px 0;
+    border-right: none;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 4px 0 25px rgba(0,0,0,0.5);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .brand { justify-content: flex-start; padding: 0 24px 32px !important; }
+  .brand span, .nav-item { font-size: 15px; justify-content: flex-start; }
+  .nav-item { padding: 14px 24px; border-radius: 0; border-left: 3px solid transparent; }
+  .nav-item.active { border-left: 3px solid var(--neon-cyan); border-bottom: none; }
+  
+  .admin-topbar { padding: 0 16px; height: 64px; justify-content: space-between; }
   .topbar-greeting p { display: none; }
-  .main-content { padding: 20px; }
+  .main-content { padding: 16px; }
   .grid-4, .grid-2 { grid-template-columns: 1fr; }
 }
 

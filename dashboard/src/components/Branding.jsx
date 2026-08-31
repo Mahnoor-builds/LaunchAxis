@@ -15,10 +15,10 @@ const Branding = ({ branding, setBranding }) => {
   const contentImageRef = useRef(null);
 
   // UX & Domain States
-  const [nameKeyword, setNameKeyword] = useState(''); // TOP BOX: User explains business here once
-  const [logoPrompt, setLogoPrompt] = useState('');   // Clean UI input for Logo styling
-  const [isLogoModalOpen, setIsLogoModalOpen] = useState(false); // NEW: Modal state for logo inspection
-  const [domainStatus, setDomainStatus] = useState('idle'); // idle, checking, available, taken, error
+  const [nameKeyword, setNameKeyword] = useState(''); 
+  const [logoPrompt, setLogoPrompt] = useState('');   
+  const [isLogoModalOpen, setIsLogoModalOpen] = useState(false); 
+  const [domainStatus, setDomainStatus] = useState('idle'); 
   const [domainName, setDomainName] = useState('');
   
   // Content Engine States
@@ -44,7 +44,7 @@ const Branding = ({ branding, setBranding }) => {
     const file = e.target.files[0];
     if (file) {
       setBranding(prev => ({ ...prev, logo: URL.createObjectURL(file) }));
-      setIsLogoModalOpen(true); // Open inspection modal right after manual upload too!
+      setIsLogoModalOpen(true); 
     }
   };
 
@@ -53,7 +53,6 @@ const Branding = ({ branding, setBranding }) => {
     if (file) setContentImage(URL.createObjectURL(file));
   };
 
-  // Auto-format business name to a clean .com domain when typed manually
   useEffect(() => {
     if (branding.name) {
       const formatted = branding.name.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com';
@@ -62,7 +61,6 @@ const Branding = ({ branding, setBranding }) => {
     }
   }, [branding.name]);
 
-  // Manual Domain Availability Checker via API-Ninjas WHOIS
   const checkDomainAvailability = async (domainToCheck = domainName) => {
     if (!domainToCheck) return false;
     setDomainStatus('checking');
@@ -103,10 +101,8 @@ const Branding = ({ branding, setBranding }) => {
   };
 
   // ==============================
-  // 3. AI GENERATORS (SEPARATED NAME, SLOGAN, LOGO)
+  // 3. AI GENERATORS 
   // ==============================
-
-  // A. GENERATE BUSINESS NAME (+ Multi-Domain Verification Loop)
   const generateNameOnly = async () => {
     const keyword = nameKeyword.trim();
     if (!keyword && !branding.name) {
@@ -158,7 +154,6 @@ const Branding = ({ branding, setBranding }) => {
     }
   };
 
-  // B. GENERATE SLOGAN ONLY
   const generateSloganOnly = async () => {
     const keyword = nameKeyword.trim();
     const brandName = branding.name || "Our Brand";
@@ -179,7 +174,6 @@ const Branding = ({ branding, setBranding }) => {
     }
   };
 
-  // C. GENERATE BRAND LOGO (WITH AUTOMATIC MODAL INSPECTOR!)
   const generateLogo = async () => {
     const desc = logoPrompt.trim() || nameKeyword || branding.name || "modern minimalist symbol";
 
@@ -190,7 +184,7 @@ const Branding = ({ branding, setBranding }) => {
       const svgCode = rawSvg.replace(/```xml|```svg|```/g, '').trim();
       const encodedSvg = `data:image/svg+xml;utf8,${encodeURIComponent(svgCode)}`;
       setBranding(prev => ({ ...prev, logo: encodedSvg }));
-      setIsLogoModalOpen(true); // Automatically open the large view modal so they can confirm it!
+      setIsLogoModalOpen(true); 
     } catch (error) {
       console.error("AI Logo Error:", error.message);
       alert("AI Logo generation failed: " + error.message);
@@ -199,7 +193,6 @@ const Branding = ({ branding, setBranding }) => {
     }
   };
 
-  // D. GENERATE CONTENT ENGINE TEXT
   const generateText = async () => {
     if (!contentPrompt && !contentImage) return alert("Please enter instructions or upload an image!");
     setIsGenerating(prev => ({ ...prev, text: true }));
@@ -217,27 +210,29 @@ const Branding = ({ branding, setBranding }) => {
 
   return (
     <div className="section active">
-      {/* HEADER WITH TABS */}
-      <div className="header" style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
+      {/* HEADER WITH TABS - FULLY RESPONSIVE */}
+      <div className="header" style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+        <div style={{ flex: '1 1 300px' }}>
           <h1 style={{ margin: '0 0 4px 0', color: 'var(--text-dark)', fontSize: '24px' }}>
             <FontAwesomeIcon icon={faPalette} style={{ color: 'var(--neon-cyan)', marginRight: '10px' }}/>
             Branding Studio
           </h1>
-          <p style={{ color:'var(--text-muted)', margin: 0 }}>
+          <p style={{ color:'var(--text-muted)', margin: 0, fontSize: '14px' }}>
             Configure your brand identity and live styling. Changes auto-sync to your Website and Ledgers.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <button 
             className={`btn ${activeTab === 'studio' ? 'btn-primary' : 'btn-outline'}`} 
             onClick={() => setActiveTab('studio')}
+            style={{ flex: '1 1 auto' }}
           >
             Visual Studio
           </button>
           <button 
             className={`btn ${activeTab === 'content' ? 'btn-primary' : 'btn-outline'}`} 
             onClick={() => setActiveTab('content')}
+            style={{ flex: '1 1 auto' }}
           >
             Content Engine
           </button>
@@ -248,10 +243,10 @@ const Branding = ({ branding, setBranding }) => {
       {/* TAB 1: VISUAL STUDIO & LIVE BRAND BOARD */}
       {/* ======================================= */}
       {activeTab === 'studio' && (
-        <div className="grid-2" style={{ gridTemplateColumns: '1fr 1.2fr', alignItems: 'start' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'flex-start' }}>
           
           {/* LEFT COLUMN: THE CONTROL ENGINE */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ flex: '1 1 320px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
               
             {/* 1. CORE IDENTITY CARD */}
             <div className="card">
@@ -259,7 +254,7 @@ const Branding = ({ branding, setBranding }) => {
                 <FontAwesomeIcon icon={faRobot} style={{ color: 'var(--neon-cyan)' }}/> Core Brand Identity
               </h3>
 
-              {/* DEDICATED TOP BOX: BUSINESS / PRODUCT EXPLANATION */}
+              {/* DEDICATED TOP BOX */}
               <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '12px', borderRadius: '8px', marginBottom: '20px' }}>
                 <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: '#166534', fontWeight: '800' }}>
                   <FontAwesomeIcon icon={faLightbulb} style={{ marginRight: '6px' }} />
@@ -274,29 +269,28 @@ const Branding = ({ branding, setBranding }) => {
                   placeholder="e.g. all types of scents and perfumes" 
                 />
                 <p style={{ margin: 0, fontSize: '11px', color: '#15803d', lineHeight: '1.4' }}>
-                  Explain what you sell here once. Use the <strong>AI buttons below</strong> to generate brand names, taglines, and logos from this description!
+                  Explain what you sell here once. Use the <strong>AI buttons below</strong> to generate brand names, taglines, and logos!
                 </p>
               </div>
 
-              {/* STEP 2: BUSINESS NAME + SEPARATE AI NAME BUTTON */}
+              {/* STEP 2: BUSINESS NAME */}
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)', fontWeight: '600' }}>
-                  Step 2: Business Name (Type your own or use AI)
+                  Step 2: Business Name
                 </label>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   <input 
                     className="input-neon" 
-                    style={{ marginBottom: 0, flex: 1 }} 
+                    style={{ marginBottom: 0, flex: '1 1 180px' }} 
                     value={branding.name || ''} 
                     onChange={(e) => handleChange('name', e.target.value)} 
                     placeholder="Enter Business Name" 
                   />
                   <button 
                     className="btn btn-primary" 
-                    style={{ padding: '0 14px', whiteSpace: 'nowrap', fontSize: '13px' }} 
+                    style={{ padding: '10px 14px', whiteSpace: 'nowrap', fontSize: '13px', flex: '1 1 auto', justifyContent: 'center' }} 
                     onClick={generateNameOnly} 
                     disabled={isGenerating.name}
-                    title="Generate an available brand name from your explanation above"
                   >
                     {isGenerating.name ? <FontAwesomeIcon icon={faSpinner} spin /> : <><FontAwesomeIcon icon={faWandMagicSparkles} /> AI Name</>}
                   </button>
@@ -306,8 +300,8 @@ const Branding = ({ branding, setBranding }) => {
               {/* REAL-TIME DOMAIN CHECKER */}
               <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', color: 'var(--text-dark)', fontWeight: 'bold' }}>Web Domain Availability</label>
-                <div style={{ display: 'flex', gap: '10px', marginBottom: '8px' }}>
-                  <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                  <div style={{ flex: '1 1 200px', position: 'relative', display: 'flex', alignItems: 'center' }}>
                     <FontAwesomeIcon icon={faGlobe} style={{ position: 'absolute', left: '12px', color: '#94a3b8' }} />
                     <input 
                       className="input-neon" 
@@ -318,7 +312,7 @@ const Branding = ({ branding, setBranding }) => {
                   </div>
                   <button 
                     className="btn btn-outline" 
-                    style={{ padding: '0 15px', minWidth: '130px', borderColor: 'var(--text-dark)', color: 'var(--text-dark)', fontSize: '13px' }} 
+                    style={{ padding: '10px 15px', flex: '1 1 auto', justifyContent: 'center', borderColor: 'var(--text-dark)', color: 'var(--text-dark)', fontSize: '13px' }} 
                     onClick={() => checkDomainAvailability()} 
                     disabled={domainStatus === 'checking'}
                   >
@@ -327,31 +321,30 @@ const Branding = ({ branding, setBranding }) => {
                 </div>
                 
                 <div style={{ fontSize: '12px', minHeight: '16px', fontWeight: '600' }}>
-                  {domainStatus === 'taken' && <span style={{ color: '#ef4444' }}><FontAwesomeIcon icon={faTimesCircle} /> Taken. Click "AI Name" again for fresh available options.</span>}
-                  {domainStatus === 'available' && <span style={{ color: '#10b981' }}><FontAwesomeIcon icon={faCheckCircle} /> Available! Ready for registration ({domainName}).</span>}
+                  {domainStatus === 'taken' && <span style={{ color: '#ef4444' }}><FontAwesomeIcon icon={faTimesCircle} /> Taken. Try another name.</span>}
+                  {domainStatus === 'available' && <span style={{ color: '#10b981' }}><FontAwesomeIcon icon={faCheckCircle} /> Available! ({domainName})</span>}
                   {domainStatus === 'error' && <span style={{ color: '#f59e0b' }}>Could not connect to domain server.</span>}
                 </div>
               </div>
 
-              {/* STEP 3: TAGLINE / SLOGAN + SEPARATE AI BUTTON */}
+              {/* STEP 3: TAGLINE / SLOGAN */}
               <div>
                 <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)', fontWeight: '600' }}>
                   Step 3: Brand Tagline
                 </label>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   <input 
                     className="input-neon" 
-                    style={{ marginBottom: 0, flex: 1 }} 
+                    style={{ marginBottom: 0, flex: '1 1 180px' }} 
                     value={branding.slogan || ''} 
                     onChange={(e) => handleChange('slogan', e.target.value)} 
                     placeholder="Your brand promise..." 
                   />
                   <button 
                     className="btn btn-outline" 
-                    style={{ padding: '0 14px', whiteSpace: 'nowrap', fontSize: '13px', borderColor: 'var(--neon-cyan)', color: 'var(--text-dark)' }} 
+                    style={{ padding: '10px 14px', whiteSpace: 'nowrap', fontSize: '13px', flex: '1 1 auto', justifyContent: 'center', borderColor: 'var(--neon-cyan)', color: 'var(--text-dark)' }} 
                     onClick={generateSloganOnly} 
                     disabled={isGenerating.slogan}
-                    title="Generate a catchy slogan for your business name"
                   >
                     {isGenerating.slogan ? <FontAwesomeIcon icon={faSpinner} spin /> : <><FontAwesomeIcon icon={faWandMagicSparkles} /> AI Tagline</>}
                   </button>
@@ -382,11 +375,10 @@ const Branding = ({ branding, setBranding }) => {
 
               <label style={{ display: 'block', marginBottom: '10px', fontSize: '13px', color: 'var(--text-muted)' }}>Brand Logo</label>
               <input type="file" accept="image/*" ref={logoInputRef} onChange={handleLogoUpload} style={{ display: 'none' }} />
-              <button className="btn btn-outline" style={{ width: '100%', marginBottom: '15px' }} onClick={() => logoInputRef.current.click()}>
+              <button className="btn btn-outline" style={{ width: '100%', marginBottom: '15px', justifyContent: 'center' }} onClick={() => logoInputRef.current.click()}>
                 <FontAwesomeIcon icon={faUpload} /> Upload Custom Logo (PNG/JPG)
               </button>
 
-              {/* UPGRADED: CLEAN UI INPUT FOR LOGO GENERATION + COMPACT INSPECTION BAR! */}
               <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                 <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: 'var(--text-dark)', fontWeight: '700' }}>
                   ✨ AI Brand Logo Engine
@@ -395,20 +387,19 @@ const Branding = ({ branding, setBranding }) => {
                   type="text"
                   className="input-neon"
                   style={{ marginBottom: '10px', fontSize: '12px', background: '#fff' }}
-                  placeholder="Optional: Describe symbol (e.g. minimalist leaf, geometric crown)..."
+                  placeholder="Optional: Describe symbol..."
                   value={logoPrompt}
                   onChange={(e) => setLogoPrompt(e.target.value)}
                 />
                 <button 
                   className="btn btn-primary" 
-                  style={{ width: '100%', padding: '10px', fontSize: '13px' }} 
+                  style={{ width: '100%', padding: '10px', fontSize: '13px', justifyContent: 'center' }} 
                   onClick={generateLogo} 
                   disabled={isGenerating.logo}
                 >
                   {isGenerating.logo ? 'Designing Brand Logo...' : <><FontAwesomeIcon icon={faWandMagicSparkles} /> Generate Brand Logo with AI</>}
                 </button>
 
-                {/* COMPACT ACTIVE LOGO BADGE (TAKES ALMOST ZERO VERTICAL SPACE!) */}
                 {branding.logo && (
                   <div 
                     onClick={() => setIsLogoModalOpen(true)}
@@ -418,16 +409,13 @@ const Branding = ({ branding, setBranding }) => {
                       alignItems: 'center', gap: '10px', cursor: 'pointer',
                       boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
                     }}
-                    title="Click to inspect full logo in popup"
                   >
                     <div style={{ width: '28px', height: '28px', borderRadius: '4px', background: primaryColor, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3px' }}>
                       <img src={branding.logo} alt="Thumb" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
                     </div>
-                    <span style={{ fontSize: '12px', fontWeight: '700', color: '#0f172a', flex: 1 }}>
-                      Logo Ready
-                    </span>
-                    <span style={{ fontSize: '11px', background: '#0f172a', color: '#fff', padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      <FontAwesomeIcon icon={faEye} /> Inspect Full
+                    <span style={{ fontSize: '12px', fontWeight: '700', color: '#0f172a', flex: 1 }}>Logo Ready</span>
+                    <span style={{ fontSize: '11px', background: '#0f172a', color: '#fff', padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold' }}>
+                      <FontAwesomeIcon icon={faEye} /> Inspect
                     </span>
                   </div>
                 )}
@@ -453,89 +441,59 @@ const Branding = ({ branding, setBranding }) => {
           </div>
 
           {/* RIGHT COLUMN: LIVE BRAND BOARD */}
-          <div style={{ position: 'sticky', top: '20px' }}>
+          <div style={{ flex: '1.2 1 320px', position: 'sticky', top: '20px' }}>
             <h3 style={{ color: 'var(--text-dark)', marginBottom: '15px', paddingLeft: '5px' }}>Live Brand Kit Preview</h3>
             
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: '1fr 1fr', 
-              gridTemplateRows: 'auto auto auto',
-              gap: '15px', 
-              fontFamily: branding.font || 'sans-serif' 
-            }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', fontFamily: branding.font || 'sans-serif' }}>
               
               {/* BOX 1: HERO LOGO BLOCK */}
               <div style={{ 
-                gridColumn: 'span 2', 
-                background: primaryColor, 
-                borderRadius: '12px', 
-                padding: '40px 20px', 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                color: '#fff',
-                textAlign: 'center'
+                background: primaryColor, borderRadius: '12px', padding: '40px 20px', 
+                display: 'flex', flexDirection: 'column', alignItems: 'center', 
+                justifyContent: 'center', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                color: '#fff', textAlign: 'center'
               }}>
                 {branding.logo ? (
                   <img src={branding.logo} alt="Logo" style={{ maxHeight: '80px', objectFit: 'contain', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.2))' }} />
                 ) : (
                   <FontAwesomeIcon icon={faImage} style={{ fontSize: '48px', opacity: 0.5, marginBottom: '10px' }} />
                 )}
-                <h1 style={{ margin: '15px 0 5px 0', fontSize: '32px', letterSpacing: '1px' }}>{branding.name || 'Brand Name'}</h1>
+                <h1 style={{ margin: '15px 0 5px 0', fontSize: '32px', letterSpacing: '1px', wordBreak: 'break-word' }}>{branding.name || 'Brand Name'}</h1>
                 <p style={{ margin: 0, opacity: 0.9, fontSize: '14px', fontStyle: 'italic' }}>{branding.slogan || 'Your professional tagline appears here'}</p>
               </div>
 
-              {/* BOX 2: TYPOGRAPHY */}
-              <div style={{ 
-                background: '#fff', 
-                borderRadius: '12px', 
-                padding: '20px', 
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                border: '1px solid #e2e8f0'
-              }}>
-                <div style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px' }}>
-                  <FontAwesomeIcon icon={faFont} /> Typography
+              {/* TWO COLUMN WRAPPER FOR TYPE & PALETTE */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '15px' }}>
+                {/* BOX 2: TYPOGRAPHY */}
+                <div style={{ background: '#fff', borderRadius: '12px', padding: '20px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px' }}>
+                    <FontAwesomeIcon icon={faFont} /> Typography
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', color: 'var(--text-dark)' }}>
+                    <span style={{ fontSize: '36px', fontWeight: 'bold' }}>Aa</span>
+                    <span style={{ fontSize: '20px' }}>Bb</span>
+                  </div>
+                  <div style={{ marginTop: '15px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                    {branding.font ? branding.font.split(',')[0].replace(/'/g, '') : 'System Default'}
+                  </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', color: 'var(--text-dark)' }}>
-                  <span style={{ fontSize: '42px', fontWeight: 'bold' }}>Aa</span>
-                  <span style={{ fontSize: '24px' }}>Bb</span>
-                </div>
-                <div style={{ marginTop: '15px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                  {branding.font ? branding.font.split(',')[0].replace(/'/g, '') : 'System Default'}
-                </div>
-              </div>
 
-              {/* BOX 3: COLOR PALETTE */}
-              <div style={{ 
-                background: '#1e293b', 
-                borderRadius: '12px', 
-                padding: '20px', 
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-              }}>
-                <div style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px' }}>
-                  Palette
-                </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: primaryColor, border: '2px solid #fff' }}></div>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#0f172a', border: '2px solid #334155' }}></div>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#f8fafc' }}></div>
-                </div>
-                <div style={{ marginTop: '15px', fontSize: '12px', color: '#cbd5e1', fontFamily: 'monospace' }}>
-                  HEX: {primaryColor.toUpperCase()}
+                {/* BOX 3: COLOR PALETTE */}
+                <div style={{ background: '#1e293b', borderRadius: '12px', padding: '20px' }}>
+                  <div style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px' }}>Palette</div>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: primaryColor, border: '2px solid #fff' }}></div>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#0f172a', border: '2px solid #334155' }}></div>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#f8fafc' }}></div>
+                  </div>
+                  <div style={{ marginTop: '15px', fontSize: '12px', color: '#cbd5e1', fontFamily: 'monospace' }}>
+                    {primaryColor.toUpperCase()}
+                  </div>
                 </div>
               </div>
 
               {/* BOX 4: DIGITAL MOCKUP */}
-              <div style={{ 
-                gridColumn: 'span 2', 
-                background: '#fff', 
-                borderRadius: '12px', 
-                padding: '20px', 
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                border: '1px solid #e2e8f0'
-              }}>
+              <div style={{ background: '#fff', borderRadius: '12px', padding: '20px', border: '1px solid #e2e8f0' }}>
                 <div style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px' }}>
                   <FontAwesomeIcon icon={faDesktop} /> Digital Application
                 </div>
@@ -575,8 +533,8 @@ const Branding = ({ branding, setBranding }) => {
       {/* TAB 2: AI CONTENT & VISION ENGINE       */}
       {/* ======================================= */}
       {activeTab === 'content' && (
-        <div className="grid-2">
-          <div className="card">
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px' }}>
+          <div className="card" style={{ flex: '1 1 320px' }}>
             <h3 style={{ margin: '0 0 10px 0', color: 'var(--text-dark)' }}>
               <FontAwesomeIcon icon={faPenNib} style={{ color: 'var(--neon-cyan)', marginRight: '8px' }}/> 
               AI Content & Vision Writer
@@ -598,14 +556,14 @@ const Branding = ({ branding, setBranding }) => {
               <input type="file" accept="image/*" ref={contentImageRef} onChange={handleContentImageUpload} style={{ display: 'none' }} />
               
               {!contentImage ? (
-                <button className="btn btn-outline" style={{ width: '100%', fontSize: '13px', padding: '10px' }} onClick={() => contentImageRef.current.click()}>
+                <button className="btn btn-outline" style={{ width: '100%', fontSize: '13px', padding: '10px', justifyContent: 'center' }} onClick={() => contentImageRef.current.click()}>
                   <FontAwesomeIcon icon={faImage} style={{ marginRight: '8px' }} /> Optional: Upload Reference Image
                 </button>
               ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
                   <img src={contentImage} alt="Reference" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
-                  <span style={{ fontSize: '13px', color: 'var(--text-dark)', flex: 1, fontWeight: '500' }}>Image ready for AI Vision</span>
-                  <button className="btn btn-outline" style={{ padding: '4px 8px', fontSize: '12px', borderColor: '#ef4444', color: '#ef4444' }} onClick={() => setContentImage(null)}>
+                  <span style={{ fontSize: '13px', color: 'var(--text-dark)', flex: '1 1 100px', fontWeight: '500' }}>Image ready for AI Vision</span>
+                  <button className="btn btn-outline" style={{ padding: '6px 12px', fontSize: '12px', borderColor: '#ef4444', color: '#ef4444' }} onClick={() => setContentImage(null)}>
                     Remove
                   </button>
                 </div>
@@ -614,7 +572,7 @@ const Branding = ({ branding, setBranding }) => {
 
             <button 
               className="btn btn-primary" 
-              style={{ width: '100%', padding: '12px' }} 
+              style={{ width: '100%', padding: '12px', justifyContent: 'center' }} 
               onClick={generateText}
               disabled={isGenerating.text}
             >
@@ -622,7 +580,7 @@ const Branding = ({ branding, setBranding }) => {
             </button>
           </div>
 
-          <div className="card">
+          <div className="card" style={{ flex: '1 1 320px' }}>
             <h3 style={{ margin: '0 0 20px 0', color: 'var(--text-dark)' }}>Result Output</h3>
             <div style={{
               padding: '20px', 
@@ -648,10 +606,10 @@ const Branding = ({ branding, setBranding }) => {
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
           background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px'
         }}>
           <div style={{
-            background: '#fff', width: '90%', maxWidth: '440px', borderRadius: '16px',
+            background: '#fff', width: '100%', maxWidth: '440px', borderRadius: '16px',
             boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', overflow: 'hidden',
             padding: '24px', textAlign: 'center'
           }}>
@@ -662,7 +620,6 @@ const Branding = ({ branding, setBranding }) => {
               </button>
             </div>
 
-            {/* Preview container with primary accent background so white/bright icons render crisply */}
             <div style={{
               background: primaryColor, borderRadius: '12px', padding: '40px',
               display: 'flex', alignItems: 'center', justifyContent: 'center',

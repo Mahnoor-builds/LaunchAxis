@@ -92,16 +92,13 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
   const printLedger = () => {
     let filteredTx = transactions;
 
-    // Helper: strips time so "today" matches exactly
     const normalizeDate = (dateString) => {
         const d = new Date(dateString);
         d.setHours(0, 0, 0, 0); 
         return d.getTime();
     };
     
-    // 1. Apply Filters
     if (reportFilter !== 'all') {
-        // Use loose equality (==) to safely match strings to IDs
         filteredTx = filteredTx.filter(tx => tx.accountId == reportFilter || tx.accountName === reportFilter);
     }
     if (dateRange.from) {
@@ -111,7 +108,6 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
         filteredTx = filteredTx.filter(tx => normalizeDate(tx.date) <= normalizeDate(dateRange.to));
     }
 
-    // 2. Calculate Totals & Build HTML Rows
     let totalIncome = 0;
     let totalExpense = 0;
     
@@ -137,7 +133,6 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
     const brandName = branding?.name || 'LaunchAxis Store';
     const accountLabel = reportFilter === 'all' ? 'Master Ledger (All Accounts)' : `Target Account: ${accounts.find(a => a.id == reportFilter)?.name || reportFilter}`;
 
-    // 3. Open New Window & Inject Premium HTML
     const printWindow = window.open('', '_blank', 'width=900,height=800');
     
     printWindow.document.write(`
@@ -214,23 +209,22 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
     printWindow.document.close();
     printWindow.focus();
     
-    // 4. Trigger the native browser print dialogue
     setTimeout(() => {
         printWindow.print();
     }, 500);
   };
 
   return (
-    <div className="section active" style={{ padding: '20px', background: '#f8fafc', minHeight: '100vh' }}>
+    <div className="section active" style={{ padding: '20px', background: '#f8fafc', minHeight: '100vh', boxSizing: 'border-box' }}>
       
-      {/* PREMIUM HEADER - ALIGNMENT FIXED */}
-      <div className="header" style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', padding: '20px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-        <div>
+      {/* PREMIUM HEADER - RESPONSIVE ALIGNMENT FIXED */}
+      <div className="header" style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px', background: '#fff', padding: '20px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+        <div style={{ flex: '1 1 200px' }}>
           <h1 style={{ margin: '0 0 6px 0', color: 'var(--text-dark)', fontSize: '26px', fontWeight: '800' }}>Omni-Ledger</h1>
           <p style={{ color:'var(--text-muted)', margin: 0, fontSize: '14px' }}>Invoicing, Expenses & Cashflow</p>
         </div>
         
-        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap', flex: '1 1 auto', justifyContent: 'flex-end' }}>
             <div style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', padding: '0 14px', height: '42px', borderRadius: '8px', border: '1px solid #e2e8f0', boxSizing: 'border-box' }}>
                 <FontAwesomeIcon icon={faGlobe} style={{ color: 'var(--text-muted)', marginRight: '8px' }} />
                 <select style={{ border: 'none', background: 'transparent', outline: 'none', fontWeight: 'bold', color: 'var(--text-dark)', cursor: 'pointer', fontSize: '14px' }} value={currency} onChange={e => setCurrency(e.target.value)}>
@@ -239,9 +233,11 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
                     <option value="€">EUR (€)</option>
                 </select>
             </div>
-            <div style={{ background: '#f1f5f9', padding: '4px', borderRadius: '8px', display: 'flex', gap: '4px', height: '42px', boxSizing: 'border-box' }}>
+            
+            {/* Scrollable / Wrapping Tab Nav for Mobile */}
+            <div style={{ background: '#f1f5f9', padding: '4px', borderRadius: '8px', display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                 {['overview', 'directory', 'inventory', 'reports'].map(tab => (
-                    <button key={tab} className={`btn ${activeTab === tab ? 'btn-primary' : 'btn-outline'}`} onClick={() => setActiveTab(tab)} style={{ textTransform:'capitalize', padding: '0 16px', borderRadius: '6px', border: 'none', background: activeTab === tab ? 'var(--primary)' : 'transparent', color: activeTab === tab ? '#fff' : 'var(--text-muted)', height: '100%' }}>
+                    <button key={tab} className={`btn ${activeTab === tab ? 'btn-primary' : 'btn-outline'}`} onClick={() => setActiveTab(tab)} style={{ textTransform:'capitalize', padding: '10px 16px', borderRadius: '6px', border: 'none', background: activeTab === tab ? 'var(--primary)' : 'transparent', color: activeTab === tab ? '#fff' : 'var(--text-muted)' }}>
                         {tab}
                     </button>
                 ))}
@@ -251,9 +247,9 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
 
       {/* === TAB 1: OVERVIEW (OMNI-LEDGER) === */}
       {activeTab === 'overview' && (
-        <div className="grid-2" style={{ gap: '24px', alignItems: 'start' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'flex-start' }}>
            
-           <div className="card" style={{ padding: '30px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+           <div className="card" style={{ flex: '1 1 320px', padding: '30px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
               <h3 style={{ margin: '0 0 24px 0', color: 'var(--text-dark)', display: 'flex', alignItems: 'center' }}>
                   <FontAwesomeIcon icon={faPlus} style={{ color: 'var(--primary)', marginRight: '10px' }} /> Transaction & Invoicing
               </h3>
@@ -266,15 +262,15 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
                   <option value="payment_out">💸 Payment Sent (Cash Out)</option>
               </select>
               
-              <div style={{ display:'flex', gap:'16px', marginBottom: '20px' }}>
-                <div style={{ flex: 1 }}>
+              <div style={{ display:'flex', flexWrap: 'wrap', gap:'16px', marginBottom: '20px' }}>
+                <div style={{ flex: '1 1 140px' }}>
                     <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold', color: 'var(--text-dark)' }}>Target Account</label>
                     <select className="input-neon" style={{ marginBottom: 0, padding: '12px' }} value={txForm.accountId} onChange={e=>setTxForm({...txForm, accountId:e.target.value})}>
                         <option value="">-- Select Entity --</option>
                         {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name} ({acc.category})</option>)}
                     </select>
                 </div>
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: '1 1 140px' }}>
                     <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold', color: 'var(--text-dark)' }}>Category</label>
                     <select className="input-neon" style={{ marginBottom: 0, padding: '12px' }} value={txForm.category} onChange={e=>setTxForm({...txForm, category:e.target.value})}>
                         <option value="Website Sales">Website Sales</option>
@@ -289,7 +285,7 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
               </div>
 
               <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold', color: 'var(--text-dark)' }}>Details & Amount</label>
-              <input className="input-neon" style={{ marginBottom: '16px', padding: '12px' }} placeholder="Short Description (e.g. Partial Payment for Shirts)" value={txForm.desc} onChange={e=>setTxForm({...txForm, desc:e.target.value})} />
+              <input className="input-neon" style={{ marginBottom: '16px', padding: '12px' }} placeholder="Short Description" value={txForm.desc} onChange={e=>setTxForm({...txForm, desc:e.target.value})} />
               
               <div style={{ position: 'relative' }}>
                   <span style={{ position: 'absolute', left: '16px', top: '14px', color: 'var(--text-muted)', fontWeight: 'bold' }}>{currency}</span>
@@ -299,7 +295,7 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
               <button className="btn btn-primary" style={{ width:'100%', padding: '16px', fontSize: '15px', fontWeight: 'bold', borderRadius: '8px' }} onClick={handleTxSubmit}>Record Transaction</button>
            </div>
            
-           <div className="card" style={{ padding: '30px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+           <div className="card" style={{ flex: '1 1 320px', padding: '30px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
               <h3 style={{ margin: '0 0 24px 0', color: 'var(--text-dark)' }}>Audit Trail</h3>
               <div style={{ maxHeight:'400px', overflowY:'auto', paddingRight: '10px' }}>
                 {transactions.length === 0 ? <p style={{ color: 'var(--text-muted)' }}>No transactions recorded yet.</p> : transactions.map((t, idx) => {
@@ -308,15 +304,15 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
                     return (
                         <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 0', borderBottom: idx === transactions.length - 1 ? 'none' : '1px solid #f1f5f9' }}>
                             <div>
-                                <div style={{ color: 'var(--text-dark)', fontWeight: '700', fontSize: '14px', marginBottom: '4px' }}>{t.desc}</div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div style={{ color: 'var(--text-dark)', fontWeight: '700', fontSize: '14px', marginBottom: '4px', wordBreak: 'break-word' }}>{t.desc}</div>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
                                     <span style={{ fontSize: '11px', color: '#64748b' }}>{t.date} • {t.accountName}</span>
-                                    <span style={{ fontSize: '10px', background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold' }}>
+                                    <span style={{ fontSize: '10px', background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
                                         <FontAwesomeIcon icon={faTags} style={{ marginRight: '4px' }}/> {t.category || 'General'}
                                     </span>
                                 </div>
                             </div>
-                            <div style={{ textAlign: 'right' }}>
+                            <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: '12px' }}>
                                 <div style={{ fontSize: '15px', fontWeight: '800', color: isMoneyIn ? '#10b981' : '#ef4444' }}>
                                     {isMoneyIn ? '+' : '-'}{currency}{parseFloat(t.amount).toLocaleString()}
                                 </div>
@@ -334,8 +330,8 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
 
       {/* === TAB 2: DIRECTORY & CRM === */}
       {activeTab === 'directory' && (
-        <div className="grid-2" style={{ gap: '24px', alignItems: 'start' }}>
-            <div className="card" style={{ padding: '30px', borderRadius: '16px', border: editingAccountId ? '2px solid var(--primary)' : 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'flex-start' }}>
+            <div className="card" style={{ flex: '1 1 320px', padding: '30px', borderRadius: '16px', border: editingAccountId ? '2px solid var(--primary)' : 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                 <h3 style={{ margin: '0 0 24px 0', color: 'var(--text-dark)', display: 'flex', alignItems: 'center' }}>
                     <FontAwesomeIcon icon={faUserPlus} style={{ color: 'var(--primary)', marginRight: '10px' }}/> 
                     {editingAccountId ? 'Edit Entity Details' : 'Add Client / Supplier'}
@@ -358,31 +354,31 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Address</label>
                 <input className="input-neon" style={{ padding: '12px', marginBottom: '24px' }} value={accForm.address} onChange={e=>setAccForm({...accForm, address:e.target.value})} placeholder="Office No..." />
 
-                <div style={{ display: 'flex', gap: '12px' }}>
-                    <button className="btn btn-primary" style={{ flex: 1, padding: '14px', borderRadius: '8px' }} onClick={handleAccountSubmit}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+                    <button className="btn btn-primary" style={{ flex: '1 1 auto', padding: '14px', borderRadius: '8px', justifyContent: 'center' }} onClick={handleAccountSubmit}>
                         {editingAccountId ? 'Save Changes' : 'Create Record'}
                     </button>
                     {editingAccountId && (
-                        <button className="btn btn-outline" style={{ padding: '14px', borderRadius: '8px' }} onClick={handleCancelEdit}>Cancel</button>
+                        <button className="btn btn-outline" style={{ flex: '1 1 auto', padding: '14px', borderRadius: '8px', justifyContent: 'center' }} onClick={handleCancelEdit}>Cancel</button>
                     )}
                 </div>
             </div>
 
-            <div className="card" style={{ padding: '30px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+            <div className="card" style={{ flex: '1 1 320px', padding: '30px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                 <h3 style={{ margin: '0 0 24px 0', color: 'var(--text-dark)' }}>Accounts Payable & Receivable</h3>
                 <div style={{ maxHeight:'450px', overflowY:'auto' }}>
                     {accounts.map(acc => {
                         const status = getAccountStatus(acc);
                         return (
-                            <div key={acc.id} style={{ padding:'20px', border:'1px solid #e2e8f0', borderRadius: '12px', marginBottom: '12px', display:'flex', justifyContent:'space-between', alignItems:'center', background: '#fff' }}>
+                            <div key={acc.id} style={{ padding:'20px', border:'1px solid #e2e8f0', borderRadius: '12px', marginBottom: '12px', display:'flex', flexWrap: 'wrap', gap: '12px', justifyContent:'space-between', alignItems:'center', background: '#fff' }}>
                                 <div>
-                                    <div style={{ fontWeight:'800', fontSize:'16px', color: 'var(--text-dark)', marginBottom: '4px' }}>{acc.name}</div>
+                                    <div style={{ fontWeight:'800', fontSize:'16px', color: 'var(--text-dark)', marginBottom: '4px', wordBreak: 'break-word' }}>{acc.name}</div>
                                     <div style={{ fontSize:'12px', color:'var(--text-muted)' }}>{acc.category} • {acc.phone || 'No Phone'}</div>
-                                    <button className="btn btn-outline" style={{ padding:'4px 12px', fontSize:'11px', marginTop:'12px', borderRadius: '6px' }} onClick={() => handleEditClick(acc)}>
+                                    <button className="btn btn-outline" style={{ padding:'6px 14px', fontSize:'11px', marginTop:'12px', borderRadius: '6px' }} onClick={() => handleEditClick(acc)}>
                                         <FontAwesomeIcon icon={faPenToSquare} style={{ marginRight: '6px' }} /> Edit
                                     </button>
                                 </div>
-                                <div style={{ textAlign:'right' }}>
+                                <div style={{ textAlign:'right', flexShrink: 0 }}>
                                     <div style={{ fontSize:'11px', fontWeight: 'bold', textTransform: 'uppercase', color: status.color, marginBottom: '4px' }}>
                                         {status.text}
                                     </div>
@@ -400,8 +396,8 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
 
       {/* === TAB 3: INVENTORY === */}
       {activeTab === 'inventory' && (
-        <div className="grid-2" style={{ gap: '24px', alignItems: 'start' }}>
-            <div className="card" style={{ padding: '30px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'flex-start' }}>
+            <div className="card" style={{ flex: '1 1 320px', padding: '30px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                 <h3 style={{ margin: '0 0 24px 0', color: 'var(--text-dark)' }}>
                     <FontAwesomeIcon icon={faBoxOpen} style={{ color: 'var(--primary)', marginRight: '10px' }}/> 
                     {editingInvId ? 'Edit Stock Item' : 'Add to Stockroom'}
@@ -416,12 +412,12 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
                     <option value="Raw Materials">Raw Materials (For Supplies/Packaging)</option>
                 </select>
 
-                <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
-                    <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '16px' }}>
+                    <div style={{ flex: '1 1 120px' }}>
                         <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Total Qty</label>
                         <input type="number" className="input-neon" style={{ padding: '12px', marginBottom: 0 }} value={invForm.quantity} onChange={e=>setInvForm({...invForm, quantity:e.target.value})} placeholder="50" />
                     </div>
-                    <div style={{ flex: 1 }}>
+                    <div style={{ flex: '1 1 120px' }}>
                         <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Base Cost (Unit)</label>
                         <div style={{ position: 'relative' }}>
                             <span style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-muted)', fontWeight: 'bold' }}>{currency}</span>
@@ -455,28 +451,28 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
                     </>
                 )}
 
-                <div style={{ display: 'flex', gap: '12px', marginTop: invForm.type === 'Raw Materials' ? '24px' : '0' }}>
-                    <button className="btn btn-primary" style={{ flex: 1, padding: '14px', borderRadius: '8px' }} onClick={handleInvSubmit}>{editingInvId ? 'Update Stock' : 'Add to Warehouse'}</button>
-                    {editingInvId && (<button className="btn btn-outline" style={{ padding: '14px', borderRadius: '8px' }} onClick={handleCancelInvEdit}>Cancel</button>)}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: invForm.type === 'Raw Materials' ? '24px' : '0' }}>
+                    <button className="btn btn-primary" style={{ flex: '1 1 auto', padding: '14px', borderRadius: '8px', justifyContent: 'center' }} onClick={handleInvSubmit}>{editingInvId ? 'Update Stock' : 'Add to Warehouse'}</button>
+                    {editingInvId && (<button className="btn btn-outline" style={{ flex: '1 1 auto', padding: '14px', borderRadius: '8px', justifyContent: 'center' }} onClick={handleCancelInvEdit}>Cancel</button>)}
                 </div>
             </div>
 
-            <div className="card" style={{ padding: '30px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+            <div className="card" style={{ flex: '1 1 320px', padding: '30px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                 <h3 style={{ margin: '0 0 24px 0', color: 'var(--text-dark)' }}>Warehouse Status</h3>
                 <div style={{ maxHeight:'450px', overflowY:'auto' }}>
                     {inventory.map(item => (
-                        <div key={item.id} style={{ padding:'20px', border:'1px solid #e2e8f0', borderRadius: '12px', marginBottom: '12px', display:'flex', justifyContent:'space-between', alignItems:'center', background: '#fff' }}>
+                        <div key={item.id} style={{ padding:'20px', border:'1px solid #e2e8f0', borderRadius: '12px', marginBottom: '12px', display:'flex', flexWrap: 'wrap', gap: '12px', justifyContent:'space-between', alignItems:'center', background: '#fff' }}>
                             <div>
-                                <div style={{ fontWeight:'800', fontSize:'16px', color: 'var(--text-dark)', marginBottom: '4px' }}>
+                                <div style={{ fontWeight:'800', fontSize:'16px', color: 'var(--text-dark)', marginBottom: '4px', wordBreak: 'break-word', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                                     {item.name}
-                                    <span style={{ fontSize: '10px', background: item.type === 'Finished Goods' ? '#e0e7ff' : '#fef3c7', color: item.type === 'Finished Goods' ? '#4338ca' : '#d97706', padding: '2px 6px', borderRadius: '4px', marginLeft: '8px', fontWeight: 'bold' }}>
+                                    <span style={{ fontSize: '10px', background: item.type === 'Finished Goods' ? '#e0e7ff' : '#fef3c7', color: item.type === 'Finished Goods' ? '#4338ca' : '#d97706', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
                                         {item.type === 'Finished Goods' ? 'Retail' : 'Raw'}
                                     </span>
                                 </div>
                                 <div style={{ fontSize:'12px', color:'var(--text-muted)' }}>Qty: {item.quantity} • True Cost: {currency}{item.landedCost?.toFixed(2)}</div>
                             </div>
                             {item.type === 'Finished Goods' && (
-                                <div style={{ textAlign:'right' }}>
+                                <div style={{ textAlign:'right', flexShrink: 0 }}>
                                     <div style={{ fontSize:'11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 'bold', marginBottom: '4px' }}>Selling For</div>
                                     <div style={{ fontWeight:'900', color: '#10b981', fontSize:'18px' }}>{currency}{item.sellingPrice?.toLocaleString()}</div>
                                 </div>
@@ -490,10 +486,10 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
 
       {/* === TAB 4: SECURE REPORTS === */}
       {activeTab === 'reports' && (
-        <div className="card" style={{ maxWidth:'700px', margin:'0 auto', padding: '40px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', textAlign: 'center' }}>
+        <div className="card" style={{ maxWidth:'700px', margin:'0 auto', padding: '40px 20px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', textAlign: 'center' }}>
             <FontAwesomeIcon icon={faFileInvoiceDollar} size="3x" style={{ color:'var(--primary)', marginBottom:'20px' }} />
             <h2 style={{ color: 'var(--text-dark)', margin: '0 0 12px 0', fontSize: '24px', fontWeight: '800' }}>Statement Generator</h2>
-            <p style={{ color:'var(--text-muted)', margin: '0 auto 30px auto', fontSize: '15px', lineHeight: '1.6', maxWidth: '80%' }}>
+            <p style={{ color:'var(--text-muted)', margin: '0 auto 30px auto', fontSize: '14px', lineHeight: '1.6', maxWidth: '90%' }}>
                 Select a client or supplier below to generate a professional, print-ready PDF statement of their account balance and payment history.
             </p>
 
@@ -504,18 +500,18 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
                     {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name} ({acc.category})</option>)}
                 </select>
 
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px', marginBottom: '24px' }}>
-                    <div>
+                <div style={{ display:'flex', flexWrap: 'wrap', gap:'20px', marginBottom: '24px' }}>
+                    <div style={{ flex: '1 1 200px' }}>
                         <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>From Date</label>
                         <input type="date" className="input-neon" style={{ padding: '12px', marginBottom: 0 }} value={dateRange.from} onChange={e=>setDateRange({...dateRange, from:e.target.value})} />
                     </div>
-                    <div>
+                    <div style={{ flex: '1 1 200px' }}>
                         <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>To Date</label>
                         <input type="date" className="input-neon" style={{ padding: '12px', marginBottom: 0 }} value={dateRange.to} onChange={e=>setDateRange({...dateRange, to:e.target.value})} />
                     </div>
                 </div>
 
-                <button className="btn btn-primary" style={{ width:'100%', padding:'16px', fontSize:'16px', fontWeight: 'bold', borderRadius: '8px' }} onClick={printLedger}>
+                <button className="btn btn-primary" style={{ width:'100%', padding:'16px', fontSize:'16px', fontWeight: 'bold', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={printLedger}>
                     <FontAwesomeIcon icon={faPrint} style={{ marginRight: '10px' }} /> Generate PDF Statement
                 </button>
             </div>

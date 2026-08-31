@@ -71,11 +71,11 @@ const Dashboard = ({ products = [], transactions = [], branding, setActiveSectio
     <section className="section active" style={{ paddingBottom: '40px' }}>
       
       {/* --- SLEEK ACTION BAR --- */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '32px' }}>
         <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '600', color: 'var(--text-dark)' }}>Command Center</h3>
         <button 
           className="btn btn-primary" 
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '100px' }} 
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '100px', flex: '1 1 auto', justifyContent: 'center', maxWidth: '200px' }} 
           onClick={() => setActiveSection('products')}
         >
           <FontAwesomeIcon icon={faPlus} /> Add Product
@@ -84,19 +84,19 @@ const Dashboard = ({ products = [], transactions = [], branding, setActiveSectio
 
       {/* --- PREMIUM AI ARCHITECTURE ROW --- */}
       {loadingKernel ? (
-        <div style={{ color: 'var(--text-muted)', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '10px' }} className="card">
+        <div style={{ color: 'var(--text-muted)', marginBottom: '2rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }} className="card">
           <FontAwesomeIcon icon={faBolt} className="fa-spin" style={{ color: 'var(--neon-cyan)' }} />
           Syncing LaunchAxis Kernel Data...
         </div>
       ) : aiData ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', marginBottom: '40px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '24px', marginBottom: '40px' }}>
           
           <div className="card" style={{ gridColumn: '1 / -1' }}>
             <h4 style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '11px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <FontAwesomeIcon icon={faIdBadge} style={{ color: 'var(--neon-cyan)' }} /> Core Identity
             </h4>
-            <h2 style={{ fontSize: '3rem', fontWeight: '800', margin: '0 0 8px 0', letterSpacing: '-1px', color: 'var(--text-dark)' }}>{aiData.businessName}</h2>
-            <p style={{ color: 'var(--neon-cyan)', fontSize: '1.2rem', margin: '0', fontWeight: '600' }}>"{aiData.tagline}"</p>
+            <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: '800', margin: '0 0 8px 0', letterSpacing: '-1px', color: 'var(--text-dark)', wordBreak: 'break-word' }}>{aiData.businessName}</h2>
+            <p style={{ color: 'var(--neon-cyan)', fontSize: '1.2rem', margin: '0', fontWeight: '600', lineHeight: '1.4' }}>"{aiData.tagline}"</p>
           </div>
 
           <div className="card">
@@ -110,7 +110,7 @@ const Dashboard = ({ products = [], transactions = [], branding, setActiveSectio
             <h4 style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '11px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <FontAwesomeIcon icon={faPalette} style={{ color: 'var(--neon-cyan)' }} /> Generated Palette
             </h4>
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
               {Object.values(aiData.colorPalette).map((color, index) => (
                 <div key={index} style={{
                   backgroundColor: color, width: '48px', height: '48px', borderRadius: '50%',
@@ -132,19 +132,19 @@ const Dashboard = ({ products = [], transactions = [], branding, setActiveSectio
         <div className="card" style={{ position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '3px', background: 'var(--neon-cyan)' }}></div>
           <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: '0 0 12px 0', letterSpacing: '1px' }}>Product Sales</h3>
-          <div style={{ fontSize: '32px', fontWeight: '800', marginBottom: '8px', color: 'var(--text-dark)' }}>PKR {salesRevenue.toLocaleString()}</div>
-          <div style={{ fontSize: '12px', color: 'var(--neon-cyan)', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600' }}><FontAwesomeIcon icon={faArrowTrendUp} /> From Website Orders</div>
+          <div style={{ fontSize: '28px', fontWeight: '800', marginBottom: '8px', color: 'var(--text-dark)', wordBreak: 'break-word' }}>PKR {salesRevenue.toLocaleString()}</div>
+          <div style={{ fontSize: '12px', color: 'var(--neon-cyan)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px', fontWeight: '600' }}><FontAwesomeIcon icon={faArrowTrendUp} /> From Website Orders</div>
         </div>
 
         <div className="card">
           <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: '0 0 12px 0', letterSpacing: '1px' }}>Active Products</h3>
-          <div style={{ fontSize: '32px', fontWeight: '800', marginBottom: '8px', color: 'var(--text-dark)' }}>{products.length}</div>
+          <div style={{ fontSize: '28px', fontWeight: '800', marginBottom: '8px', color: 'var(--text-dark)' }}>{products.length}</div>
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>Live on website</div>
         </div>
 
         <div className="card">
           <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: '0 0 12px 0', letterSpacing: '1px' }}>Pending Orders</h3>
-          <div style={{ fontSize: '32px', fontWeight: '800', marginBottom: '8px', color: 'var(--text-dark)' }}>{pendingOrdersCount}</div>
+          <div style={{ fontSize: '28px', fontWeight: '800', marginBottom: '8px', color: 'var(--text-dark)' }}>{pendingOrdersCount}</div>
           <div style={{ fontSize: '12px', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600' }}>Needs fulfillment</div>
         </div>
 
@@ -152,25 +152,25 @@ const Dashboard = ({ products = [], transactions = [], branding, setActiveSectio
         {features?.wantsAccounting ? (
           <div className="card" style={{ background: '#f8fafc' }}>
             <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: '0 0 12px 0', letterSpacing: '1px' }}>Current Balance</h3>
-            <div style={{ fontSize: '32px', fontWeight: '800', marginBottom: '8px', color: currentBalance >= 0 ? 'var(--text-dark)' : '#ef4444' }}>
+            <div style={{ fontSize: '28px', fontWeight: '800', marginBottom: '8px', color: currentBalance >= 0 ? 'var(--text-dark)' : '#ef4444', wordBreak: 'break-word' }}>
               PKR {currentBalance.toLocaleString()}
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}><FontAwesomeIcon icon={faWallet} /> Sales + Capital - Expenses</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}><FontAwesomeIcon icon={faWallet} /> Sales + Capital - Expenses</div>
           </div>
         ) : (
           <div className="card" style={{ background: '#f8fafc' }}>
              <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: '0 0 12px 0', letterSpacing: '1px' }}>Gross Revenue</h3>
-             <div style={{ fontSize: '32px', fontWeight: '800', marginBottom: '8px', color: 'var(--text-dark)' }}>
+             <div style={{ fontSize: '28px', fontWeight: '800', marginBottom: '8px', color: 'var(--text-dark)', wordBreak: 'break-word' }}>
                 PKR {salesRevenue.toLocaleString()}
              </div>
-             <div style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>Total E-commerce Earnings</div>
+             <div style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>Total E-commerce Earnings</div>
           </div>
         )}
       </div>
 
       {/* --- CONDITIONAL CASH FLOW CHART --- */}
       {features?.wantsAccounting && (
-        <div className="card" style={{ height: '350px', marginBottom: '24px' }}>
+        <div className="card" style={{ height: '350px', marginBottom: '24px', overflow: 'hidden' }}>
           <h3 style={{ margin: '0 0 20px 0', color: 'var(--text-dark)', fontSize: '16px' }}>
             <FontAwesomeIcon icon={faChartLine} style={{color:'var(--neon-cyan)', marginRight: '8px'}} /> 
             Cash Flow (In/Out)
@@ -185,7 +185,7 @@ const Dashboard = ({ products = [], transactions = [], branding, setActiveSectio
                          </linearGradient>
                      </defs>
                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                     <XAxis dataKey="name" stroke="#94a3b8" />
+                     <XAxis dataKey="name" stroke="#94a3b8" tick={{ fontSize: 12 }} />
                      <Tooltip contentStyle={{backgroundColor:'#ffffff', border:'1px solid #e2e8f0', borderRadius:'8px', color: '#1e293b'}} />
                      <Area type="monotone" dataKey="amount" stroke="#2dd4bf" fill="url(#colorSplit)" />
                  </AreaChart>
@@ -197,20 +197,20 @@ const Dashboard = ({ products = [], transactions = [], branding, setActiveSectio
       {/* --- INVENTORY ALERTS (Shows if low stock exists) --- */}
       {lowStockItems.length > 0 && (
          <div className="card" style={{ borderLeft: '4px solid #ef4444', marginBottom: '24px', background: '#fef2f2' }}>
-            <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#991b1b', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#991b1b', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                <FontAwesomeIcon icon={faTriangleExclamation} /> Critical Inventory Alert
             </h3>
             <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#7f1d1d' }}>The following items are running dangerously low:</p>
             <ul style={{ margin: 0, paddingLeft: '20px', color: '#991b1b', fontSize: '14px', fontWeight: '600' }}>
                {lowStockItems.map((item, idx) => (
-                  <li key={idx}>{item.name} — Only {item.quantity} left in stock!</li>
+                  <li key={idx} style={{ marginBottom: '6px' }}>{item.name} — Only {item.quantity} left in stock!</li>
                ))}
             </ul>
          </div>
       )}
 
       <div className="card">
-        <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-dark)' }}>
+        <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px', color: 'var(--text-dark)' }}>
           <FontAwesomeIcon icon={faBolt} style={{color:'var(--neon-cyan)'}}/> Business Insights
         </h3>
         <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '14px', lineHeight: '1.6' }}>
