@@ -149,11 +149,7 @@
             const rawData = localStorage.getItem("launchAxisTempData");
             if (!rawData) throw new Error("No startup data found.");
             const userData = JSON.parse(rawData);
-
-            // YOUR GEMINI API KEY HERE
-            const geminiApiKey = "";
             
-            // STRICT JSON PROMPT
             const systemPrompt = `You are a strict JSON data generator for a SaaS platform. Return ONLY valid JSON. Do not include markdown \`\`\` wrappers. 
             Format requirements:
             {
@@ -168,26 +164,21 @@
             }`;
             
             const promptText = `User Data -> Name: ${userData.businessName}. Description: ${userData.businessDesc}. Type: ${userData.businessType}. Founder Profile: ${userData.userType}. Generate the JSON structure.`;
-
-            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
             
-            const response = await fetch(geminiUrl, {
+            // --- SECURE VERCEL API CALL ---
+            const response = await fetch('/api/gemini', {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: systemPrompt + "\n\n" + promptText }] }],
-                    generationConfig: { responseMimeType: "application/json" }
-                })
+                body: JSON.stringify({ prompt: systemPrompt + "\n\n" + promptText })
             });
 
             if (!response.ok) throw new Error(`API rejected request: HTTP ${response.status}`);
             const apiData = await response.json();
             
-            let rawText = apiData.candidates[0].content.parts[0].text;
+            let rawText = apiData.text;
             rawText = rawText.replace(/```json|```/g, '').trim();
             const aiGenerated = JSON.parse(rawText);
 
-            // Combine user inputs and AI outputs
             const finalDatabaseEntry = {
                 email: userData.email,
                 businessType: userData.businessType,
@@ -203,7 +194,6 @@
                 createdAt: serverTimestamp()
             };
 
-            // Save to Firestore
             await setDoc(doc(db, "users", userData.email), finalDatabaseEntry);
 
             isApiFinished = true;
@@ -215,9 +205,8 @@
             successLine.style.color = "#2dd4bf";
             terminalWindow.appendChild(successLine);
 
-            // Redirect to the main React Dashboard
             setTimeout(() => {
-                window.location.href = "http://localhost:3000/admin"; 
+                window.location.href = "/admin"; 
             }, 1500);
 
         } catch (error) {

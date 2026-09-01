@@ -189,11 +189,7 @@
     }
 
     async function getGeminiResponse(prompt) {
-      // 🚨 REMEMBER TO PASTE YOUR ACTUAL API KEY HERE
-      const apiKey = ""; 
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`;
-
-      // --- 🚨 NEW: RE-ENGINEERED PROMPT FOR SIMPLE STEP-BY-STEP FORMATTING ---
+      // --- RE-ENGINEERED PROMPT FOR SIMPLE STEP-BY-STEP FORMATTING ---
       let systemPrompt = `You are Axis, the executive AI Co-Founder built into the LaunchAxis startup platform.
 Your persona: Highly supportive, acts like a smart guide, and speaks in plain, simple English.
 Strict Formatting Rules:
@@ -209,25 +205,22 @@ Industry: ${currentUserContext.businessType || "E-commerce"}
 Description: ${currentUserContext.businessDesc || "Not specified"}`;
       }
 
-      const payload = {
-        contents: [{ parts: [{ text: `${systemPrompt}\n\nUser Question: ${prompt}` }] }]
-      };
+      const finalPrompt = `${systemPrompt}\n\nUser Question: ${prompt}`;
 
       try {
-        const response = await fetch(endpoint, {
+        // --- SECURE VERCEL API CALL ---
+        const response = await fetch('/api/gemini', {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({ prompt: finalPrompt })
         });
 
         const data = await response.json();
-        if (!response.ok) throw new Error(data.error?.message || `HTTP ${response.status}`);
+        if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
 
-        if (data.candidates && data.candidates[0].content.parts[0].text) {
-            let cleanText = data.candidates[0].content.parts[0].text;
+        if (data.text) {
+            let cleanText = data.text;
             cleanText = cleanText.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
-            
-            // Format markdown newlines into HTML breaks for proper rendering
             cleanText = cleanText.replace(/\n/g, "<br>");
             return cleanText;
         } else {
@@ -237,7 +230,6 @@ Description: ${currentUserContext.businessDesc || "Not specified"}`;
         return `Connection error: ${error.message}`;
       }
     }
-
     initAxisMemory();
   </script>
 </body>
