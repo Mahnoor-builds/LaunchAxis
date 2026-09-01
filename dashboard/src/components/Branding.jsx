@@ -80,24 +80,19 @@ const Branding = ({ branding, setBranding }) => {
   };
 
   // ==============================
-  // 2. REUSABLE GEMINI API HELPER
+  // 2. SECURE VERCEL API HELPER
   // ==============================
   const callGemini = async (promptText) => {
-    const geminiKey = process.env.REACT_APP_GEMINI_API_KEY;
-    if (!geminiKey) throw new Error("REACT_APP_GEMINI_API_KEY is missing in your .env file.");
-
-    const modelName = "gemini-3.5-flash-lite"; 
-
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`, {
+    const res = await fetch('/api/gemini', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: promptText }] }]
-      })
+      body: JSON.stringify({ prompt: promptText })
     });
+    
     const data = await res.json();
-    if (data.error) throw new Error(data.error.message);
-    return data.candidates[0].content.parts[0].text;
+    if (data.error) throw new Error(data.error);
+    
+    return data.text;
   };
 
   // ==============================
@@ -197,11 +192,17 @@ const Branding = ({ branding, setBranding }) => {
     if (!contentPrompt && !contentImage) return alert("Please enter instructions or upload an image!");
     setIsGenerating(prev => ({ ...prev, text: true }));
     try {
-      const prompt = `Write professional e-commerce website content for "${branding.name || 'our store'}" based on: "${contentPrompt}". Make it clean, persuasive, and ready for publication.`;
-      const text = await callGemini(prompt);
+      // Structure a smart system prompt to handle SEO, Privacy Policies, and generic copy
+      const systemPrompt = `You are a professional business writer and legal assistant for a company named "${branding?.name || 'our business'}". Generate exactly what the user requests in clean, plain text. Do not use markdown backticks unless specifically asked. Make it professional and ready for publication.`;
+      
+      const finalPrompt = `${systemPrompt}\n\nUser Request: ${contentPrompt}`;
+
+      // Call the secure Vercel API
+      const text = await callGemini(finalPrompt);
+      
       setGeneratedContent(text.trim());
     } catch (error) {
-      console.error("AI Content Error:", error.message);
+      console.error("AI Content Error:", error);
       alert("AI Content generation failed: " + error.message);
     } finally {
       setIsGenerating(prev => ({ ...prev, text: false }));

@@ -75,7 +75,7 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
     try {
       const accessKey = process.env.REACT_APP_UNSPLASH_ACCESS_KEY;
       if (!accessKey) { alert("Missing REACT_APP_UNSPLASH_ACCESS_KEY."); setIsSearchingImage(false); return; }
-      const response = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(keyword)}&per_page=1&orientation=landscape`, { headers: { 'Authorization': `Client-ID ${accessKey}` } });
+      const response = await fetch(`[https://api.unsplash.com/search/photos?query=$](https://api.unsplash.com/search/photos?query=$){encodeURIComponent(keyword)}&per_page=1&orientation=landscape`, { headers: { 'Authorization': `Client-ID ${accessKey}` } });
       const data = await response.json();
       if (data.results && data.results.length > 0) setSiteConfig(prev => ({ ...prev, [targetField]: data.results[0].urls.regular }));
       else alert("No images found.");
@@ -120,16 +120,45 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
   };
   const removeStrength = (index) => setSiteConfig({ ...siteConfig, whyChooseUs: (siteConfig.whyChooseUs || []).filter((_, i) => i !== index) });
 
+  // ==============================
+  // REAL AI GENERATOR VIA VERCEL
+  // ==============================
   const triggerAIGenerator = async (section) => {
     setIsGenerating({ ...isGenerating, [section]: true });
-    setTimeout(() => {
+    try {
+      let prompt = "";
       if (section === 'hero') {
-        setSiteConfig(prev => ({ ...prev, heroTitle: isService ? `Premium ${branding?.name || 'Solutions'} & Strategic Consulting` : `Next-Gen ${branding?.name || 'Products'} Engineered for Tomorrow`, heroSubtitle: isService ? "Delivering reliable expertise, seamless project execution, and personalized client solutions." : "Experience premium structural efficiency and elegant styling combinations tailored to your routine." }));
+        prompt = `You are a professional copywriter. Write a highly converting, modern Hero Section for a business named "${branding?.name || 'our company'}" (Industry: ${isService ? 'Service/Consulting' : 'E-commerce/Retail'}). Return ONLY a raw JSON object exactly like this, no markdown wrappers: {"heroTitle": "Short punchy headline", "heroSubtitle": "A persuasive, slightly longer subtext (1-2 sentences)"}`;
       } else if (section === 'about') {
-        setSiteConfig(prev => ({ ...prev, aboutText: `Our mission at ${branding?.name || 'LaunchAxis'} is rooted in radical operational excellence. We deliver high-performance solutions optimized for sustainability and client success.` }));
+        prompt = `You are a professional brand storyteller. Write a compelling 'About Us' biography (around 3-4 sentences) for a business named "${branding?.name || 'our company'}". Emphasize operational excellence, customer success, and high-quality deliverables. Return ONLY the raw text, no quotes or markdown.`;
       }
+
+      const response = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+
+      if (section === 'hero') {
+        const cleanJson = data.text.replace(/```json/g, '').replace(/```/g, '').trim();
+        const parsed = JSON.parse(cleanJson);
+        setSiteConfig(prev => ({ 
+          ...prev, 
+          heroTitle: parsed.heroTitle || prev.heroTitle, 
+          heroSubtitle: parsed.heroSubtitle || prev.heroSubtitle 
+        }));
+      } else if (section === 'about') {
+        setSiteConfig(prev => ({ ...prev, aboutText: data.text.trim() }));
+      }
+    } catch (error) {
+      console.error("AI Generation failed:", error);
+      alert("Failed to generate content: " + error.message);
+    } finally {
       setIsGenerating({ ...isGenerating, [section]: false });
-    }, 1200);
+    }
   };
 
   const cardStyle = { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '32px', marginBottom: '24px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' };
@@ -404,11 +433,11 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
               </div>
             </div>
             <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>Instagram URL</label>
-            <input type="text" value={siteConfig.socials?.instagram || ''} onChange={(e) => handleTextChange('socials', 'instagram', e.target.value, 150)} placeholder="https://instagram.com/..." style={{ ...inputStyle, marginTop: 0, marginBottom: '20px' }} />
+            <input type="text" value={siteConfig.socials?.instagram || ''} onChange={(e) => handleTextChange('socials', 'instagram', e.target.value, 150)} placeholder="[https://instagram.com/](https://instagram.com/)..." style={{ ...inputStyle, marginTop: 0, marginBottom: '20px' }} />
             <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>Facebook URL</label>
-            <input type="text" value={siteConfig.socials?.facebook || ''} onChange={(e) => handleTextChange('socials', 'facebook', e.target.value, 150)} placeholder="https://facebook.com/..." style={{ ...inputStyle, marginTop: 0, marginBottom: '20px' }} />
+            <input type="text" value={siteConfig.socials?.facebook || ''} onChange={(e) => handleTextChange('socials', 'facebook', e.target.value, 150)} placeholder="[https://facebook.com/](https://facebook.com/)..." style={{ ...inputStyle, marginTop: 0, marginBottom: '20px' }} />
             <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>LinkedIn URL</label>
-            <input type="text" value={siteConfig.socials?.linkedin || ''} onChange={(e) => handleTextChange('socials', 'linkedin', e.target.value, 150)} placeholder="https://linkedin.com/..." style={{ ...inputStyle, marginTop: 0 }} />
+            <input type="text" value={siteConfig.socials?.linkedin || ''} onChange={(e) => handleTextChange('socials', 'linkedin', e.target.value, 150)} placeholder="[https://linkedin.com/](https://linkedin.com/)..." style={{ ...inputStyle, marginTop: 0 }} />
           </div>
         )}
       </div>
