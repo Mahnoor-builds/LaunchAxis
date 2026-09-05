@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { doc, getDoc, updateDoc, setDoc, collection, onSnapshot, addDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from './firebaseConfig';
@@ -353,16 +353,17 @@ function App() {
         
         <Route path="/profile" element={<ProfileHub branding={branding} />} />
 
-        <Route path="/checkout" element={<ShopCheckout cart={cart} branding={branding} onPlaceOrder={placeOrder} siteConfig={siteConfig} />} />
+        {/* 2. USER STORE ROUTES */}
+        <Route path="/store/checkout" element={<ShopCheckout cart={cart} branding={branding} onPlaceOrder={placeOrder} siteConfig={siteConfig} />} />
         
-        <Route path="/catalog" element={
+        <Route path="/store/catalog" element={
           <>
             <ShopCartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} updateQty={updateQty} removeFromCart={removeFromCart} />
             <ShopCatalog branding={branding} products={products} cartCount={cart.reduce((sum, item) => sum + item.qty, 0)} addToCart={addToCart} siteConfig={siteConfig} openCart={() => setIsCartOpen(true)} />
           </>
         } />
 
-        <Route path="/" element={
+        <Route path="/store" element={
           isService ? (
              <ServiceTemplate 
                 branding={branding} 
@@ -377,6 +378,9 @@ function App() {
             </>
           )
         } />
+
+        {/* 3. ROOT REDIRECT TO ADMIN DASHBOARD */}
+        <Route path="/" element={<Navigate to="/admin" replace />} />
       </Routes>
     </Router>
   );
