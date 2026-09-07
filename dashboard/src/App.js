@@ -4,7 +4,15 @@ import { doc, getDoc, updateDoc, setDoc, collection, onSnapshot, addDoc } from '
 import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from './firebaseConfig';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCog, faUserCircle, faBars } from '@fortawesome/free-solid-svg-icons'; // Ensure faBars is imported at the top!
+import { faCog, faUserCircle, faBars } from '@fortawesome/free-solid-svg-icons'; 
+
+// MARKETING & AUTH COMPONENTS
+import Homepage from './components/homepage/Homepage';
+import Auth from './components/auth/Auth';
+import Login from './components/auth/Login';
+import StartBuilding from './components/auth/StartBuilding';
+import LoadingKernel from './components/auth/LoadingKernel';
+
 // ADMIN COMPONENTS
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -88,8 +96,6 @@ const AdminPanel = ({
           {activeSection === 'settings' && <Settings branding={branding} setSiteConfig={setSiteConfig} siteConfig={siteConfig}/>} 
         </main>
       </div>
-      
-      {/* <AxisChatbot branding={branding} /> */} 
     </div>
   );
 };
@@ -337,6 +343,18 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* ======================================= */}
+        {/* 1. PUBLIC MARKETING & AUTH ROUTES       */}
+        {/* ======================================= */}
+        <Route path="/" element={<Homepage />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/start-building" element={<StartBuilding />} />
+        <Route path="/loading" element={<LoadingKernel />} />
+
+        {/* ======================================= */}
+        {/* 2. ADMIN DASHBOARD ROUTE                */}
+        {/* ======================================= */}
         <Route path="/admin" element={
           <AdminPanel 
             branding={branding} setBranding={setBranding}
@@ -353,7 +371,9 @@ function App() {
         
         <Route path="/profile" element={<ProfileHub branding={branding} />} />
 
-        {/* 2. USER STORE ROUTES */}
+        {/* ======================================= */}
+        {/* 3. USER STORE ROUTES                    */}
+        {/* ======================================= */}
         <Route path="/store/checkout" element={<ShopCheckout cart={cart} branding={branding} onPlaceOrder={placeOrder} siteConfig={siteConfig} />} />
         
         <Route path="/store/catalog" element={
@@ -378,9 +398,6 @@ function App() {
             </>
           )
         } />
-
-        {/* 3. ROOT REDIRECT TO ADMIN DASHBOARD */}
-        <Route path="/" element={<Navigate to="/admin" replace />} />
       </Routes>
     </Router>
   );

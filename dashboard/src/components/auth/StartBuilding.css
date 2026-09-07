@@ -1,0 +1,96 @@
+.start-building-wrapper {
+  --bg-dark: #030712;
+  --card-bg: rgba(10, 10, 14, 0.7);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --neon-teal: #2dd4bf;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  position: relative;
+  overflow-x: hidden;
+  font-family: 'Inter', sans-serif;
+}
+
+.start-building-wrapper * { box-sizing: border-box; }
+
+.start-building-wrapper .space-ambient-glow { position: fixed; top: -10%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(45, 212, 191, 0.1) 0%, transparent 60%); z-index: -1; }
+.start-building-wrapper .space-ambient-glow-2 { position: fixed; bottom: -10%; right: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 60%); z-index: -1; }
+.start-building-wrapper .cosmic-dust-overlay { position: fixed; inset: 0; background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 50px 50px; opacity: 0.03; z-index: -1; }
+
+.start-building-wrapper .form-container {
+  background: var(--card-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  padding: clamp(2rem, 5vw, 3rem); border-radius: 20px; border: 1px solid var(--border-color);
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+  max-width: 800px; width: 100%; animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.start-building-wrapper .header-text { text-align: center; margin-bottom: 2.5rem; }
+.start-building-wrapper .header-text h2 { font-size: clamp(1.8rem, 4vw, 2.2rem); font-weight: 800; margin: 0 0 8px 0; letter-spacing: -0.5px; }
+.start-building-wrapper .header-text p { color: var(--neon-teal); margin: 0; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; font-size: 0.85rem; }
+
+.start-building-wrapper .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 768px) { .start-building-wrapper .form-grid { grid-template-columns: 1fr; } }
+
+.start-building-wrapper .full-width { grid-column: 1 / -1; }
+.start-building-wrapper .form-group { display: flex; flex-direction: column; }
+.start-building-wrapper label.field-label { font-weight: 700; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.start-building-wrapper input[type="text"], 
+.start-building-wrapper input[type="email"], 
+.start-building-wrapper textarea {
+  width: 100%; padding: 0.9rem 1rem; border-radius: 10px;
+  border: 1px solid #1e293b; background-color: #0f172a;
+  color: var(--text-main); font-size: 0.95rem; transition: all 0.2s ease; resize: vertical;
+}
+.start-building-wrapper input:focus, .start-building-wrapper textarea:focus { outline: none; border-color: var(--neon-teal); background-color: #020617; box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.15); }
+
+.start-building-wrapper .selection-group { background: #0f172a; padding: 1rem; border-radius: 10px; border: 1px solid #1e293b; display: flex; flex-direction: column; gap: 12px; }
+.start-building-wrapper .selection-group.row-layout { flex-direction: row; flex-wrap: wrap; gap: 20px; }
+.start-building-wrapper .radio-label { display: flex; align-items: center; font-size: 0.9rem; font-weight: 600; cursor: pointer; color: #e2e8f0; transition: color 0.2s; }
+.start-building-wrapper .radio-label:hover { color: var(--neon-teal); }
+.start-building-wrapper input[type="checkbox"], .start-building-wrapper input[type="radio"] { accent-color: var(--neon-teal); width: 16px; height: 16px; margin-right: 10px; cursor: pointer; }
+
+.start-building-wrapper .submit-btn {
+  background: linear-gradient(135deg, #00f0ff, #8B5CF6); color: #000;
+  font-weight: 800; font-size: 1rem; border: none; padding: 1.1rem; border-radius: 10px;
+  cursor: pointer; margin-top: 1rem; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.start-building-wrapper .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0, 240, 255, 0.25); }
+
+/* CUSTOM MODAL */
+.start-building-wrapper .modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px);
+  display: none; justify-content: center; align-items: center; z-index: 1000;
+  opacity: 0; transition: opacity 0.3s ease;
+}
+.start-building-wrapper .modal-overlay.active { display: flex; opacity: 1; }
+
+.start-building-wrapper .modal-card {
+  background: rgba(10, 10, 14, 0.9); border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px; padding: 2.5rem; max-width: 400px; width: 90%;
+  text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+  transform: translateY(20px); transition: transform 0.3s ease;
+}
+.start-building-wrapper .modal-overlay.active .modal-card { transform: translateY(0); }
+
+.start-building-wrapper .modal-icon { width: 60px; height: 60px; background: rgba(45, 212, 191, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: var(--neon-teal); margin: 0 auto 1.5rem; border: 1px solid rgba(45, 212, 191, 0.3); }
+.start-building-wrapper .modal-card h3 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; color: #fff; }
+.start-building-wrapper .modal-card p { font-size: 0.9rem; color: #94a3b8; margin-bottom: 2rem; line-height: 1.5; }
+
+.start-building-wrapper .modal-btn-primary { display: block; width: 100%; background: #2dd4bf; color: #020617; font-weight: 800; padding: 0.9rem; border-radius: 8px; text-decoration: none; margin-bottom: 12px; transition: background 0.2s; }
+.start-building-wrapper .modal-btn-primary:hover { background: #14b8a6; }
+
+.start-building-wrapper .modal-btn-secondary { display: block; width: 100%; background: transparent; color: #f8fafc; border: 1px solid #334155; font-weight: 700; padding: 0.9rem; border-radius: 8px; text-decoration: none; transition: background 0.2s; margin-bottom: 1rem; }
+.start-building-wrapper .modal-btn-secondary:hover { background: #1e293b; }
+
+.start-building-wrapper .close-modal { background: none; border: none; color: #64748b; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-decoration: underline; }
+.start-building-wrapper .close-modal:hover { color: #f8fafc; }
