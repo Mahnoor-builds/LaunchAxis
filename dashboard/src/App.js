@@ -5,6 +5,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from './firebaseConfig';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCog, faUserCircle, faBars } from '@fortawesome/free-solid-svg-icons'; 
+import AxisChatbot from './components/chatbot/AxisChatbot';
 
 // MARKETING & AUTH COMPONENTS
 import Homepage from './components/homepage/Homepage';
@@ -351,6 +352,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/start-building" element={<StartBuilding />} />
         <Route path="/loading" element={<LoadingKernel />} />
+        <Route path="/axis" element={<AxisChatbot />} />
 
         {/* ======================================= */}
         {/* 2. ADMIN DASHBOARD ROUTE                */}
