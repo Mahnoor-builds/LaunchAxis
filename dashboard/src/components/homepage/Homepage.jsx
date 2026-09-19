@@ -120,35 +120,37 @@ const Homepage = () => {
         </div>
         
         {/* SECURE AUTHENTICATION CONTAINER */}
-        <div className="nav-actions">
-          {userProfile ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <a href="/profile" style={{
-                  display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(45, 212, 191, 0.1)', 
-                  border: '1px solid rgba(45, 212, 191, 0.3)', padding: '6px 16px 6px 8px', 
-                  borderRadius: '100px', textDecoration: 'none', color: '#f8fafc',
-                  fontSize: '13px', fontWeight: '600', transition: 'all 0.2s ease'
-                }}
-              >
-                <div style={{
-                    width: '28px', height: '28px', borderRadius: '50%', background: '#2dd4bf', 
-                    color: '#030712', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                    fontWeight: '800', fontSize: '12px'
-                  }}
-                >
-                  {userProfile}
-                </div>
-                <span>Founder Hub &rarr;</span>
-              </a>
-            </div>
-          ) : (
-            <>
-              <a href="/auth" className="login-link">Signup</a>
-              <a href="/start-building" className="btn-pill-cta" style={{ textDecoration: 'none' }}>Start building &rarr;</a>
-            </>
-          )}
+<div className="nav-actions">
+  {userProfile ? (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <button 
+        onClick={() => navigate('/profile')} 
+        style={{
+          display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(45, 212, 191, 0.1)', 
+          border: '1px solid rgba(45, 212, 191, 0.3)', padding: '6px 16px 6px 8px', 
+          borderRadius: '100px', color: '#f8fafc', fontSize: '13px', fontWeight: '600', 
+          transition: 'all 0.2s ease', cursor: 'pointer'
+        }}
+      >
+        <div style={{
+            width: '28px', height: '28px', borderRadius: '50%', background: '#2dd4bf', 
+            color: '#030712', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+            fontWeight: '800', fontSize: '12px'
+          }}
+        >
+          {userProfile}
         </div>
-      </nav>
+        <span>Founder Hub &rarr;</span>
+      </button>
+    </div>
+  ) : (
+    <>
+      <button onClick={() => navigate('/auth')} className="login-link" style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer' }}>Signup</button>
+      <button onClick={() => navigate('/start-building')} className="btn-pill-cta" style={{ border: 'none', cursor: 'pointer' }}>Start building &rarr;</button>
+    </>
+  )}
+</div>  
+    </nav>
 
       {/* 2. HIGH-ALTITUDE HERO BLOCK */}
       <header id="platform" className="hero-section">

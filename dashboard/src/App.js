@@ -5,7 +5,6 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from './firebaseConfig';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCog, faUserCircle, faBars } from '@fortawesome/free-solid-svg-icons'; 
-import AxisChatbot from './components/chatbot/AxisChatbot';
 
 // MARKETING & AUTH COMPONENTS
 import Homepage from './components/homepage/Homepage';
@@ -26,6 +25,7 @@ import Settings from './components/Settings';
 import ProfileHub from './components/ProfileHub';
 import Projects from './components/Projects';
 import Leads from './components/Leads';
+import AxisChatbot from './components/chatbot/AxisChatbot';
 
 // SHOP COMPONENTS
 import ShopHome from './components/shop/ShopHome';
@@ -65,7 +65,6 @@ const AdminPanel = ({
       <div className="admin-main-wrapper">
         <header className="admin-topbar">
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            {/* Hamburger Button for Mobile */}
             <button className="mobile-menu-btn" onClick={() => setIsMobileOpen(true)}>
               <FontAwesomeIcon icon={faBars} />
             </button>
@@ -79,7 +78,7 @@ const AdminPanel = ({
             <button className="icon-btn" title="Settings" onClick={() => setActiveSection('settings')}>
               <FontAwesomeIcon icon={faCog} />
             </button>
-            <button className="icon-btn profile-btn" title="Account Profile" onClick={() => window.location.href = '/profile'}>
+            <button className="icon-btn profile-btn" title="Account Profile" onClick={() => setActiveSection('profile')}>
               <FontAwesomeIcon icon={faUserCircle} />
             </button>
           </div>
@@ -95,6 +94,7 @@ const AdminPanel = ({
           {activeSection === 'leads' && <Leads />}
           {activeSection === 'orders' && <Orders orders={orders} updateOrderStatus={updateOrderStatus} />}
           {activeSection === 'settings' && <Settings branding={branding} setSiteConfig={setSiteConfig} siteConfig={siteConfig}/>} 
+          {activeSection === 'profile' && <ProfileHub branding={branding} />} 
         </main>
       </div>
     </div>
@@ -108,6 +108,7 @@ function App() {
   const [isAiLoading, setIsAiLoading] = useState(true);
   const [userFeatures, setUserFeatures] = useState(null);
   const [currentUserEmail, setCurrentUserEmail] = useState(null); 
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
 
   const [branding, setBranding] = useState({ name: 'Loading...', slogan: '', industry: '', logo: '', owners: [{ name: 'Admin', role: 'Founder' }] });
   const [siteConfig, setSiteConfig] = useState({ themeColor: '#2dd4bf', showHero: true, notificationEmail: 'orders@launchaxis.com', supportEmail: 'help@launchaxis.com', socials: { facebook: '', instagram: '' }, menuItems: [{ id: 1, label: 'Home', link: '#home' }, { id: 2, label: 'Catalog', link: '#catalog' }, { id: 3, label: 'About', link: '#about' }] });
@@ -123,9 +124,8 @@ function App() {
   
   const [inventory, setInventory] = useState([]);
   const [activeSection, setActiveSection] = useState('dashboard');
-  const isService = true; // Temporary hardcode for testing
+  const isService = true; 
 
-  // --- CART LOGIC ---
   const addToCart = (product) => {
     setCart(prevCart => {
       const existing = prevCart.find(item => item.cartId === product.cartId);
@@ -156,22 +156,24 @@ function App() {
     let unsubscribeProjects = null;
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+      setIsAuthChecking(true);
       try {
-        let targetId = "ceo@ecosole.store"; 
-        const rawMemory = localStorage.getItem("launchAxisTempData");
-        if (rawMemory) targetId = JSON.parse(rawMemory).email;
-
-        if (user) {
-          targetId = user.uid;
+        if (!user) {
+            setCurrentUserEmail(null);
+            setIsAuthChecking(false);
+            setIsAiLoading(false);
+            return; 
         }
+
+        let targetId = user.uid;
+        setCurrentUserEmail(targetId);
 
         const docRef = doc(db, "users", targetId);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
             const liveData = docSnap.data();
-            setCurrentUserEmail(targetId);
-
+            
             if (liveData.aiArchitecture) {
                 setBranding(prev => ({ ...prev, name: liveData.aiArchitecture.businessName, slogan: liveData.aiArchitecture.tagline, industry: liveData.businessType }));
             }
@@ -189,7 +191,6 @@ function App() {
             if (liveData.inventory) setInventory(liveData.inventory); 
         }
 
-        // --- 1. LIVE PRODUCTS SUBCOLLECTION LISTENER ---
         const productsRef = collection(db, `users/${targetId}/products`);
         unsubscribeProducts = onSnapshot(productsRef, (snapshot) => {
             const liveProducts = [];
@@ -199,7 +200,6 @@ function App() {
             setProducts(liveProducts);
         });
 
-        // --- 2. LIVE ORDERS SUBCOLLECTION LISTENER ---
         const ordersRef = collection(db, `users/${targetId}/orders`);
         unsubscribeOrders = onSnapshot(ordersRef, (snapshot) => {
             const liveOrders = [];
@@ -209,7 +209,6 @@ function App() {
             setOrders(liveOrders);
         });
 
-        // --- 3. LIVE PROJECTS SUBCOLLECTION LISTENER ---
         const projectsRef = collection(db, `users/${targetId}/projects`);
         unsubscribeProjects = onSnapshot(projectsRef, (snapshot) => {
             const liveProjects = [];
@@ -222,6 +221,7 @@ function App() {
       } catch (error) {
           console.error("Firebase Sync Error:", error);
       } finally {
+          setIsAuthChecking(false);
           setIsAiLoading(false);
       }
     });
@@ -244,13 +244,10 @@ function App() {
     }
   };
 
-  // --- HELPERS (DECOUPLED FROM FINANCE) ---
   const updateOrderStatus = async (id, status, trackId) => {
     try {
-      let targetId = "ceo@ecosole.store"; 
-      if (auth.currentUser) targetId = auth.currentUser.uid;
-
-      const orderRef = doc(db, `users/${targetId}/orders`, id);
+      if (!currentUserEmail) return;
+      const orderRef = doc(db, `users/${currentUserEmail}/orders`, id);
       await updateDoc(orderRef, { status, trackingId: trackId });
     } catch (error) {
       console.error("Error updating order status:", error);
@@ -288,7 +285,6 @@ function App() {
     syncToFirebase("inventory", updatedList);
   };
 
-  // --- LEAD SUBMISSION LOGIC ---
   const handleSubmitLead = async (leadData) => {
     try {
       let targetId = "ceo@ecosole.store"; 
@@ -306,7 +302,6 @@ function App() {
     }
   };
 
-  // --- UPDATED PLACE ORDER LOGIC ---
   const placeOrder = async (orderDetails) => {
     const orderId = `ord_${Math.floor(Math.random() * 100000)}`;
     
@@ -339,43 +334,44 @@ function App() {
     }
   };
 
+  // =========================================
+  // PROTECTED ROUTE COMPONENT
+  // =========================================
+  const ProtectedRoute = ({ children }) => {
+    if (isAuthChecking) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: '#111', color: '#2dd4bf', fontSize: '24px', fontWeight: 'bold' }}>Authenticating Session...</div>;
+    if (!currentUserEmail) return <Navigate to="/" replace />;
+    return children;
+  };
+
   if (isAiLoading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', backgroundColor: '#111', color: '#2dd4bf', fontSize: '24px', fontWeight: 'bold' }}>INITIALIZING LAUNCHAXIS AI KERNEL...</div>;
 
   return (
     <Router>
       <Routes>
-        {/* ======================================= */}
-        {/* 1. PUBLIC MARKETING & AUTH ROUTES       */}
-        {/* ======================================= */}
         <Route path="/" element={<Homepage />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/login" element={<Login />} />
         <Route path="/start-building" element={<StartBuilding />} />
         <Route path="/loading" element={<LoadingKernel />} />
         <Route path="/axis" element={<AxisChatbot />} />
+        <Route path="/profile" element={<ProfileHub />} />
 
-        {/* ======================================= */}
-        {/* 2. ADMIN DASHBOARD ROUTE                */}
-        {/* ======================================= */}
         <Route path="/admin" element={
-          <AdminPanel 
-            branding={branding} setBranding={setBranding}
-            products={products} setProducts={setProducts}
-            orders={orders} updateOrderStatus={updateOrderStatus}
-            transactions={transactions} addTransaction={addTransaction}
-            accounts={accounts} addAccount={addAccount} updateAccount={updateAccount}
-            inventory={inventory} addInventoryItem={addInventoryItem} updateInventoryItem={updateInventoryItem} 
-            activeSection={activeSection} setActiveSection={setActiveSection}
-            siteConfig={siteConfig} setSiteConfig={setSiteConfig}
-            features={userFeatures}
-          />
+          <ProtectedRoute>
+            <AdminPanel 
+              branding={branding} setBranding={setBranding}
+              products={products} setProducts={setProducts}
+              orders={orders} updateOrderStatus={updateOrderStatus}
+              transactions={transactions} addTransaction={addTransaction}
+              accounts={accounts} addAccount={addAccount} updateAccount={updateAccount}
+              inventory={inventory} addInventoryItem={addInventoryItem} updateInventoryItem={updateInventoryItem} 
+              activeSection={activeSection} setActiveSection={setActiveSection}
+              siteConfig={siteConfig} setSiteConfig={setSiteConfig}
+              features={userFeatures}
+            />
+          </ProtectedRoute>
         } />
         
-        <Route path="/profile" element={<ProfileHub branding={branding} />} />
-
-        {/* ======================================= */}
-        {/* 3. USER STORE ROUTES                    */}
-        {/* ======================================= */}
         <Route path="/store/checkout" element={<ShopCheckout cart={cart} branding={branding} onPlaceOrder={placeOrder} siteConfig={siteConfig} />} />
         
         <Route path="/store/catalog" element={

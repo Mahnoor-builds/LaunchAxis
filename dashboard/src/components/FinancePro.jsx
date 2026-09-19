@@ -21,6 +21,17 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
   const [reportFilter, setReportFilter] = useState('all'); 
   const [dateRange, setDateRange] = useState({ from: '', to: '' });
 
+  // --- QUOTA LOGIC (CADET / FREE PLAN) ---
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  const txThisMonth = transactions.filter(tx => {
+      const txDate = new Date(tx.date);
+      return txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear;
+  }).length;
+  
+  const FREE_TX_LIMIT = 50;
+  const isTxLimitReached = txThisMonth >= FREE_TX_LIMIT;
+
   // --- SMART BALANCE CALCULATOR ---
   const getAccountStatus = (account) => {
     let balance = 0;
@@ -56,6 +67,7 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
 
   // --- SUBMIT LOGIC ---
   const handleTxSubmit = () => {
+    if(isTxLimitReached) return alert("Monthly transaction limit reached on the Free plan.");
     if(!txForm.desc || !txForm.amount || !txForm.accountId) return alert("Please fill all details.");
     const selectedAcc = accounts.find(a => a.id == txForm.accountId);
     addTransaction({ ...txForm, amount: parseFloat(txForm.amount), date: new Date().toLocaleDateString(), accountName: selectedAcc ? selectedAcc.name : 'Unknown Account' });
@@ -250,12 +262,17 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'flex-start' }}>
            
            <div className="card" style={{ flex: '1 1 320px', padding: '30px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-              <h3 style={{ margin: '0 0 24px 0', color: 'var(--text-dark)', display: 'flex', alignItems: 'center' }}>
-                  <FontAwesomeIcon icon={faPlus} style={{ color: 'var(--primary)', marginRight: '10px' }} /> Transaction & Invoicing
-              </h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h3 style={{ margin: '0', color: 'var(--text-dark)', display: 'flex', alignItems: 'center' }}>
+                    <FontAwesomeIcon icon={faPlus} style={{ color: 'var(--primary)', marginRight: '10px' }} /> Transaction & Invoicing
+                </h3>
+                <span style={{ fontSize: '12px', fontWeight: 'bold', color: isTxLimitReached ? '#ef4444' : '#64748b', background: isTxLimitReached ? '#fef2f2' : '#f1f5f9', padding: '4px 8px', borderRadius: '12px' }}>
+                    {txThisMonth} / {FREE_TX_LIMIT} Used
+                </span>
+              </div>
               
               <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold', color: 'var(--text-dark)' }}>Transaction Type</label>
-              <select className="input-neon" style={{ marginBottom: '20px', padding: '12px' }} value={txForm.type} onChange={e=>setTxForm({...txForm, type:e.target.value, category: e.target.value === 'invoice_out' ? 'Website Sales' : 'General'})}>
+              <select className="input-neon" style={{ marginBottom: '20px', padding: '12px' }} value={txForm.type} onChange={e=>setTxForm({...txForm, type:e.target.value, category: e.target.value === 'invoice_out' ? 'Website Sales' : 'General'})} disabled={isTxLimitReached}>
                   <option value="invoice_out">📄 Sales Invoice (Customer owes you)</option>
                   <option value="payment_in">💵 Payment Received (Cash In)</option>
                   <option value="bill_in">🧾 Purchase Bill (You owe Supplier)</option>
@@ -265,14 +282,14 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
               <div style={{ display:'flex', flexWrap: 'wrap', gap:'16px', marginBottom: '20px' }}>
                 <div style={{ flex: '1 1 140px' }}>
                     <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold', color: 'var(--text-dark)' }}>Target Account</label>
-                    <select className="input-neon" style={{ marginBottom: 0, padding: '12px' }} value={txForm.accountId} onChange={e=>setTxForm({...txForm, accountId:e.target.value})}>
+                    <select className="input-neon" style={{ marginBottom: 0, padding: '12px' }} value={txForm.accountId} onChange={e=>setTxForm({...txForm, accountId:e.target.value})} disabled={isTxLimitReached}>
                         <option value="">-- Select Entity --</option>
                         {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name} ({acc.category})</option>)}
                     </select>
                 </div>
                 <div style={{ flex: '1 1 140px' }}>
                     <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold', color: 'var(--text-dark)' }}>Category</label>
-                    <select className="input-neon" style={{ marginBottom: 0, padding: '12px' }} value={txForm.category} onChange={e=>setTxForm({...txForm, category:e.target.value})}>
+                    <select className="input-neon" style={{ marginBottom: 0, padding: '12px' }} value={txForm.category} onChange={e=>setTxForm({...txForm, category:e.target.value})} disabled={isTxLimitReached}>
                         <option value="Website Sales">Website Sales</option>
                         <option value="Inventory Purchase">Inventory Purchase</option>
                         <option value="Payroll">Payroll / Salary</option>
@@ -285,14 +302,22 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
               </div>
 
               <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold', color: 'var(--text-dark)' }}>Details & Amount</label>
-              <input className="input-neon" style={{ marginBottom: '16px', padding: '12px' }} placeholder="Short Description" value={txForm.desc} onChange={e=>setTxForm({...txForm, desc:e.target.value})} />
+              <input className="input-neon" style={{ marginBottom: '16px', padding: '12px' }} placeholder="Short Description" value={txForm.desc} onChange={e=>setTxForm({...txForm, desc:e.target.value})} disabled={isTxLimitReached} />
               
               <div style={{ position: 'relative' }}>
                   <span style={{ position: 'absolute', left: '16px', top: '14px', color: 'var(--text-muted)', fontWeight: 'bold' }}>{currency}</span>
-                  <input className="input-neon" style={{ marginBottom: '24px', padding: '12px 12px 12px 40px', fontSize: '16px', fontWeight: 'bold' }} type="number" placeholder="0.00" value={txForm.amount} onChange={e=>setTxForm({...txForm, amount:e.target.value})} />
+                  <input className="input-neon" style={{ marginBottom: '24px', padding: '12px 12px 12px 40px', fontSize: '16px', fontWeight: 'bold' }} type="number" placeholder="0.00" value={txForm.amount} onChange={e=>setTxForm({...txForm, amount:e.target.value})} disabled={isTxLimitReached} />
               </div>
 
-              <button className="btn btn-primary" style={{ width:'100%', padding: '16px', fontSize: '15px', fontWeight: 'bold', borderRadius: '8px' }} onClick={handleTxSubmit}>Record Transaction</button>
+              {isTxLimitReached && (
+                  <div style={{ background: '#fffbeb', border: '1px dashed #f59e0b', color: '#b45309', padding: '12px', borderRadius: '8px', marginBottom: '16px', fontSize: '13px', fontWeight: 'bold', textAlign: 'center' }}>
+                     <FontAwesomeIcon icon={faTriangleExclamation} /> Free Tier Limit: 50/50 transactions used this month. Upgrade to Pilot to unlock unlimited entries.
+                  </div>
+              )}
+
+              <button className="btn btn-primary" style={{ width:'100%', padding: '16px', fontSize: '15px', fontWeight: 'bold', borderRadius: '8px', opacity: isTxLimitReached ? 0.5 : 1, cursor: isTxLimitReached ? 'not-allowed' : 'pointer' }} onClick={handleTxSubmit} disabled={isTxLimitReached}>
+                  Record Transaction
+              </button>
            </div>
            
            <div className="card" style={{ flex: '1 1 320px', padding: '30px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
