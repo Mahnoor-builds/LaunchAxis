@@ -71,10 +71,16 @@ const Branding = ({ branding, setBranding }) => {
     if (!domainToCheck) return false;
     setDomainStatus('checking');
     try {
-      const res = await fetch(`https://api.api-ninjas.com/v1/whois?domain=${domainToCheck}`, {
-        headers: { 'X-Api-Key': process.env.REACT_APP_API_NINJAS_KEY }
+      const res = await fetch('/api/whois', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain: domainToCheck })
       });
+      
       const data = await res.json();
+      
+      if (data.error) throw new Error(data.error);
+
       const isTaken = Boolean(data.registrar || data.creation_date);
       setDomainStatus(isTaken ? 'taken' : 'available');
       return !isTaken;

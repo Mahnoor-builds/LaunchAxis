@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faGlobe, faToggleOn, faToggleOff, faTrash, faPlus,
   faEnvelope, faBars, faPalette, faFont, faHeading, faMagic, faTags, faLock, faUpload,
-  faSave, faLink, faExternalLinkAlt, faShareAlt, faTruck, faImage, faUsers, faCheckCircle, faBriefcase, faScaleBalanced
+  faSave, faLink, faExternalLinkAlt, faShareAlt, faTruck, faImage, faUsers, faCheckCircle, faBriefcase, faScaleBalanced, faTriangleExclamation, faTimesCircle, faSearch
 } from '@fortawesome/free-solid-svg-icons';
 
 import { doc, setDoc } from 'firebase/firestore';
@@ -15,13 +15,17 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
   const [activeTab, setActiveTab] = useState('hero_about'); 
   const [activeSubSection, setActiveSubSection] = useState('hero');
   
-  const [newCategory, setNewCategory] = useState('');
   const [newTeamMember, setNewTeamMember] = useState({ name: '', role: '', bio: '' });
   const [newStrength, setNewStrength] = useState({ title: '', desc: '', icon: 'fa-check' });
+  const [newCategoryName, setNewCategoryName] = useState('');
 
   const [isGenerating, setIsGenerating] = useState({ hero: false, about: false });
   const [isSaving, setIsSaving] = useState(false);
   const [isSearchingImage, setIsSearchingImage] = useState(false);
+
+  // --- CUSTOM POPUP MODALS STATE ---
+  const [alertModal, setAlertModal] = useState({ isOpen: false, type: 'success', title: '', message: '' });
+  const [unsplashModal, setUnsplashModal] = useState({ isOpen: false, targetField: '', keyword: '' });
 
   // --- CORE LINKS LOGIC ---
   let baseMenu = siteConfig.menuItems || [];
@@ -68,18 +72,38 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
     if (file) setSiteConfig({ ...siteConfig, [field]: URL.createObjectURL(file) });
   };
 
-  const handleUnsplashSearch = async (targetField) => {
-    const keyword = prompt("Enter a keyword to search Unsplash for an image:");
-    if (!keyword) return;
+  // ==============================
+  // SECURE UNSPLASH API LOGIC
+  // ==============================
+  const openUnsplashSearch = (targetField) => {
+    setUnsplashModal({ isOpen: true, targetField, keyword: '' });
+  };
+
+  const executeUnsplashSearch = async () => {
+    if (!unsplashModal.keyword.trim()) return;
     setIsSearchingImage(true);
+    setUnsplashModal(prev => ({ ...prev, isOpen: false })); 
+
     try {
-      const accessKey = process.env.REACT_APP_UNSPLASH_ACCESS_KEY;
-      if (!accessKey) { alert("Missing REACT_APP_UNSPLASH_ACCESS_KEY."); setIsSearchingImage(false); return; }
-      const response = await fetch(`[https://api.unsplash.com/search/photos?query=$](https://api.unsplash.com/search/photos?query=$){encodeURIComponent(keyword)}&per_page=1&orientation=landscape`, { headers: { 'Authorization': `Client-ID ${accessKey}` } });
+      // Secure call to backend API to protect the Unsplash key
+      const response = await fetch('/api/unsplash', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: unsplashModal.keyword })
+      });
       const data = await response.json();
-      if (data.results && data.results.length > 0) setSiteConfig(prev => ({ ...prev, [targetField]: data.results[0].urls.regular }));
-      else alert("No images found.");
-    } catch (error) { alert("Could not fetch image."); } finally { setIsSearchingImage(false); }
+      
+      if (data.url) {
+        setSiteConfig(prev => ({ ...prev, [unsplashModal.targetField]: data.url }));
+        setAlertModal({ isOpen: true, type: 'success', title: 'Image Applied', message: 'Unsplash image successfully added to your storefront.' });
+      } else {
+        setAlertModal({ isOpen: true, type: 'error', title: 'No Results', message: 'Could not find a high-quality image for that keyword.' });
+      }
+    } catch (error) {
+      setAlertModal({ isOpen: true, type: 'error', title: 'Connection Error', message: 'Failed to contact the image server.' });
+    } finally {
+      setIsSearchingImage(false);
+    }
   };
 
   const handleSaveToFirebase = async () => {
@@ -87,13 +111,41 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
       setIsSaving(true);
       const targetId = auth.currentUser ? auth.currentUser.uid : 'ceo@ecosole.store';
       await setDoc(doc(db, "users", targetId), { siteConfig }, { merge: true });
-      alert("✨ Website configuration successfully saved!");
-    } catch (error) { alert("Failed to save: " + error.message); } finally { setIsSaving(false); }
+      setAlertModal({ isOpen: true, type: 'success', title: 'System Saved', message: 'Website configuration successfully synchronized with the cloud.' });
+    } catch (error) { 
+      setAlertModal({ isOpen: true, type: 'error', title: 'Save Failed', message: error.message });
+    } finally { 
+      setIsSaving(false); 
+    }
+  };
+
+  const handleViewSite = () => {
+    if (siteConfig.isPublished) {
+      window.open(`https://${siteConfig.subdomain || 'yourstore'}.launchaxis.com`, '_blank');
+    } else {
+      setAlertModal({ isOpen: true, type: 'error', title: 'Store Offline', message: 'Your website is not published yet. Please save your configurations and enable publishing.' });
+    }
   };
 
   const updateMenuLabel = (id, newLabel) => {
     const updatedMenu = currentMenu.map(item => item.id === id ? { ...item, label: sanitizeInput(newLabel).substring(0, 20) } : item);
     setSiteConfig({ ...siteConfig, menuItems: updatedMenu });
+  };
+
+  // --- QUOTA CONTROLLED CATEGORY MANAGER ---
+  const addCategory = () => {
+    const currentCats = siteConfig.categories || [];
+    if (currentCats.length >= 3) {
+      setAlertModal({ isOpen: true, type: 'error', title: 'Free Tier Limit', message: 'You have reached the maximum of 3 product categories on the Cadet plan. Upgrade to Pilot to add unlimited collections.' });
+      return;
+    }
+    if (!newCategoryName.trim()) return;
+    setSiteConfig({ ...siteConfig, categories: [...currentCats, { id: `cat_${Date.now()}`, label: sanitizeInput(newCategoryName) }] });
+    setNewCategoryName('');
+  };
+
+  const removeCategory = (index) => {
+    setSiteConfig({ ...siteConfig, categories: (siteConfig.categories || []).filter((_, i) => i !== index) });
   };
 
   const addServiceCategory = () => {
@@ -154,8 +206,7 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
         setSiteConfig(prev => ({ ...prev, aboutText: data.text.trim() }));
       }
     } catch (error) {
-      console.error("AI Generation failed:", error);
-      alert("Failed to generate content: " + error.message);
+      setAlertModal({ isOpen: true, type: 'error', title: 'Generation Failed', message: error.message });
     } finally {
       setIsGenerating({ ...isGenerating, [section]: false });
     }
@@ -179,25 +230,25 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', boxSizing: 'border-box', paddingBottom: '60px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', boxSizing: 'border-box', paddingBottom: '60px', position: 'relative' }}>
       
       {/* TOP ACTION BAR */}
       <div style={{ maxWidth: '800px', width: '100%', margin: '0 auto', padding: '0 0 20px 0', flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
         <div>
           <h1 style={{ fontSize: '26px', margin: 0, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px', color: '#0f172a', fontWeight: '800' }}>
-            <FontAwesomeIcon icon={faGlobe} style={{ color: 'var(--brand-color, #2dd4bf)' }} /> {isService ? 'Service Portfolio' : 'Storefront'}
+            <FontAwesomeIcon icon={faGlobe} style={{ color: 'var(--brand-color, #2dd4bf)' }} /> {isService ? 'Service Portfolio' : 'Storefront Editor'}
           </h1>
           <p style={{ color: '#64748b', fontSize: '14px', margin: '5px 0 0' }}>Configure themes, navigation, and styling.</p>
         </div>
 
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', width: '100%', maxWidth: '350px' }}>
-          <button onClick={() => siteConfig.isPublished ? window.open(`https://${siteConfig.subdomain || 'yourstore'}.launchaxis.com`, '_blank') : alert('Website is offline.')}
+          <button onClick={handleViewSite}
             style={{ ...premiumBtnStyle, flex: '1 1 auto', justifyContent: 'center', background: '#f8fafc', color: '#0f172a', border: '1px solid #cbd5e1', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
             <FontAwesomeIcon icon={faExternalLinkAlt} /> View Site
           </button>
           <button onClick={handleSaveToFirebase} disabled={isSaving}
             style={{ ...premiumBtnStyle, flex: '1 1 auto', justifyContent: 'center', background: '#0f172a', color: '#fff', boxShadow: '0 4px 12px rgba(15, 23, 42, 0.2)' }}>
-            <FontAwesomeIcon icon={faSave} /> {isSaving ? 'Saving...' : 'Save'}
+            <FontAwesomeIcon icon={faSave} /> {isSaving ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </div>
@@ -268,7 +319,7 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
                       <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                         <input type="file" accept="image/*" id="hero-upload" style={{ display: 'none' }} onChange={(e) => handleImageUpload('heroImage', e)} />
                         <label htmlFor="hero-upload" style={{ ...premiumBtnStyle, flex: '1 1 140px', justifyContent: 'center', background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0', cursor: 'pointer' }}><FontAwesomeIcon icon={faUpload} /> Upload File</label>
-                        <button onClick={() => handleUnsplashSearch('heroImage')} disabled={isSearchingImage} style={{ ...premiumBtnStyle, flex: '1 1 140px', justifyContent: 'center', background: '#fff', color: '#0f172a', border: '1px solid #e2e8f0' }}><FontAwesomeIcon icon={faImage} style={{ color: '#3b82f6' }} /> Unsplash</button>
+                        <button onClick={() => openUnsplashSearch('heroImage')} disabled={isSearchingImage} style={{ ...premiumBtnStyle, flex: '1 1 140px', justifyContent: 'center', background: '#fff', color: '#0f172a', border: '1px solid #e2e8f0' }}><FontAwesomeIcon icon={faImage} style={{ color: '#3b82f6' }} /> Unsplash</button>
                       </div>
                     </div>
                     <div>
@@ -303,7 +354,7 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
                       <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                         <input type="file" accept="image/*" id="about-upload" style={{ display: 'none' }} onChange={(e) => handleImageUpload('aboutImage', e)} />
                         <label htmlFor="about-upload" style={{ ...premiumBtnStyle, flex: '1 1 140px', justifyContent: 'center', background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0', cursor: 'pointer' }}><FontAwesomeIcon icon={faUpload} /> Upload File</label>
-                        <button onClick={() => handleUnsplashSearch('aboutImage')} disabled={isSearchingImage} style={{ ...premiumBtnStyle, flex: '1 1 140px', justifyContent: 'center', background: '#fff', color: '#0f172a', border: '1px solid #e2e8f0' }}><FontAwesomeIcon icon={faImage} style={{ color: '#3b82f6' }} /> Unsplash</button>
+                        <button onClick={() => openUnsplashSearch('aboutImage')} disabled={isSearchingImage} style={{ ...premiumBtnStyle, flex: '1 1 140px', justifyContent: 'center', background: '#fff', color: '#0f172a', border: '1px solid #e2e8f0' }}><FontAwesomeIcon icon={faImage} style={{ color: '#3b82f6' }} /> Unsplash</button>
                       </div>
                     </div>
                     <div>
@@ -334,7 +385,36 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
           </div>
         )}
 
-        {/* TAB 3 (SERVICE): SERVICE CATEGORIES */}
+        {/* TAB 3 (ECOMMERCE): CATEGORIES MANAGER */}
+        {!isService && activeTab === 'categories' && (
+          <div style={cardStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '18px', margin: 0, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FontAwesomeIcon icon={faTags} style={{ color: 'var(--brand-color)' }} /> Collection Categories
+              </h3>
+              <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b', background: '#f1f5f9', padding: '4px 10px', borderRadius: '12px' }}>
+                {(siteConfig.categories || []).length} / 3 Used
+              </span>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
+              {(siteConfig.categories || []).map((cat, idx) => (
+                <div key={cat.id} style={{ padding: '16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <strong style={{ color: '#0f172a', fontSize: '15px' }}>{cat.label}</strong>
+                  <button onClick={() => removeCategory(idx)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '8px' }}><FontAwesomeIcon icon={faTrash} /></button>
+                </div>
+              ))}
+            </div>
+            
+            <div style={{ background: '#fff', border: '1px solid #e2e8f0', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+              <h4 style={{ margin: '0 0 12px', fontSize: '14px', color: '#0f172a' }}>Add New Collection</h4>
+              <input placeholder="e.g. Summer Wear" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} style={{...inputStyle, marginTop: 0, marginBottom: '16px'}} />
+              <button onClick={addCategory} style={{ ...premiumBtnStyle, background: '#0f172a', color: '#fff', width: '100%', justifyContent: 'center' }}><FontAwesomeIcon icon={faPlus} /> Add Category</button>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4 (SERVICE): SERVICE CATEGORIES */}
         {isService && activeTab === 'services' && (
           <div style={cardStyle}>
             <h3 style={{ fontSize: '18px', margin: '0 0 8px', color: '#0f172a' }}>Service Categories</h3>
@@ -358,7 +438,7 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
           </div>
         )}
 
-        {/* TAB 4 (SERVICE): LEADERSHIP TEAM */}
+        {/* TAB 5 (SERVICE): LEADERSHIP TEAM */}
         {isService && activeTab === 'team' && (
           <div style={cardStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
@@ -390,7 +470,7 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
           </div>
         )}
 
-        {/* TAB 5 (SERVICE): WHY CHOOSE US */}
+        {/* TAB 6 (SERVICE): WHY CHOOSE US */}
         {isService && activeTab === 'strengths' && (
           <div style={cardStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
@@ -433,14 +513,70 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
               </div>
             </div>
             <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>Instagram URL</label>
-            <input type="text" value={siteConfig.socials?.instagram || ''} onChange={(e) => handleTextChange('socials', 'instagram', e.target.value, 150)} placeholder="[https://instagram.com/](https://instagram.com/)..." style={{ ...inputStyle, marginTop: 0, marginBottom: '20px' }} />
+            <input type="text" value={siteConfig.socials?.instagram || ''} onChange={(e) => handleTextChange('socials', 'instagram', e.target.value, 150)} placeholder="https://instagram.com/..." style={{ ...inputStyle, marginTop: 0, marginBottom: '20px' }} />
             <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>Facebook URL</label>
-            <input type="text" value={siteConfig.socials?.facebook || ''} onChange={(e) => handleTextChange('socials', 'facebook', e.target.value, 150)} placeholder="[https://facebook.com/](https://facebook.com/)..." style={{ ...inputStyle, marginTop: 0, marginBottom: '20px' }} />
+            <input type="text" value={siteConfig.socials?.facebook || ''} onChange={(e) => handleTextChange('socials', 'facebook', e.target.value, 150)} placeholder="https://facebook.com/..." style={{ ...inputStyle, marginTop: 0, marginBottom: '20px' }} />
             <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#475569', marginBottom: '8px' }}>LinkedIn URL</label>
-            <input type="text" value={siteConfig.socials?.linkedin || ''} onChange={(e) => handleTextChange('socials', 'linkedin', e.target.value, 150)} placeholder="[https://linkedin.com/](https://linkedin.com/)..." style={{ ...inputStyle, marginTop: 0 }} />
+            <input type="text" value={siteConfig.socials?.linkedin || ''} onChange={(e) => handleTextChange('socials', 'linkedin', e.target.value, 150)} placeholder="https://linkedin.com/..." style={{ ...inputStyle, marginTop: 0 }} />
           </div>
         )}
       </div>
+
+      {/* ======================================= */}
+      {/* 1. STANDARD ALERT MODAL                 */}
+      {/* ======================================= */}
+      {alertModal.isOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
+          <div style={{ background: '#fff', width: '100%', maxWidth: '400px', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', overflow: 'hidden', padding: '30px 24px', textAlign: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', color: '#0f172a', fontWeight: '800' }}>
+                {alertModal.type === 'error' ? <FontAwesomeIcon icon={faTriangleExclamation} style={{ color: '#ef4444', marginRight: '8px' }} /> : <FontAwesomeIcon icon={faCheckCircle} style={{ color: '#10b981', marginRight: '8px' }} />}
+                {alertModal.title}
+              </h3>
+              <button onClick={() => setAlertModal({ ...alertModal, isOpen: false })} style={{ background: 'none', border: 'none', fontSize: '20px', color: '#64748b', cursor: 'pointer' }}>
+                <FontAwesomeIcon icon={faTimesCircle} />
+              </button>
+            </div>
+            <p style={{ fontSize: '14px', color: '#475569', lineHeight: '1.6', marginBottom: '24px' }}>{alertModal.message}</p>
+            <button onClick={() => setAlertModal({ ...alertModal, isOpen: false })} style={{ width: '100%', padding: '14px', background: '#0f172a', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}>
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================= */}
+      {/* 2. UNSPLASH SEARCH MODAL                */}
+      {/* ======================================= */}
+      {unsplashModal.isOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
+          <div style={{ background: '#fff', width: '100%', maxWidth: '400px', borderRadius: '16px', padding: '30px 24px' }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: '18px', color: '#0f172a', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FontAwesomeIcon icon={faImage} style={{ color: '#3b82f6' }} /> Search Unsplash
+            </h3>
+            <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '20px' }}>Enter a keyword to automatically find and apply a high-quality, royalty-free image.</p>
+            
+            <input 
+              autoFocus
+              placeholder="e.g. minimalist office, nature, luxury..." 
+              value={unsplashModal.keyword} 
+              onChange={(e) => setUnsplashModal({ ...unsplashModal, keyword: e.target.value })} 
+              style={{ ...inputStyle, marginTop: 0, marginBottom: '24px' }} 
+              onKeyDown={(e) => e.key === 'Enter' && executeUnsplashSearch()}
+            />
+            
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button onClick={() => setUnsplashModal({ ...unsplashModal, isOpen: false })} style={{ flex: 1, padding: '12px', background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}>
+                Cancel
+              </button>
+              <button onClick={executeUnsplashSearch} disabled={isSearchingImage} style={{ flex: 1, padding: '12px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer' }}>
+                {isSearchingImage ? 'Searching...' : 'Search'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
