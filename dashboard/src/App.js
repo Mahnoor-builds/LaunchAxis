@@ -353,7 +353,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/start-building" element={<StartBuilding />} />
         <Route path="/loading" element={<LoadingKernel />} />
-        <Route path="/axis" element={<AxisChatbot />} />
+        <Route path="/chatbot" element={<AxisChatbot />} />
         <Route path="/profile" element={<ProfileHub />} />
 
         <Route path="/admin" element={
