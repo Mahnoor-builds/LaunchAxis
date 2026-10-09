@@ -98,7 +98,7 @@ const Auth = () => {
 
           <div className="divider">Or register with email</div>
 
-          <form onSubmit={handleSignup}>
+          <form onSubmit={handleSignup} autoComplete="off">
             <div className="input-group">
               <label>Full Name</label>
               <input 
@@ -106,8 +106,9 @@ const Auth = () => {
                 name="fullName" 
                 value={formData.fullName} 
                 onChange={handleInputChange} 
-                placeholder="e.g. Mahnoor Naveed" 
+                placeholder="e.g. John" 
                 required 
+                autoComplete="off"
               />
             </div>
             
@@ -120,6 +121,7 @@ const Auth = () => {
                 onChange={handleInputChange} 
                 placeholder="ceo@startup.com" 
                 required 
+                autoComplete="off"
               />
             </div>
             
@@ -132,6 +134,7 @@ const Auth = () => {
                 onChange={handleInputChange} 
                 placeholder="Create a password" 
                 required 
+                autoComplete="new-password"
               />
               <ul className="password-rules">
                 <li><i className="fa-solid fa-circle"></i> Minimum 8 characters</li>
@@ -149,6 +152,7 @@ const Auth = () => {
                 onChange={handleInputChange} 
                 placeholder="Repeat your password" 
                 required 
+                autoComplete="new-password"
               />
               {errorMsg && <div className="error-msg" style={{ display: 'block' }}>{errorMsg}</div>}
             </div>

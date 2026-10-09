@@ -79,7 +79,7 @@ const Login = () => {
 
           <div className="divider">Or log in with email</div>
 
-          <form onSubmit={handleLogin}>
+          <form onSubmit={handleLogin} autoComplete="off">
             <div className="input-group">
               <label>Email Address</label>
               <input 
@@ -88,6 +88,7 @@ const Login = () => {
                 onChange={(e) => setEmail(e.target.value)} 
                 placeholder="ceo@startup.com" 
                 required 
+                autoComplete="off"
               />
             </div>
             
@@ -99,6 +100,7 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)} 
                 placeholder="Enter your password" 
                 required 
+                autoComplete="new-password"
               />
             </div>
             

@@ -48,7 +48,7 @@ const StartBuilding = () => {
 
     const userData = { 
       businessName: formData.businessName || "Auto-Generate", 
-      businessDesc: formData.formData, 
+      businessDesc: formData.businessDesc, 
       businessType: formData.businessType, 
       userType: formData.userType, 
       features: formData.needs, 
