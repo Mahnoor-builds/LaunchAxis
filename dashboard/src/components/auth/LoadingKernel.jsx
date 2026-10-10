@@ -16,6 +16,7 @@ const LoadingKernel = () => {
   const navigate = useNavigate();
   const [logs, setLogs] = useState([]);
   const [progress, setProgress] = useState(0);
+  const [errorModal, setErrorModal] = useState({ show: false, message: '' });
   const terminalRef = useRef(null);
 
   useEffect(() => {
@@ -63,7 +64,12 @@ const LoadingKernel = () => {
             body: JSON.stringify({ prompt: systemPrompt + "\n\n" + promptText })
         });
 
-        if (!response.ok) throw new Error(`API rejected request: HTTP ${response.status}`);
+        // UPDATED: Catch custom JSON errors from our new backend
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.error || `API rejected request: HTTP ${response.status}`);
+        }
+        
         const apiData = await response.json();
         
         let rawText = apiData.text;
@@ -101,7 +107,8 @@ const LoadingKernel = () => {
 
       } catch (error) {
         console.error("Kernel Failure:", error);
-        alert("LaunchAxis Kernel encountered an error: " + error.message);
+        // UPDATED: Trigger custom UI modal instead of browser alert
+        setErrorModal({ show: true, message: error.message });
       }
     };
 
@@ -146,6 +153,20 @@ const LoadingKernel = () => {
               <i className={log.icon}></i> {log.text}
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* CUSTOM ERROR MODAL */}
+      <div className={`kernel-error-modal-overlay ${errorModal.show ? 'active' : ''}`}>
+        <div className="kernel-error-modal">
+          <div className="error-icon">
+            <i className="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <h3>System Overload</h3>
+          <p>{errorModal.message}</p>
+          <button className="error-btn" onClick={() => navigate('/')}>
+            Return to Setup
+          </button>
         </div>
       </div>
     </div>

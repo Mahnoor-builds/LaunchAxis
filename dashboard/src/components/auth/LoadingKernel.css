@@ -53,3 +53,84 @@
 .loading-wrapper .log-line.active { color: var(--neon-cyan); opacity: 1; text-shadow: 0 0 8px rgba(45, 212, 191, 0.4); }
 .loading-wrapper .log-line i { margin-right: 8px; font-size: 0.7rem; }
 @keyframes slideUp { to { transform: translateY(0); } }
+
+/* --- CUSTOM ERROR MODAL --- */
+.kernel-error-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 7, 18, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.kernel-error-modal-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.kernel-error-modal {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  padding: 2.5rem;
+  width: 90%;
+  max-width: 450px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(239, 68, 68, 0.2);
+  transform: translateY(20px) scale(0.95);
+  transition: all 0.3s ease;
+}
+
+.kernel-error-modal-overlay.active .kernel-error-modal {
+  transform: translateY(0) scale(1);
+}
+
+.kernel-error-modal .error-icon {
+  width: 60px;
+  height: 60px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin: 0 auto 1.5rem;
+}
+
+.kernel-error-modal h3 {
+  color: #f8fafc;
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.kernel-error-modal p {
+  color: #94a3b8;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin-bottom: 2rem;
+}
+
+.kernel-error-modal .error-btn {
+  background: #ef4444;
+  color: #ffffff;
+  border: none;
+  padding: 0.85rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.2s ease;
+}
+
+.kernel-error-modal .error-btn:hover {
+  background: #dc2626;
+}

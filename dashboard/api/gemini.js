@@ -17,8 +17,8 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'API key not configured on server' });
     }
 
-    // 3. Make the call to Google Gemini using the active 3.5 model
-    const googleRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`, {
+    // 3. Connect to the CORRECT model: gemini-1.5-flash
+    const googleRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -28,16 +28,23 @@ export default async function handler(req, res) {
 
     const data = await googleRes.json();
 
-    if (data.error) {
-      throw new Error(data.error.message);
+    // 4. Safety Net: Catch Google's rejections (like High Demand) before it crashes
+    if (!googleRes.ok || data.error) {
+      const errorMsg = data.error?.message || "Google AI request failed.";
+      
+      if (errorMsg.toLowerCase().includes("high demand") || googleRes.status === 503) {
+        return res.status(503).json({ error: "The AI architects are experiencing extreme traffic. Please wait 30 seconds and try again." });
+      }
+      
+      return res.status(500).json({ error: `AI Engine Error: ${errorMsg}` });
     }
 
-    // 4. Send the clean text back to your React frontend
+    // 5. Send the clean text back to your React frontend
     const textOutput = data.candidates[0].content.parts[0].text;
     return res.status(200).json({ text: textOutput });
 
   } catch (error) {
     console.error("Vercel Serverless Error:", error);
-    return res.status(500).json({ error: 'Failed to generate content' });
+    return res.status(500).json({ error: "Backend network crash: " + error.message });
   }
 }
