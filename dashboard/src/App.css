@@ -3,8 +3,8 @@
    ========================================================================== */
 :root {
   --neon-cyan: #2dd4bf;
-  --bg-sidebar: #030712; /* Deep Space Dark */
-  --bg-canvas: #F3F4F6; /* Clean Off-White */
+  --bg-sidebar: #030712; 
+  --bg-canvas: #F3F4F6; 
   --card-bg: #FFFFFF;
   --text-dark: #1e293b;
   --text-muted: #64748b;
@@ -27,11 +27,13 @@ body {
 
 
 /* ==========================================================================
-   2. DASHBOARD SHELL LAYOUT
+   2. DASHBOARD SHELL LAYOUT (FIXED SCROLLING)
    ========================================================================== */
 .app-container.split-theme {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh; /* Fixes mobile browser address bar jump */
+  overflow: hidden; /* Locks outer body */
   background-color: var(--bg-canvas);
   color: var(--text-dark);
 }
@@ -40,6 +42,7 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
+  overflow: hidden; /* CRITICAL: Forces scrollbar into .main-content */
 }
 
 .main-content {
@@ -85,6 +88,7 @@ body {
 
 .admin-topbar {
   height: 72px;
+  flex-shrink: 0; /* Prevents topbar from squishing */
   border-bottom: 1px solid #e2e8f0;
   background: #ffffff;
   display: flex;
@@ -140,7 +144,6 @@ input:focus, select:focus, textarea:focus {
 .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 
-/* Clean, bright cards with soft shadows */
 .card {
   background: var(--card-bg);
   border: 1px solid #e2e8f0;
@@ -167,11 +170,10 @@ input:focus, select:focus, textarea:focus {
   transform: translateY(-1px); 
 }
 
-/* ADD THIS TO FIX THE INVISIBLE BUTTONS */
 .btn-outline, .btn-secondary {
   background: transparent;
   border: 1px solid #cbd5e1;
-  color: #475569; /* Dark grey text so it shows on white */
+  color: #475569; 
   font-weight: 600;
   transition: all 0.2s ease;
 }
@@ -182,7 +184,6 @@ input:focus, select:focus, textarea:focus {
   border-color: #94a3b8;
 }
 
-/* Updated for light theme */
 .input-neon {
   width: 100%;
   background: #f8fafc;
@@ -204,14 +205,12 @@ input:focus, select:focus, textarea:focus {
   .grid-4 { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* Hide hamburger button on desktop */
 .mobile-menu-btn { display: none; }
 .sidebar-overlay { display: none; }
 
 @media (max-width: 768px) {
   .app-container.split-theme { flex-direction: column; }
   
-  /* Show hamburger button on mobile */
   .mobile-menu-btn {
     display: flex;
     background: none;
@@ -223,7 +222,6 @@ input:focus, select:focus, textarea:focus {
     margin-right: 12px;
   }
 
-  /* Darken background when drawer is open */
   .sidebar-overlay.open {
     display: block;
     position: fixed;
@@ -233,7 +231,6 @@ input:focus, select:focus, textarea:focus {
     z-index: 998;
   }
 
-  /* The Slide-Out Drawer */
   .sidebar {
     position: fixed;
     top: 0;
@@ -268,7 +265,6 @@ input:focus, select:focus, textarea:focus {
    SERVICE TEMPLATE STYLES (PINDIZONE)
    ========================================= */
 
-/* Typography & Layout spacing */
 .section-padding { padding: 80px 20px; }
 .container { max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box; }
 .text-center { text-align: center; }
@@ -287,7 +283,6 @@ input:focus, select:focus, textarea:focus {
   margin: 0 auto 40px; line-height: 1.7; 
 }
 
-/* --- HERO SECTION --- */
 .hero-section { 
   min-height: 85vh; display: flex; align-items: center; justify-content: center; 
   background-size: cover; background-position: center; 
@@ -298,7 +293,6 @@ input:focus, select:focus, textarea:focus {
 .hero-description { font-size: 20px; margin-bottom: 40px; opacity: 0.9; line-height: 1.6; color: #fff; max-width: 700px; margin-left: auto; margin-right: auto; }
 .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
 
-/* Buttons */
 .btn { 
   padding: 16px 32px; border-radius: 8px; font-weight: 800; cursor: pointer; 
   text-decoration: none; display: inline-block; transition: all 0.3s ease; 
@@ -309,8 +303,6 @@ input:focus, select:focus, textarea:focus {
 .btn-secondary { background: transparent; color: #fff; border: 2px solid #fff; }
 .btn-secondary:hover { background: #fff; color: #0f172a; transform: translateY(-2px); }
 
-/* --- GRID LAYOUTS --- */
-/* 1. Services */
 .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
 .service-card { 
   background: #fff; padding: 40px 30px; border-radius: 12px; 
@@ -323,7 +315,6 @@ input:focus, select:focus, textarea:focus {
 .service-card-title { font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 12px; margin-top: 0; }
 .service-card-desc { font-size: 15px; color: #64748b; line-height: 1.6; margin-bottom: 24px; flex-grow: 1; }
 
-/* 2. Team */
 .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 30px; margin-top: 40px; }
 .team-card { 
   background: #fff; padding: 32px 24px; border-radius: 12px; 
@@ -333,7 +324,6 @@ input:focus, select:focus, textarea:focus {
 .member-role { font-size: 14px; font-weight: 800; margin: 0 0 16px; text-transform: uppercase; letter-spacing: 1px; }
 .member-bio { font-size: 14px; color: #64748b; line-height: 1.6; margin: 0; }
 
-/* 3. Strengths (Why Choose Us) */
 .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
 .feature-card { 
   display: flex; align-items: flex-start; gap: 20px; 
@@ -348,7 +338,6 @@ input:focus, select:focus, textarea:focus {
 .feature-card h4 { margin: 0 0 8px; font-size: 18px; color: #0f172a; font-weight: 800; }
 .feature-card p { margin: 0; font-size: 14px; color: #64748b; line-height: 1.6; }
 
-/* --- SOCIAL LINKS --- */
 .social-links-row { display: flex; gap: 12px; }
 .social-links-row a { 
   display: inline-flex; align-items: center; justify-content: center; 
@@ -357,7 +346,6 @@ input:focus, select:focus, textarea:focus {
 }
 .social-links-row a:hover { background: var(--primary-color); color: #fff; transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
 
-/* Mobile Responsiveness */
 @media (max-width: 768px) {
   .hero-title { font-size: 40px; }
   .hero-description { font-size: 16px; }

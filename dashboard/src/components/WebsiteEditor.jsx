@@ -9,9 +9,7 @@ import {
 import { doc, setDoc } from 'firebase/firestore';
 import { db, auth } from '../firebaseConfig';
 
-const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
-  const isService = true; // Temporary testing flag
-
+const WebsiteEditor = ({ branding = {}, siteConfig = {}, setSiteConfig, isService = true }) => {
   const [activeTab, setActiveTab] = useState('hero_about'); 
   const [activeSubSection, setActiveSubSection] = useState('hero');
   
@@ -85,7 +83,6 @@ const WebsiteEditor = ({ branding, siteConfig, setSiteConfig }) => {
     setUnsplashModal(prev => ({ ...prev, isOpen: false })); 
 
     try {
-      // Secure call to backend API to protect the Unsplash key
       const response = await fetch('/api/unsplash', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

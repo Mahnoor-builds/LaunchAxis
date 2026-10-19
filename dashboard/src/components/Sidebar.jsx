@@ -5,13 +5,18 @@ import {
   faGlobe, faBoxOpen, faCartShopping, faWandMagicSparkles,
   faGear, faBriefcase, faAddressBook, faTimes, faUserCircle
 } from '@fortawesome/free-solid-svg-icons';
-import { auth } from '../firebaseConfig';
+import { auth, db } from '../firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 const Sidebar = ({ activeSection, setActiveSection, branding, features, isMobileOpen, setIsMobileOpen }) => {
   const isService = true;
   const [userName, setUserName] = useState('Guest Pioneer');
   const [userEmail, setUserEmail] = useState('guest@launchaxis.com');
+  
+  // NEW: Independent state for Sidebar branding
+  const [sidebarBrandName, setSidebarBrandName] = useState(branding?.name || 'LaunchAxis');
+  const [sidebarLogo, setSidebarLogo] = useState(branding?.logo || null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -25,6 +30,37 @@ const Sidebar = ({ activeSection, setActiveSection, branding, features, isMobile
     });
     return () => unsubscribe();
   }, []);
+
+  // NEW: Fetch AI Data directly for the Sidebar
+  useEffect(() => {
+    async function fetchSidebarData() {
+      try {
+        const rawMemory = localStorage.getItem("launchAxisTempData");
+        if (rawMemory) {
+          const userEmailData = JSON.parse(rawMemory).email;
+          const docRef = doc(db, "users", userEmailData);
+          const docSnap = await getDoc(docRef);
+
+          if (docSnap.exists() && docSnap.data().aiArchitecture) {
+            setSidebarBrandName(docSnap.data().aiArchitecture.businessName);
+            // If you save AI logos later, they will sync here too
+            if (docSnap.data().aiArchitecture.logo) {
+               setSidebarLogo(docSnap.data().aiArchitecture.logo);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Sidebar sync failed:", error);
+      }
+    }
+    // Only fetch if standard branding hasn't loaded
+    if (!branding?.name) {
+      fetchSidebarData();
+    } else {
+      setSidebarBrandName(branding.name);
+      setSidebarLogo(branding.logo);
+    }
+  }, [branding]);
 
   const navItems = [
     { id: 'dashboard', icon: faChartPie, label: 'Dashboard' },
@@ -56,12 +92,12 @@ const Sidebar = ({ activeSection, setActiveSection, branding, features, isMobile
         
         <div className="brand" style={{ padding: '0 24px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '20px', fontWeight: 'bold', color: '#f8fafc' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            {branding?.logo ? (
-              <img src={branding.logo} alt="Logo" style={{ width: '32px', borderRadius: '8px' }} />
+            {sidebarLogo ? (
+              <img src={sidebarLogo} alt="Logo" style={{ width: '32px', borderRadius: '8px' }} />
             ) : (
               <FontAwesomeIcon icon={faRocket} style={{ color: '#2dd4bf' }} />
             )}
-            <span>{branding?.name || 'LaunchAxis'}</span>
+            <span>{sidebarBrandName}</span>
           </div>
           
           {isMobileOpen && (

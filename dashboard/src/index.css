@@ -54,10 +54,9 @@ body {
 /* =========================================
    3. DASHBOARD LAYOUT (The Container)
 ========================================= */
+/* REMOVED SCROLL LOCK HERE - Managed cleanly by App.css */
 .app-container {
-    display: flex;         
-    height: 100vh;         
-    overflow: hidden;      
+    display: flex;              
 }
 
 .sidebar { 
@@ -81,10 +80,9 @@ body {
    4. DASHBOARD COMPONENTS (Fixed Alignment)
 ========================================= */
 
-/* --- HEADER FIX (Aligns Buttons to Right) --- */
 .header { 
     display: flex; 
-    justify-content: space-between; /* Pushes content to edges */
+    justify-content: space-between; 
     align-items: center; 
     margin-bottom: 30px; 
 }
@@ -101,12 +99,12 @@ body {
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
 
-/* FINANCE TILES (Fixed Colors) */
+/* FINANCE TILES */
 .finance-tile {
     position: relative; overflow: hidden; padding: 25px; border-radius: 16px;
-    background: var(--bg-card); /* Clean background, no rainbow gradient */
+    background: var(--bg-card);
     border: 1px solid var(--border);
-    border-top-width: 4px; /* Makes the top color prominent */
+    border-top-width: 4px;
 }
 .finance-tile h3 { margin: 0 0 10px 0; color: var(--text-muted); font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
 .finance-tile .amount { font-size: 28px; font-weight: 800; color: var(--text-main); margin-bottom: 5px; }

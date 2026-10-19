@@ -6,7 +6,7 @@ import {
   faGlobe, faSpinner, faCheckCircle, faTimesCircle, faLightbulb, faEye, faTriangleExclamation
 } from '@fortawesome/free-solid-svg-icons';
 
-const Branding = ({ branding, setBranding }) => {
+const Branding = ({ branding = {}, setBranding }) => {
   const [activeTab, setActiveTab] = useState('studio'); 
   const [isGenerating, setIsGenerating] = useState({ name: false, slogan: false, logo: false, text: false });
   

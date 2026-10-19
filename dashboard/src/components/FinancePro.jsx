@@ -6,7 +6,7 @@ import {
   faBoxOpen, faBoxesStacked, faTriangleExclamation, faGlobe, faTags
 } from '@fortawesome/free-solid-svg-icons';
 
-const FinancePro = ({ transactions, accounts, addAccount, updateAccount, branding, addTransaction, inventory, addInventoryItem, updateInventoryItem }) => {
+const FinancePro = ({ transactions = [], accounts = [], addAccount, updateAccount, branding = {}, addTransaction, inventory = [], addInventoryItem, updateInventoryItem }) => {
   const [activeTab, setActiveTab] = useState('overview'); 
   const [currency, setCurrency] = useState('Rs');
   
@@ -152,7 +152,7 @@ const FinancePro = ({ transactions, accounts, addAccount, updateAccount, brandin
         <head>
             <title>${brandName} - Official Statement</title>
             <style>
-                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+                @import url('[https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap)');
                 body { font-family: 'Inter', sans-serif; padding: 40px; color: #0f172a; margin: 0; }
                 .header { border-bottom: 4px solid #2dd4bf; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; }
                 .header h1 { margin: 0; font-size: 32px; font-weight: 900; letter-spacing: -1px; }
