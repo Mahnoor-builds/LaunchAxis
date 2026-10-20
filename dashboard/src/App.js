@@ -47,7 +47,8 @@ const AdminPanel = ({
   inventory, addInventoryItem, updateInventoryItem, 
   activeSection, setActiveSection,
   siteConfig, setSiteConfig,
-  features 
+  features,
+  isService
 }) => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -70,7 +71,7 @@ const AdminPanel = ({
             </button>
             <div className="topbar-greeting">
               <h2>Welcome back, CEO</h2>
-              <p>System Overview for <span className="highlight-cyan">{branding?.name}</span></p>
+              <p>System Overview for <span className="highlight-cyan">{branding?.name || 'Loading...'}</span></p>
             </div>
           </div>
           
@@ -88,7 +89,7 @@ const AdminPanel = ({
           {activeSection === 'dashboard' && <Dashboard products={products} transactions={transactions} branding={branding} setActiveSection={setActiveSection} orders={orders} features={features} inventory={inventory} />}
           {activeSection === 'finance' && features?.wantsAccounting && <FinancePro transactions={transactions} accounts={accounts} addAccount={addAccount} updateAccount={updateAccount} inventory={inventory} addInventoryItem={addInventoryItem} updateInventoryItem={updateInventoryItem} branding={branding} addTransaction={addTransaction} />}
           {activeSection === 'branding' && features?.wantsBranding && <Branding branding={branding} setBranding={setBranding} />}
-          {activeSection === 'website' && features?.wantsWebsite && <WebsiteEditor branding={branding} products={products} siteConfig={siteConfig} setSiteConfig={setSiteConfig} />}
+          {activeSection === 'website' && features?.wantsWebsite && <WebsiteEditor branding={branding} products={products} siteConfig={siteConfig} setSiteConfig={setSiteConfig} isService={isService} />}
           {activeSection === 'products' && <Products siteConfig={siteConfig} />}
           {activeSection === 'projects' && <Projects />}
           {activeSection === 'leads' && <Leads />}
@@ -106,7 +107,8 @@ const AdminPanel = ({
 // =========================================
 function App() {
   const [isAiLoading, setIsAiLoading] = useState(true);
-  const [userFeatures, setUserFeatures] = useState(null);
+  const [userFeatures, setUserFeatures] = useState({ wantsWebsite: true, wantsAccounting: true, wantsBranding: true });
+  const [isService, setIsService] = useState(false);
   const [currentUserEmail, setCurrentUserEmail] = useState(null); 
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
@@ -124,7 +126,6 @@ function App() {
   
   const [inventory, setInventory] = useState([]);
   const [activeSection, setActiveSection] = useState('dashboard');
-  const isService = true; 
 
   const addToCart = (product) => {
     setCart(prevCart => {
@@ -174,6 +175,17 @@ function App() {
         if (docSnap.exists()) {
             const liveData = docSnap.data();
             
+            // DYNAMIC FETCH: Pull exactly what the user selected in StartBuilding.jsx
+            if (liveData.businessType === 'service') {
+               setIsService(true);
+            } else {
+               setIsService(false);
+            }
+
+            if (liveData.features) {
+               setUserFeatures(liveData.features);
+            }
+            
             if (liveData.aiArchitecture) {
                 setBranding(prev => ({ ...prev, name: liveData.aiArchitecture.businessName, slogan: liveData.aiArchitecture.tagline, industry: liveData.businessType }));
             }
@@ -183,8 +195,6 @@ function App() {
             } else if (liveData.aiArchitecture?.colorPalette?.primary) {
                 setSiteConfig(prev => ({ ...prev, themeColor: liveData.aiArchitecture.colorPalette.primary }));
             }
-
-            setUserFeatures({ wantsWebsite: true, wantsAccounting: true, wantsBranding: true });
 
             if (liveData.accounts) setAccounts(liveData.accounts);
             if (liveData.transactions) setTransactions(liveData.transactions);
@@ -368,6 +378,7 @@ function App() {
               activeSection={activeSection} setActiveSection={setActiveSection}
               siteConfig={siteConfig} setSiteConfig={setSiteConfig}
               features={userFeatures}
+              isService={isService}
             />
           </ProtectedRoute>
         } />
