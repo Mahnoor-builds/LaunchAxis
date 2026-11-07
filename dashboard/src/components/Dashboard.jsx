@@ -1,17 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faArrowTrendUp, faBolt, faWallet, 
-  faIdBadge, faBullseye, faPalette, faPlus,
-  faChartLine, faTriangleExclamation
+  faArrowTrendUp, faWallet, faPlus,
+  faTriangleExclamation, faCheckCircle, faCircle,
+  faArrowRight, faBoxOpen, faClock, faUsers,
+  faPalette, faBriefcase, faStore, faLightbulb,
+  faClipboardCheck, faGlobe
 } from '@fortawesome/free-solid-svg-icons';
-import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
-// 1. Firebase Imports
+// Firebase Imports
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../firebaseConfig'; 
+import { db, auth } from '../firebaseConfig'; 
 
-const Dashboard = ({ products = [], transactions = [], branding, setActiveSection, orders = [], features, inventory = [] }) => {
+const Dashboard = ({ 
+  products = [], 
+  transactions = [], 
+  branding = {}, 
+  setActiveSection, 
+  orders = [], 
+  features = {}, 
+  inventory = [] 
+}) => {
   
   const [aiData, setAiData] = useState(null);
   const [loadingKernel, setLoadingKernel] = useState(true);
@@ -19,9 +28,15 @@ const Dashboard = ({ products = [], transactions = [], branding, setActiveSectio
   useEffect(() => {
     async function fetchKernelData() {
       try {
-        const rawMemory = localStorage.getItem("launchAxisTempData");
-        if (rawMemory) {
-          const userEmail = JSON.parse(rawMemory).email;
+        let userEmail = auth.currentUser?.email;
+        if (!userEmail) {
+          const rawMemory = localStorage.getItem("launchAxisTempData");
+          if (rawMemory) {
+            userEmail = JSON.parse(rawMemory).email;
+          }
+        }
+        
+        if (userEmail) {
           const docRef = doc(db, "users", userEmail);
           const docSnap = await getDoc(docRef);
 
@@ -38,18 +53,18 @@ const Dashboard = ({ products = [], transactions = [], branding, setActiveSectio
     fetchKernelData();
   }, []);
 
-  // --- FINANCIAL LOGIC ---
+  // --- SYNCED FINANCIAL LOGIC (Matches FinancePro.jsx) ---
   const salesRevenue = transactions
-    .filter(t => t.type === 'income' && t.category === 'Sales')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .filter(t => ['income', 'payment_in', 'invoice_out'].includes(t.type) && ['Sales', 'Sales Revenue', 'Website Sales'].includes(t.category))
+    .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
 
   const totalCashIn = transactions
-    .filter(t => t.type === 'income')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .filter(t => ['income', 'payment_in'].includes(t.type))
+    .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
 
   const totalExpense = transactions
-    .filter(t => t.type === 'expense')
-    .reduce((sum, t) => sum + t.amount, 0);
+    .filter(t => ['expense', 'payment_out'].includes(t.type))
+    .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
 
   const currentBalance = totalCashIn - totalExpense;
 
@@ -57,167 +72,362 @@ const Dashboard = ({ products = [], transactions = [], branding, setActiveSectio
     ? orders.filter(o => o.status === 'Pending').length 
     : 0;
 
-  // --- CHART LOGIC ---
-  const chartData = transactions.map((t) => ({
-    name: t.date.slice(0,5),
-    amount: t.amount,
-    type: t.type
-  })).slice(-7);
+  // --- INVENTORY ALERTS ---
+  const lowStockItems = inventory.filter(item => item.quantity !== null && item.quantity <= (item.lowStockThreshold || 5));
 
-  // --- INVENTORY LOGIC (For Phase 3) ---
-  const lowStockItems = inventory.filter(item => item.quantity <= (item.lowStockThreshold || 5));
+  // --- BUSINESS TYPE CHECK ---
+  const isService = branding?.industry === 'service';
+
+  // --- DISPLAY DATA FALLBACKS ---
+  const displayBrandName = branding?.name && branding.name !== 'Loading...' 
+    ? branding.name 
+    : (aiData?.businessName || 'Your Business');
+    
+  const displayTagline = branding?.slogan || aiData?.tagline || 'Build and scale your operations from one place.';
+  const displayAudience = aiData?.targetAudience || 'Everyday customers and clients looking for reliable, high-quality solutions.';
+  const displayPalette = aiData?.colorPalette 
+    ? Object.values(aiData.colorPalette) 
+    : [branding?.color || '#0d9488', '#0f172a', '#f8fafc'];
+
+  // --- INTERACTIVE TO-DO LIST FOR NEW FOUNDERS ---
+  const setupTasks = [
+    {
+      id: 'brand',
+      title: 'Review your brand identity & logo',
+      desc: 'Customize your colors, fonts, and slogan in the Branding studio.',
+      done: Boolean(branding?.logo || (branding?.name && branding?.name !== 'Loading...')),
+      actionText: 'Open Branding',
+      target: 'branding'
+    },
+    {
+      id: 'catalog',
+      title: isService ? 'Add your first service project' : 'Add your first product to sell',
+      desc: isService ? 'Showcase your agency work and services to clients.' : 'Upload product photos and prices for your web store.',
+      done: products.length > 0 || inventory.length > 0,
+      actionText: isService ? 'Add Project' : 'Add Product',
+      target: isService ? 'projects' : 'products'
+    },
+    {
+      id: 'finance',
+      title: 'Record your starting cash or first sale',
+      desc: 'Keep your books clean by logging your opening balance or first receipt.',
+      done: transactions.length > 0,
+      actionText: 'Open Finance',
+      target: 'finance'
+    },
+    {
+      id: 'website',
+      title: 'Customize your live website',
+      desc: 'Update your homepage headline, biography, and contact links.',
+      done: false,
+      actionText: 'Edit Website',
+      target: 'website'
+    }
+  ];
 
   return (
-    <section className="section active" style={{ paddingBottom: '40px' }}>
+    <section className="section active" style={{ paddingBottom: '48px', maxWidth: '1200px', margin: '0 auto' }}>
       
-      {/* --- SLEEK ACTION BAR --- */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '32px' }}>
-        <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '600', color: 'var(--text-dark)' }}>Command Center</h3>
-        <button 
-          className="btn btn-primary" 
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '100px', flex: '1 1 auto', justifyContent: 'center', maxWidth: '200px' }} 
-          onClick={() => setActiveSection('products')}
-        >
-          <FontAwesomeIcon icon={faPlus} /> Add Product
-        </button>
+      {/* --- 1. TOP HEADER BAR --- */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '28px' }}>
+        <div>
+          <span style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.8px', color: '#ea580c', display: 'block', marginBottom: '4px' }}>
+            Daily Overview
+          </span>
+          <h2 style={{ margin: 0, fontSize: '26px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.5px' }}>
+            Business Summary
+          </h2>
+        </div>
+
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <button 
+            onClick={() => setActiveSection('website')}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '11px 18px', borderRadius: '10px', background: '#ffffff', color: '#334155', border: '1px solid #cbd5e1', fontWeight: '700', fontSize: '13px', cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' }}
+          >
+            <FontAwesomeIcon icon={faGlobe} style={{ color: '#6366f1' }} /> Edit Website
+          </button>
+          <button 
+            onClick={() => setActiveSection(isService ? 'projects' : 'products')}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '11px 20px', borderRadius: '10px', background: '#0f172a', color: '#ffffff', border: 'none', fontWeight: '700', fontSize: '13px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)' }}
+          >
+            <FontAwesomeIcon icon={faPlus} style={{ color: '#f97316' }} /> {isService ? 'Add Service / Project' : 'Add New Product'}
+          </button>
+        </div>
       </div>
 
-      {/* --- PREMIUM AI ARCHITECTURE ROW --- */}
-      {loadingKernel ? (
-        <div style={{ color: 'var(--text-muted)', marginBottom: '2rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }} className="card">
-          <FontAwesomeIcon icon={faBolt} className="fa-spin" style={{ color: 'var(--neon-cyan)' }} />
-          Syncing LaunchAxis Kernel Data...
+      {/* --- 2. FOUR KEY NUMBERS (CLEAR & COLOR-CODED) --- */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '28px' }}>
+        
+        {/* CARD 1: TOTAL SALES (Emerald Accent) */}
+        <div style={{ background: '#ffffff', borderRadius: '14px', padding: '22px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
+            <span style={{ fontSize: '13px', fontWeight: '700', color: '#64748b' }}>Total Sales</span>
+            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#ecfdf5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px' }}>
+              <FontAwesomeIcon icon={faArrowTrendUp} />
+            </div>
+          </div>
+          <div style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a', marginBottom: '6px', wordBreak: 'break-word' }}>
+            Rs {salesRevenue.toLocaleString()}
+          </div>
+          <div style={{ fontSize: '12px', color: '#059669', fontWeight: '600' }}>
+            {salesRevenue > 0 ? 'Money earned from sales' : 'No sales recorded yet'}
+          </div>
         </div>
-      ) : aiData ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '24px', marginBottom: '40px' }}>
-          
-          <div className="card" style={{ gridColumn: '1 / -1' }}>
-            <h4 style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '11px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FontAwesomeIcon icon={faIdBadge} style={{ color: 'var(--neon-cyan)' }} /> Core Identity
-            </h4>
-            <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: '800', margin: '0 0 8px 0', letterSpacing: '-1px', color: 'var(--text-dark)', wordBreak: 'break-word' }}>{aiData.businessName}</h2>
-            <p style={{ color: 'var(--neon-cyan)', fontSize: '1.2rem', margin: '0', fontWeight: '600', lineHeight: '1.4' }}>"{aiData.tagline}"</p>
-          </div>
 
-          <div className="card">
-            <h4 style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '11px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FontAwesomeIcon icon={faBullseye} style={{ color: 'var(--neon-cyan)' }} /> Target Demographic
-            </h4>
-            <p style={{ fontSize: '14px', lineHeight: '1.7', color: 'var(--text-dark)', margin: 0 }}>{aiData.targetAudience}</p>
+        {/* CARD 2: CASH IN HAND (Blue Accent) */}
+        {features?.wantsAccounting !== false && (
+          <div style={{ background: '#ffffff', borderRadius: '14px', padding: '22px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
+              <span style={{ fontSize: '13px', fontWeight: '700', color: '#64748b' }}>Available Cash</span>
+              <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px' }}>
+                <FontAwesomeIcon icon={faWallet} />
+              </div>
+            </div>
+            <div style={{ fontSize: '28px', fontWeight: '800', color: currentBalance >= 0 ? '#0f172a' : '#dc2626', marginBottom: '6px', wordBreak: 'break-word' }}>
+              Rs {currentBalance.toLocaleString()}
+            </div>
+            <div style={{ fontSize: '12px', color: '#64748b', fontWeight: '500' }}>
+              Cash received minus expenses
+            </div>
           </div>
+        )}
 
-          <div className="card">
-            <h4 style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '11px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FontAwesomeIcon icon={faPalette} style={{ color: 'var(--neon-cyan)' }} /> Generated Palette
-            </h4>
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              {Object.values(aiData.colorPalette).map((color, index) => (
-                <div key={index} style={{
-                  backgroundColor: color, width: '48px', height: '48px', borderRadius: '50%',
-                  border: `1px solid #e2e8f0`
-                }}></div>
+        {/* CARD 3: ORDERS / LEADS (Orange/Amber Accent) */}
+        <div style={{ background: '#ffffff', borderRadius: '14px', padding: '22px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
+            <span style={{ fontSize: '13px', fontWeight: '700', color: '#64748b' }}>
+              {isService ? 'Client Inquiries' : 'Orders to Pack'}
+            </span>
+            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#fff7ed', color: '#ea580c', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px' }}>
+              <FontAwesomeIcon icon={faClock} />
+            </div>
+          </div>
+          <div style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a', marginBottom: '6px' }}>
+            {pendingOrdersCount}
+          </div>
+          <div style={{ fontSize: '12px', color: pendingOrdersCount > 0 ? '#ea580c' : '#64748b', fontWeight: pendingOrdersCount > 0 ? '700' : '500' }}>
+            {pendingOrdersCount > 0 ? 'Waiting for your action' : 'All caught up right now'}
+          </div>
+        </div>
+
+        {/* CARD 4: ACTIVE ITEMS (Indigo Accent) */}
+        <div style={{ background: '#ffffff', borderRadius: '14px', padding: '22px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
+            <span style={{ fontSize: '13px', fontWeight: '700', color: '#64748b' }}>
+              {isService ? 'Listed Services' : 'Products in Store'}
+            </span>
+            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#eef2ff', color: '#4f46e5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px' }}>
+              <FontAwesomeIcon icon={isService ? faBriefcase : faBoxOpen} />
+            </div>
+          </div>
+          <div style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a', marginBottom: '6px' }}>
+            {products.length}
+          </div>
+          <div style={{ fontSize: '12px', color: '#64748b', fontWeight: '500' }}>
+            Visible to your visitors
+          </div>
+        </div>
+
+      </div>
+
+      {/* --- 3. MIDDLE SECTION: TO-DO LIST & BRAND SNAPSHOT --- */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 380px), 1fr))', gap: '24px' }}>
+        
+        {/* LEFT COLUMN: ACTION ITEMS & LAUNCH CHECKLIST */}
+        <div style={{ background: '#ffffff', borderRadius: '16px', padding: '28px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#fff7ed', color: '#ea580c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <FontAwesomeIcon icon={faClipboardCheck} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: '#0f172a' }}>Next Steps & Tasks</h3>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748b' }}>Simple steps to grow and manage your business</p>
+                </div>
+              </div>
+              <span style={{ fontSize: '11px', fontWeight: '800', color: '#ea580c', background: '#fff7ed', padding: '4px 10px', borderRadius: '20px', border: '1px solid #fed7aa' }}>
+                {setupTasks.filter(t => t.done).length} of {setupTasks.length} Done
+              </span>
+            </div>
+
+            {/* URGENT ALERTS (IF ANY) */}
+            {lowStockItems.length > 0 && (
+              <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', padding: '14px 16px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <FontAwesomeIcon icon={faTriangleExclamation} style={{ color: '#dc2626', fontSize: '18px' }} />
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: '800', color: '#991b1b' }}>Low Stock Warning</div>
+                    <div style={{ fontSize: '12px', color: '#b91c1c' }}>
+                      {lowStockItems.map(i => `${i.name} (${i.quantity} left)`).join(', ')}
+                    </div>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setActiveSection('finance')}
+                  style={{ background: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                >
+                  Restock
+                </button>
+              </div>
+            )}
+
+            {pendingOrdersCount > 0 && (
+              <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '12px', padding: '14px 16px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <FontAwesomeIcon icon={faClock} style={{ color: '#d97706', fontSize: '18px' }} />
+                  <div>
+                    <div style={{ fontSize: '13px', fontWeight: '800', color: '#92400e' }}>
+                      You have {pendingOrdersCount} pending {pendingOrdersCount === 1 ? 'order' : 'orders'}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#b45309' }}>Review customer details and mark as shipped.</div>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setActiveSection('orders')}
+                  style={{ background: '#d97706', color: '#fff', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                >
+                  View Orders
+                </button>
+              </div>
+            )}
+
+            {/* STEP-BY-STEP CHECKLIST */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {setupTasks.map((task) => (
+                <div 
+                  key={task.id} 
+                  style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center', 
+                    padding: '14px 16px', 
+                    borderRadius: '12px', 
+                    background: task.done ? '#f8fafc' : '#ffffff', 
+                    border: task.done ? '1px solid #e2e8f0' : '1px solid #cbd5e1',
+                    gap: '12px',
+                    flexWrap: 'wrap'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', flex: '1 1 200px' }}>
+                    <FontAwesomeIcon 
+                      icon={task.done ? faCheckCircle : faCircle} 
+                      style={{ color: task.done ? '#10b981' : '#cbd5e1', fontSize: '18px', marginTop: '2px', flexShrink: 0 }} 
+                    />
+                    <div>
+                      <div style={{ fontSize: '14px', fontWeight: '700', color: task.done ? '#64748b' : '#0f172a', textDecoration: task.done ? 'line-through' : 'none' }}>
+                        {task.title}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px', lineHeight: '1.4' }}>
+                        {task.desc}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <button 
+                    onClick={() => setActiveSection(task.target)}
+                    style={{ 
+                      background: task.done ? 'transparent' : '#f1f5f9', 
+                      color: task.done ? '#64748b' : '#0f172a', 
+                      border: task.done ? '1px solid #e2e8f0' : 'none', 
+                      padding: '8px 14px', 
+                      borderRadius: '8px', 
+                      fontSize: '12px', 
+                      fontWeight: '700', 
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      flexShrink: 0
+                    }}
+                  >
+                    {task.done ? 'Review' : task.actionText} <FontAwesomeIcon icon={faArrowRight} style={{ fontSize: '10px', color: '#ea580c' }} />
+                  </button>
+                </div>
               ))}
             </div>
           </div>
-        </div>
-      ) : null}
 
-      {/* --- ENTERPRISE METRICS MATRIX --- */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-        <h3 style={{ margin: 0, fontSize: '16px', color: 'var(--text-dark)' }}>Live Metrics</h3>
-        <div style={{ height: '1px', flex: 1, background: '#e2e8f0' }}></div>
-      </div>
-      
-      <div className="grid-4" style={{ marginBottom: '24px' }}>
-        <div className="card" style={{ position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '3px', background: 'var(--neon-cyan)' }}></div>
-          <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: '0 0 12px 0', letterSpacing: '1px' }}>Product Sales</h3>
-          <div style={{ fontSize: '28px', fontWeight: '800', marginBottom: '8px', color: 'var(--text-dark)', wordBreak: 'break-word' }}>PKR {salesRevenue.toLocaleString()}</div>
-          <div style={{ fontSize: '12px', color: 'var(--neon-cyan)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px', fontWeight: '600' }}><FontAwesomeIcon icon={faArrowTrendUp} /> From Website Orders</div>
+          {/* HELPFUL TIP FOOTER */}
+          <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: '#64748b' }}>
+            <FontAwesomeIcon icon={faLightbulb} style={{ color: '#f59e0b', fontSize: '15px' }} />
+            <span>
+              <strong style={{ color: '#0f172a' }}>Quick Tip:</strong> Recording every sale and expense in the Finance tab keeps your available cash accurate automatically.
+            </span>
+          </div>
         </div>
 
-        <div className="card">
-          <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: '0 0 12px 0', letterSpacing: '1px' }}>Active Products</h3>
-          <div style={{ fontSize: '28px', fontWeight: '800', marginBottom: '8px', color: 'var(--text-dark)' }}>{products.length}</div>
-          <div style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>Live on website</div>
-        </div>
-
-        <div className="card">
-          <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: '0 0 12px 0', letterSpacing: '1px' }}>Pending Orders</h3>
-          <div style={{ fontSize: '28px', fontWeight: '800', marginBottom: '8px', color: 'var(--text-dark)' }}>{pendingOrdersCount}</div>
-          <div style={{ fontSize: '12px', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600' }}>Needs fulfillment</div>
-        </div>
-
-        {/* CONDITIONALLY RENDER BALANCE VS GROSS REVENUE */}
-        {features?.wantsAccounting ? (
-          <div className="card" style={{ background: '#f8fafc' }}>
-            <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: '0 0 12px 0', letterSpacing: '1px' }}>Current Balance</h3>
-            <div style={{ fontSize: '28px', fontWeight: '800', marginBottom: '8px', color: currentBalance >= 0 ? 'var(--text-dark)' : '#ef4444', wordBreak: 'break-word' }}>
-              PKR {currentBalance.toLocaleString()}
+        {/* RIGHT COLUMN: ONE-GLANCE BRAND & AUDIENCE PROFILE */}
+        <div style={{ background: '#ffffff', borderRadius: '16px', padding: '28px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#eef2ff', color: '#4f46e5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <FontAwesomeIcon icon={faStore} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: '#0f172a' }}>Your Brand & Customers</h3>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748b' }}>Who you are and who buys from you</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setActiveSection('branding')}
+                style={{ background: 'none', border: '1px solid #e2e8f0', color: '#475569', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+              >
+                Edit Brand
+              </button>
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}><FontAwesomeIcon icon={faWallet} /> Sales + Capital - Expenses</div>
-          </div>
-        ) : (
-          <div className="card" style={{ background: '#f8fafc' }}>
-             <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: '0 0 12px 0', letterSpacing: '1px' }}>Gross Revenue</h3>
-             <div style={{ fontSize: '28px', fontWeight: '800', marginBottom: '8px', color: 'var(--text-dark)', wordBreak: 'break-word' }}>
-                PKR {salesRevenue.toLocaleString()}
-             </div>
-             <div style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>Total E-commerce Earnings</div>
-          </div>
-        )}
-      </div>
 
-      {/* --- CONDITIONAL CASH FLOW CHART --- */}
-      {features?.wantsAccounting && (
-        <div className="card" style={{ height: '350px', marginBottom: '24px', overflow: 'hidden' }}>
-          <h3 style={{ margin: '0 0 20px 0', color: 'var(--text-dark)', fontSize: '16px' }}>
-            <FontAwesomeIcon icon={faChartLine} style={{color:'var(--neon-cyan)', marginRight: '8px'}} /> 
-            Cash Flow (In/Out)
-          </h3>
-          <div style={{ width: '100%', height: '260px' }}>
-             <ResponsiveContainer>
-                 <AreaChart data={chartData}>
-                     <defs>
-                         <linearGradient id="colorSplit" x1="0" y1="0" x2="0" y2="1">
-                             <stop offset="5%" stopColor="#2dd4bf" stopOpacity={0.8}/>
-                             <stop offset="95%" stopColor="#2dd4bf" stopOpacity={0}/>
-                         </linearGradient>
-                     </defs>
-                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                     <XAxis dataKey="name" stroke="#94a3b8" tick={{ fontSize: 12 }} />
-                     <Tooltip contentStyle={{backgroundColor:'#ffffff', border:'1px solid #e2e8f0', borderRadius:'8px', color: '#1e293b'}} />
-                     <Area type="monotone" dataKey="amount" stroke="#2dd4bf" fill="url(#colorSplit)" />
-                 </AreaChart>
-             </ResponsiveContainer>
+            {/* BRAND NAME & SLOGAN BOX */}
+            <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '20px', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
+              <div style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.6px', color: '#64748b', marginBottom: '6px' }}>
+                Business Name & Slogan
+              </div>
+              <div style={{ fontSize: '24px', fontWeight: '900', color: '#0f172a', letterSpacing: '-0.5px', marginBottom: '6px', wordBreak: 'break-word' }}>
+                {loadingKernel ? 'Loading Brand...' : displayBrandName}
+              </div>
+              <div style={{ fontSize: '14px', fontWeight: '600', color: '#ea580c', lineHeight: '1.4' }}>
+                "{displayTagline}"
+              </div>
+            </div>
+
+            {/* WHO BUYS FROM YOU (TARGET AUDIENCE) */}
+            <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '20px', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.6px', color: '#64748b', marginBottom: '8px' }}>
+                <FontAwesomeIcon icon={faUsers} style={{ color: '#2563eb' }} /> Best Customers For Your Business
+              </div>
+              <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.6', color: '#1e293b', fontWeight: '500' }}>
+                {displayAudience}
+              </p>
+            </div>
+
+            {/* BRAND COLORS */}
+            <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '18px 20px', border: '1px solid #e2e8f0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.6px', color: '#64748b', marginBottom: '12px' }}>
+                <FontAwesomeIcon icon={faPalette} style={{ color: '#059669' }} /> Brand Colors
+              </div>
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                {displayPalette.map((color, index) => (
+                  <div 
+                    key={index} 
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#ffffff', padding: '6px 12px 6px 8px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                  >
+                    <span style={{ width: '22px', height: '22px', borderRadius: '6px', backgroundColor: color, border: '1px solid rgba(0,0,0,0.1)', display: 'inline-block' }}></span>
+                    <span style={{ fontSize: '12px', fontFamily: 'monospace', fontWeight: '700', color: '#334155' }}>
+                      {String(color).toUpperCase()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', color: '#64748b' }}>
+            <span>Business Model: <strong style={{ color: '#0f172a', textTransform: 'capitalize' }}>{isService ? 'Service & Agency' : 'Product Store'}</strong></span>
+            <span style={{ color: '#059669', fontWeight: '700' }}>Active & Online</span>
           </div>
         </div>
-      )}
 
-      {/* --- INVENTORY ALERTS (Shows if low stock exists) --- */}
-      {lowStockItems.length > 0 && (
-         <div className="card" style={{ borderLeft: '4px solid #ef4444', marginBottom: '24px', background: '#fef2f2' }}>
-            <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#991b1b', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-               <FontAwesomeIcon icon={faTriangleExclamation} /> Critical Inventory Alert
-            </h3>
-            <p style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#7f1d1d' }}>The following items are running dangerously low:</p>
-            <ul style={{ margin: 0, paddingLeft: '20px', color: '#991b1b', fontSize: '14px', fontWeight: '600' }}>
-               {lowStockItems.map((item, idx) => (
-                  <li key={idx} style={{ marginBottom: '6px' }}>{item.name} — Only {item.quantity} left in stock!</li>
-               ))}
-            </ul>
-         </div>
-      )}
-
-      <div className="card">
-        <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '10px', color: 'var(--text-dark)' }}>
-          <FontAwesomeIcon icon={faBolt} style={{color:'var(--neon-cyan)'}}/> Business Insights
-        </h3>
-        <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '14px', lineHeight: '1.6' }}>
-           {salesRevenue > 0 
-             ? `Great job! You have generated PKR ${salesRevenue.toLocaleString()} in pure sales revenue.`
-             : "No sales recorded yet. Keep pushing your marketing efforts to get that first order!"}
-        </p>
       </div>
     </section>
   );
