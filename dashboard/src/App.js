@@ -121,8 +121,9 @@ function App() {
   const [isCartOpen, setIsCartOpen] = useState(false); 
   const [orders, setOrders] = useState([]);
   
-  const [accounts, setAccounts] = useState([{ id: 1, name: 'Cash Register', type: 'asset', category: 'Bank' }]);
-  const [transactions, setTransactions] = useState([{ id: 1, date: new Date().toLocaleDateString(), desc: 'Initial Capital', amount: 100000, type: 'income', category: 'Capital', accountId: 1, accountName: 'Cash Register' }]);
+  // ACCOUNTING FIX: Removed the fake 100k transaction. Added a default Bank Account so users can log cash immediately.
+  const [accounts, setAccounts] = useState([{ id: 'bank_01', name: 'Main Bank Account', type: 'asset', category: 'Bank' }]);
+  const [transactions, setTransactions] = useState([]);
   
   const [inventory, setInventory] = useState([]);
   const [activeSection, setActiveSection] = useState('dashboard');
@@ -166,7 +167,6 @@ function App() {
             return; 
         }
 
-        // CRITICAL FIX: Fetch using user.email to match LoadingKernel.jsx!
         let targetId = user.email; 
         setCurrentUserEmail(targetId);
 
@@ -190,7 +190,6 @@ function App() {
                 setBranding(prev => ({ ...prev, name: liveData.aiArchitecture.businessName, slogan: liveData.aiArchitecture.tagline, industry: liveData.businessType }));
             }
 
-            // CRITICAL FIX: Safely build default menu items directly from Firebase fetch
             if (liveData.siteConfig) {
                 setSiteConfig(liveData.siteConfig);
             } else {

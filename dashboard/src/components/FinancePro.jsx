@@ -11,7 +11,7 @@ const FinancePro = ({ transactions = [], accounts = [], addAccount, updateAccoun
   const [currency, setCurrency] = useState('Rs');
   
   // --- FORMS & STATE ---
-  const [txForm, setTxForm] = useState({ desc: '', amount: '', type: 'payment_in', category: 'Website Sales', accountId: '' });
+  const [txForm, setTxForm] = useState({ desc: '', amount: '', type: 'payment_in', category: 'Sales Revenue', accountId: '' });
   const [accForm, setAccForm] = useState({ name: '', category: 'Customer', phone: '', address: '' });
   const [editingAccountId, setEditingAccountId] = useState(null); 
   
@@ -41,19 +41,19 @@ const FinancePro = ({ transactions = [], accounts = [], addAccount, updateAccoun
         const invoiced = accTx.filter(t => t.type === 'invoice_out').reduce((sum, t) => sum + t.amount, 0);
         const paid = accTx.filter(t => t.type === 'payment_in' || t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
         balance = invoiced - paid;
-        return { balance, text: balance > 0 ? 'Customer Owes You' : balance < 0 ? 'Overpaid / Credit' : 'Settled', color: balance > 0 ? '#eab308' : '#10b981' };
+        return { balance, text: balance > 0 ? 'Awaiting Payment' : balance < 0 ? 'Account in Credit' : 'Fully Settled', color: balance > 0 ? '#eab308' : '#10b981' };
     } 
     else if (account.category === 'Supplier') {
         const billed = accTx.filter(t => t.type === 'bill_in').reduce((sum, t) => sum + t.amount, 0);
         const paid = accTx.filter(t => t.type === 'payment_out' || t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
         balance = billed - paid;
-        return { balance, text: balance > 0 ? 'You Owe Supplier' : balance < 0 ? 'Supplier Owes You' : 'Settled', color: balance > 0 ? '#ef4444' : '#10b981' };
+        return { balance, text: balance > 0 ? 'Unpaid Balance' : balance < 0 ? 'Supplier Owes You' : 'Fully Settled', color: balance > 0 ? '#ef4444' : '#10b981' };
     }
     else {
         const moneyIn = accTx.filter(t => t.type === 'payment_in' || t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
         const moneyOut = accTx.filter(t => t.type === 'payment_out' || t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
         balance = moneyIn - moneyOut;
-        return { balance, text: 'Available Funds', color: '#3b82f6' };
+        return { balance, text: 'Available Cash', color: '#3b82f6' };
     }
   };
 
@@ -71,7 +71,7 @@ const FinancePro = ({ transactions = [], accounts = [], addAccount, updateAccoun
     if(!txForm.desc || !txForm.amount || !txForm.accountId) return alert("Please fill all details.");
     const selectedAcc = accounts.find(a => a.id == txForm.accountId);
     addTransaction({ ...txForm, amount: parseFloat(txForm.amount), date: new Date().toLocaleDateString(), accountName: selectedAcc ? selectedAcc.name : 'Unknown Account' });
-    setTxForm({ desc: '', amount: '', type: 'payment_in', category: 'Website Sales', accountId: '' }); 
+    setTxForm({ desc: '', amount: '', type: 'payment_in', category: 'Sales Revenue', accountId: '' }); 
   };
 
   const handleAccountSubmit = () => {
@@ -100,7 +100,7 @@ const FinancePro = ({ transactions = [], accounts = [], addAccount, updateAccoun
   const handleEditInvClick = (item) => { setInvForm({ name: item.name, type: item.type, quantity: item.quantity || '', baseCost: item.baseCost, shipping: item.shipping || '', sellingPrice: item.sellingPrice || '', lowStockThreshold: item.lowStockThreshold || '5' }); setEditingInvId(item.id); };
   const handleCancelInvEdit = () => { setInvForm({ name: '', type: 'Finished Goods', quantity: '', baseCost: '', shipping: '', sellingPrice: '', lowStockThreshold: '5' }); setEditingInvId(null); };
 
-  // --- NATIVE HTML PRINT GENERATOR (The "Side Popup" Method) ---
+  // --- NATIVE HTML PRINT GENERATOR ---
   const printLedger = () => {
     let filteredTx = transactions;
 
@@ -130,12 +130,18 @@ const FinancePro = ({ transactions = [], accounts = [], addAccount, updateAccoun
             totalExpense += parseFloat(tx.amount);
         }
         
+        let typeLabel = tx.type;
+        if (tx.type === 'invoice_out') typeLabel = 'Sales Invoice';
+        if (tx.type === 'payment_in') typeLabel = 'Cash Receipt';
+        if (tx.type === 'bill_in') typeLabel = 'Supplier Bill';
+        if (tx.type === 'payment_out') typeLabel = 'Cash Payment';
+
         return `
             <tr>
                 <td style="padding: 14px; border-bottom: 1px solid #e2e8f0; color: #475569;">${tx.date}</td>
                 <td style="padding: 14px; border-bottom: 1px solid #e2e8f0; font-weight: 600;">${tx.desc}</td>
                 <td style="padding: 14px; border-bottom: 1px solid #e2e8f0; color: #64748b;">${tx.category || 'General'}</td>
-                <td style="padding: 14px; border-bottom: 1px solid #e2e8f0; color: #64748b;">${tx.type.replace('_', ' ').toUpperCase()}</td>
+                <td style="padding: 14px; border-bottom: 1px solid #e2e8f0; color: #64748b;">${typeLabel}</td>
                 <td style="padding: 14px; border-bottom: 1px solid #e2e8f0; font-weight: 800; text-align: right;">${currency} ${parseFloat(tx.amount).toLocaleString()}</td>
             </tr>
         `;
@@ -150,9 +156,9 @@ const FinancePro = ({ transactions = [], accounts = [], addAccount, updateAccoun
     printWindow.document.write(`
         <html>
         <head>
-            <title>${brandName} - Official Statement</title>
+            <title>${brandName} - Financial Statement</title>
             <style>
-                @import url('[https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap)');
+                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
                 body { font-family: 'Inter', sans-serif; padding: 40px; color: #0f172a; margin: 0; }
                 .header { border-bottom: 4px solid #2dd4bf; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; }
                 .header h1 { margin: 0; font-size: 32px; font-weight: 900; letter-spacing: -1px; }
@@ -171,7 +177,7 @@ const FinancePro = ({ transactions = [], accounts = [], addAccount, updateAccoun
             <div class="header">
                 <div>
                     <h1>${brandName}</h1>
-                    <p>Official Account Statement</p>
+                    <p>Official Financial Statement</p>
                 </div>
                 <div style="text-align: right; font-size: 12px; color: #64748b; font-weight: 600;">
                     Generated<br/>
@@ -202,11 +208,11 @@ const FinancePro = ({ transactions = [], accounts = [], addAccount, updateAccoun
 
             <div class="totals-box">
                 <div class="totals-row">
-                    <span>Total Cash In</span>
+                    <span>Total Money In</span>
                     <span>${currency} ${totalIncome.toLocaleString()}</span>
                 </div>
                 <div class="totals-row">
-                    <span>Total Cash Out</span>
+                    <span>Total Money Out</span>
                     <span>${currency} ${totalExpense.toLocaleString()}</span>
                 </div>
                 <div class="totals-row net">
@@ -229,11 +235,11 @@ const FinancePro = ({ transactions = [], accounts = [], addAccount, updateAccoun
   return (
     <div className="section active" style={{ padding: '20px', background: '#f8fafc', minHeight: '100vh', boxSizing: 'border-box' }}>
       
-      {/* PREMIUM HEADER - RESPONSIVE ALIGNMENT FIXED */}
+      {/* PREMIUM HEADER */}
       <div className="header" style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px', background: '#fff', padding: '20px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
         <div style={{ flex: '1 1 200px' }}>
-          <h1 style={{ margin: '0 0 6px 0', color: 'var(--text-dark)', fontSize: '26px', fontWeight: '800' }}>Omni-Ledger</h1>
-          <p style={{ color:'var(--text-muted)', margin: 0, fontSize: '14px' }}>Invoicing, Expenses & Cashflow</p>
+          <h1 style={{ margin: '0 0 6px 0', color: 'var(--text-dark)', fontSize: '26px', fontWeight: '800' }}>Financial Center</h1>
+          <p style={{ color:'var(--text-muted)', margin: 0, fontSize: '14px' }}>Bookkeeping, Cashflow & Invoicing</p>
         </div>
         
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap', flex: '1 1 auto', justifyContent: 'flex-end' }}>
@@ -246,25 +252,24 @@ const FinancePro = ({ transactions = [], accounts = [], addAccount, updateAccoun
                 </select>
             </div>
             
-            {/* Scrollable / Wrapping Tab Nav for Mobile */}
             <div style={{ background: '#f1f5f9', padding: '4px', borderRadius: '8px', display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                 {['overview', 'directory', 'inventory', 'reports'].map(tab => (
                     <button key={tab} className={`btn ${activeTab === tab ? 'btn-primary' : 'btn-outline'}`} onClick={() => setActiveTab(tab)} style={{ textTransform:'capitalize', padding: '10px 16px', borderRadius: '6px', border: 'none', background: activeTab === tab ? 'var(--primary)' : 'transparent', color: activeTab === tab ? '#fff' : 'var(--text-muted)' }}>
-                        {tab}
+                        {tab === 'directory' ? 'Contacts' : tab}
                     </button>
                 ))}
             </div>
         </div>
       </div>
 
-      {/* === TAB 1: OVERVIEW (OMNI-LEDGER) === */}
+      {/* === TAB 1: OVERVIEW (LEDGER) === */}
       {activeTab === 'overview' && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'flex-start' }}>
            
            <div className="card" style={{ flex: '1 1 320px', padding: '30px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                 <h3 style={{ margin: '0', color: 'var(--text-dark)', display: 'flex', alignItems: 'center' }}>
-                    <FontAwesomeIcon icon={faPlus} style={{ color: 'var(--primary)', marginRight: '10px' }} /> Transaction & Invoicing
+                    <FontAwesomeIcon icon={faPlus} style={{ color: 'var(--primary)', marginRight: '10px' }} /> Record Entry
                 </h3>
                 <span style={{ fontSize: '12px', fontWeight: 'bold', color: isTxLimitReached ? '#ef4444' : '#64748b', background: isTxLimitReached ? '#fef2f2' : '#f1f5f9', padding: '4px 8px', borderRadius: '12px' }}>
                     {txThisMonth} / {FREE_TX_LIMIT} Used
@@ -272,37 +277,41 @@ const FinancePro = ({ transactions = [], accounts = [], addAccount, updateAccoun
               </div>
               
               <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold', color: 'var(--text-dark)' }}>Transaction Type</label>
-              <select className="input-neon" style={{ marginBottom: '20px', padding: '12px' }} value={txForm.type} onChange={e=>setTxForm({...txForm, type:e.target.value, category: e.target.value === 'invoice_out' ? 'Website Sales' : 'General'})} disabled={isTxLimitReached}>
-                  <option value="invoice_out">📄 Sales Invoice (Customer owes you)</option>
-                  <option value="payment_in">💵 Payment Received (Cash In)</option>
-                  <option value="bill_in">🧾 Purchase Bill (You owe Supplier)</option>
-                  <option value="payment_out">💸 Payment Sent (Cash Out)</option>
+              <select className="input-neon" style={{ marginBottom: '20px', padding: '12px' }} value={txForm.type} onChange={e=>setTxForm({...txForm, type:e.target.value, category: (e.target.value === 'payment_in' || e.target.value === 'invoice_out') ? 'Sales Revenue' : 'General Expense'})} disabled={isTxLimitReached}>
+                  <optgroup label="Cash Transactions (Affects Bank)">
+                    <option value="payment_in">💵 Cash Receipt (Money In)</option>
+                    <option value="payment_out">💸 Cash Payment (Money Out / Expense)</option>
+                  </optgroup>
+                  <optgroup label="Accruals (Awaiting Payment)">
+                    <option value="invoice_out">📄 Create Sales Invoice (Customer Owes You)</option>
+                    <option value="bill_in">🧾 Log Supplier Bill (You Owe Supplier)</option>
+                  </optgroup>
               </select>
               
               <div style={{ display:'flex', flexWrap: 'wrap', gap:'16px', marginBottom: '20px' }}>
                 <div style={{ flex: '1 1 140px' }}>
                     <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold', color: 'var(--text-dark)' }}>Target Account</label>
                     <select className="input-neon" style={{ marginBottom: 0, padding: '12px' }} value={txForm.accountId} onChange={e=>setTxForm({...txForm, accountId:e.target.value})} disabled={isTxLimitReached}>
-                        <option value="">-- Select Entity --</option>
+                        <option value="">-- Select Contact --</option>
                         {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name} ({acc.category})</option>)}
                     </select>
                 </div>
                 <div style={{ flex: '1 1 140px' }}>
                     <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold', color: 'var(--text-dark)' }}>Category</label>
                     <select className="input-neon" style={{ marginBottom: 0, padding: '12px' }} value={txForm.category} onChange={e=>setTxForm({...txForm, category:e.target.value})} disabled={isTxLimitReached}>
-                        <option value="Website Sales">Website Sales</option>
+                        <option value="Sales Revenue">Sales / Revenue</option>
                         <option value="Inventory Purchase">Inventory Purchase</option>
                         <option value="Payroll">Payroll / Salary</option>
                         <option value="Shipping">Shipping Costs</option>
-                        <option value="Marketing">Marketing</option>
-                        <option value="Capital">Initial Capital</option>
-                        <option value="General">General / Other</option>
+                        <option value="Marketing">Marketing & Ads</option>
+                        <option value="Owner Capital">Owner Capital / Equity</option>
+                        <option value="General Expense">General Expense</option>
                     </select>
                 </div>
               </div>
 
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold', color: 'var(--text-dark)' }}>Details & Amount</label>
-              <input className="input-neon" style={{ marginBottom: '16px', padding: '12px' }} placeholder="Short Description" value={txForm.desc} onChange={e=>setTxForm({...txForm, desc:e.target.value})} disabled={isTxLimitReached} />
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold', color: 'var(--text-dark)' }}>Description & Amount</label>
+              <input className="input-neon" style={{ marginBottom: '16px', padding: '12px' }} placeholder="e.g. Website Design Fee" value={txForm.desc} onChange={e=>setTxForm({...txForm, desc:e.target.value})} disabled={isTxLimitReached} />
               
               <div style={{ position: 'relative' }}>
                   <span style={{ position: 'absolute', left: '16px', top: '14px', color: 'var(--text-muted)', fontWeight: 'bold' }}>{currency}</span>
@@ -316,16 +325,22 @@ const FinancePro = ({ transactions = [], accounts = [], addAccount, updateAccoun
               )}
 
               <button className="btn btn-primary" style={{ width:'100%', padding: '16px', fontSize: '15px', fontWeight: 'bold', borderRadius: '8px', opacity: isTxLimitReached ? 0.5 : 1, cursor: isTxLimitReached ? 'not-allowed' : 'pointer' }} onClick={handleTxSubmit} disabled={isTxLimitReached}>
-                  Record Transaction
+                  Save Transaction
               </button>
            </div>
            
            <div className="card" style={{ flex: '1 1 320px', padding: '30px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-              <h3 style={{ margin: '0 0 24px 0', color: 'var(--text-dark)' }}>Audit Trail</h3>
+              <h3 style={{ margin: '0 0 24px 0', color: 'var(--text-dark)' }}>Ledger Audit Trail</h3>
               <div style={{ maxHeight:'400px', overflowY:'auto', paddingRight: '10px' }}>
                 {transactions.length === 0 ? <p style={{ color: 'var(--text-muted)' }}>No transactions recorded yet.</p> : transactions.map((t, idx) => {
                     const isMoneyIn = ['payment_in', 'invoice_out', 'income'].includes(t.type);
                     
+                    let typeLabel = t.type;
+                    if (t.type === 'invoice_out') typeLabel = 'Invoice';
+                    if (t.type === 'payment_in') typeLabel = 'Receipt';
+                    if (t.type === 'bill_in') typeLabel = 'Bill';
+                    if (t.type === 'payment_out') typeLabel = 'Payment';
+
                     return (
                         <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 0', borderBottom: idx === transactions.length - 1 ? 'none' : '1px solid #f1f5f9' }}>
                             <div>
@@ -341,8 +356,8 @@ const FinancePro = ({ transactions = [], accounts = [], addAccount, updateAccoun
                                 <div style={{ fontSize: '15px', fontWeight: '800', color: isMoneyIn ? '#10b981' : '#ef4444' }}>
                                     {isMoneyIn ? '+' : '-'}{currency}{parseFloat(t.amount).toLocaleString()}
                                 </div>
-                                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '2px' }}>
-                                    {t.type.replace('_', ' ')}
+                                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '2px', fontWeight: 'bold' }}>
+                                    {typeLabel}
                                 </div>
                             </div>
                         </div>
@@ -359,29 +374,29 @@ const FinancePro = ({ transactions = [], accounts = [], addAccount, updateAccoun
             <div className="card" style={{ flex: '1 1 320px', padding: '30px', borderRadius: '16px', border: editingAccountId ? '2px solid var(--primary)' : 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                 <h3 style={{ margin: '0 0 24px 0', color: 'var(--text-dark)', display: 'flex', alignItems: 'center' }}>
                     <FontAwesomeIcon icon={faUserPlus} style={{ color: 'var(--primary)', marginRight: '10px' }}/> 
-                    {editingAccountId ? 'Edit Entity Details' : 'Add Client / Supplier'}
+                    {editingAccountId ? 'Edit Contact Details' : 'Add Client or Vendor'}
                 </h3>
                 
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Entity Name</label>
-                <input className="input-neon" style={{ padding: '12px', marginBottom: '16px' }} value={accForm.name} onChange={e=>setAccForm({...accForm, name:e.target.value})} placeholder="e.g. Samz Technologies" />
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Contact Name / Company</label>
+                <input className="input-neon" style={{ padding: '12px', marginBottom: '16px' }} value={accForm.name} onChange={e=>setAccForm({...accForm, name:e.target.value})} placeholder="e.g. Acme Corp" />
                 
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Category</label>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Relationship Category</label>
                 <select className="input-neon" style={{ padding: '12px', marginBottom: '16px' }} value={accForm.category} onChange={e=>setAccForm({...accForm, category:e.target.value})}>
-                    <option value="Customer">Customer</option>
-                    <option value="Supplier">Supplier</option>
+                    <option value="Customer">Customer / Client</option>
+                    <option value="Supplier">Supplier / Vendor</option>
                     <option value="Employee">Employee</option>
-                    <option value="Bank">Bank/Cash Register</option>
+                    <option value="Bank">Bank / Cash Register</option>
                 </select>
 
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Phone</label>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Phone Number</label>
                 <input className="input-neon" style={{ padding: '12px', marginBottom: '16px' }} value={accForm.phone} onChange={e=>setAccForm({...accForm, phone:e.target.value})} placeholder="0300-1234567" />
                 
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Address</label>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Billing Address</label>
                 <input className="input-neon" style={{ padding: '12px', marginBottom: '24px' }} value={accForm.address} onChange={e=>setAccForm({...accForm, address:e.target.value})} placeholder="Office No..." />
 
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
                     <button className="btn btn-primary" style={{ flex: '1 1 auto', padding: '14px', borderRadius: '8px', justifyContent: 'center' }} onClick={handleAccountSubmit}>
-                        {editingAccountId ? 'Save Changes' : 'Create Record'}
+                        {editingAccountId ? 'Save Changes' : 'Create Contact'}
                     </button>
                     {editingAccountId && (
                         <button className="btn btn-outline" style={{ flex: '1 1 auto', padding: '14px', borderRadius: '8px', justifyContent: 'center' }} onClick={handleCancelEdit}>Cancel</button>
@@ -425,7 +440,7 @@ const FinancePro = ({ transactions = [], accounts = [], addAccount, updateAccoun
             <div className="card" style={{ flex: '1 1 320px', padding: '30px', borderRadius: '16px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                 <h3 style={{ margin: '0 0 24px 0', color: 'var(--text-dark)' }}>
                     <FontAwesomeIcon icon={faBoxOpen} style={{ color: 'var(--primary)', marginRight: '10px' }}/> 
-                    {editingInvId ? 'Edit Stock Item' : 'Add to Stockroom'}
+                    {editingInvId ? 'Edit Stock Item' : 'Add to Warehouse'}
                 </h3>
                 
                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Product / Material Name</label>
@@ -433,8 +448,8 @@ const FinancePro = ({ transactions = [], accounts = [], addAccount, updateAccoun
                 
                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 'bold' }}>Tracking Type</label>
                 <select className="input-neon" style={{ padding: '12px', marginBottom: '16px' }} value={invForm.type} onChange={e=>setInvForm({...invForm, type:e.target.value})}>
-                    <option value="Finished Goods">Finished Goods (For Sale)</option>
-                    <option value="Raw Materials">Raw Materials (For Supplies/Packaging)</option>
+                    <option value="Finished Goods">Retail Product (For Sale)</option>
+                    <option value="Raw Materials">Raw Material (Supplies/Packaging)</option>
                 </select>
 
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '16px' }}>
@@ -457,7 +472,7 @@ const FinancePro = ({ transactions = [], accounts = [], addAccount, updateAccoun
                     <input type="number" className="input-neon" style={{ padding: '12px 12px 12px 35px', marginBottom: '8px' }} value={invForm.shipping} onChange={e=>setInvForm({...invForm, shipping:e.target.value})} />
                 </div>
                 <p style={{ fontSize: '12px', color: 'var(--primary)', fontWeight: 'bold', marginBottom: '20px' }}>
-                    💡 Landed Cost: {currency}{unitLandedCost.toFixed(2)} per unit.
+                    💡 True Landed Cost: {currency}{unitLandedCost.toFixed(2)} per unit.
                 </p>
 
                 {invForm.type === 'Finished Goods' && (
@@ -470,14 +485,14 @@ const FinancePro = ({ transactions = [], accounts = [], addAccount, updateAccoun
                         
                         <div style={{ background: expectedProfit > 0 ? '#ecfdf5' : '#f8fafc', padding: '16px', borderRadius: '8px', marginBottom: '24px', border: expectedProfit > 0 ? '1px solid #10b981' : '1px solid #e2e8f0' }}>
                             <p style={{ fontSize: '13px', color: expectedProfit > 0 ? '#059669' : 'var(--text-muted)', margin: '0', fontWeight: 'bold' }}>
-                                {expectedProfit > 0 ? `✨ You earn ${currency}${expectedProfit.toFixed(2)} pure profit per sale.` : 'Awaiting cost & price logic...'}
+                                {expectedProfit > 0 ? `✨ Expected Profit: ${currency}${expectedProfit.toFixed(2)} per sale.` : 'Awaiting cost & price details...'}
                             </p>
                         </div>
                     </>
                 )}
 
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: invForm.type === 'Raw Materials' ? '24px' : '0' }}>
-                    <button className="btn btn-primary" style={{ flex: '1 1 auto', padding: '14px', borderRadius: '8px', justifyContent: 'center' }} onClick={handleInvSubmit}>{editingInvId ? 'Update Stock' : 'Add to Warehouse'}</button>
+                    <button className="btn btn-primary" style={{ flex: '1 1 auto', padding: '14px', borderRadius: '8px', justifyContent: 'center' }} onClick={handleInvSubmit}>{editingInvId ? 'Update Item' : 'Add to Stock'}</button>
                     {editingInvId && (<button className="btn btn-outline" style={{ flex: '1 1 auto', padding: '14px', borderRadius: '8px', justifyContent: 'center' }} onClick={handleCancelInvEdit}>Cancel</button>)}
                 </div>
             </div>
@@ -515,7 +530,7 @@ const FinancePro = ({ transactions = [], accounts = [], addAccount, updateAccoun
             <FontAwesomeIcon icon={faFileInvoiceDollar} size="3x" style={{ color:'var(--primary)', marginBottom:'20px' }} />
             <h2 style={{ color: 'var(--text-dark)', margin: '0 0 12px 0', fontSize: '24px', fontWeight: '800' }}>Statement Generator</h2>
             <p style={{ color:'var(--text-muted)', margin: '0 auto 30px auto', fontSize: '14px', lineHeight: '1.6', maxWidth: '90%' }}>
-                Select a client or supplier below to generate a professional, print-ready PDF statement of their account balance and payment history.
+                Select a client or vendor below to generate a professional, print-ready PDF statement of their account balance and payment history.
             </p>
 
             <div style={{ textAlign: 'left', background: '#f8fafc', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
