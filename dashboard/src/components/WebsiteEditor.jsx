@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faGlobe, faToggleOn, faToggleOff, faTrash, faPlus,
-  faEnvelope, faBars, faPalette, faFont, faHeading, faMagic, faTags, faLock, faUpload,
-  faSave, faLink, faExternalLinkAlt, faShareAlt, faTruck, faImage, faUsers, faCheckCircle, faBriefcase, faScaleBalanced, faTriangleExclamation, faTimesCircle, faSearch
+  faBars, faPalette, faFont, faHeading, faMagic, faTags, faLock, faUpload,
+  faSave, faExternalLinkAlt, faShareAlt, faImage, faUsers, faCheckCircle, faBriefcase, faScaleBalanced, faTriangleExclamation, faTimesCircle, faLink
 } from '@fortawesome/free-solid-svg-icons';
 
 import { doc, setDoc } from 'firebase/firestore';
@@ -25,34 +25,8 @@ const WebsiteEditor = ({ branding = {}, siteConfig = {}, setSiteConfig, isServic
   const [alertModal, setAlertModal] = useState({ isOpen: false, type: 'success', title: '', message: '' });
   const [unsplashModal, setUnsplashModal] = useState({ isOpen: false, targetField: '', keyword: '' });
 
-  // --- CORE LINKS LOGIC ---
-  let baseMenu = siteConfig.menuItems || [];
-  baseMenu = baseMenu.map(item => {
-    if (['#home', '#catalog', '#about', '#services', '#contact'].includes(item.link)) return { ...item, isCore: true };
-    return item;
-  });
-
-  const hasHome = baseMenu.some(i => i.link === '#home');
-  const hasCatalog = baseMenu.some(i => i.link === '#catalog');
-  const hasServices = baseMenu.some(i => i.link === '#services');
-  const hasAbout = baseMenu.some(i => i.link === '#about');
-  const hasContact = baseMenu.some(i => i.link === '#contact');
-  
-  if (!hasHome) baseMenu.unshift({ id: 'core-home', label: 'Home', link: '#home', isCore: true });
-  
-  if (isService) {
-    if (!hasServices) baseMenu.splice(1, 0, { id: 'core-services', label: 'Services', link: '#services', isCore: true });
-    if (!hasContact) baseMenu.push({ id: 'core-contact', label: 'Contact', link: '#contact', isCore: true });
-    baseMenu = baseMenu.filter(item => item.link !== '#catalog');
-  } else {
-    if (!hasCatalog) baseMenu.splice(1, 0, { id: 'core-catalog', label: 'Catalog', link: '#catalog', isCore: true });
-    baseMenu = baseMenu.filter(item => item.link !== '#services' && item.link !== '#contact');
-  }
-  
-  if (!hasAbout) baseMenu.push({ id: 'core-about', label: 'About', link: '#about', isCore: true });
-  const currentMenu = baseMenu;
-
-  useEffect(() => { setSiteConfig(prev => ({ ...prev, menuItems: currentMenu })); }, []);
+  // Safe Fallback for menuItems
+  const currentMenu = siteConfig.menuItems || [];
 
   const sanitizeInput = (text) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#x27;");
   const handleSubdomainChange = (val) => setSiteConfig({ ...siteConfig, subdomain: val.toLowerCase().replace(/[^a-z0-9-]/g, '').substring(0, 30) });
@@ -106,7 +80,7 @@ const WebsiteEditor = ({ branding = {}, siteConfig = {}, setSiteConfig, isServic
   const handleSaveToFirebase = async () => {
     try {
       setIsSaving(true);
-      const targetId = auth.currentUser ? auth.currentUser.uid : 'ceo@ecosole.store';
+      const targetId = auth.currentUser ? auth.currentUser.email : 'ceo@ecosole.store';
       await setDoc(doc(db, "users", targetId), { siteConfig }, { merge: true });
       setAlertModal({ isOpen: true, type: 'success', title: 'System Saved', message: 'Website configuration successfully synchronized with the cloud.' });
     } catch (error) { 

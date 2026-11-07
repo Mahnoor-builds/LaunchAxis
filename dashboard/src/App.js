@@ -113,7 +113,7 @@ function App() {
   const [isAuthChecking, setIsAuthChecking] = useState(true);
 
   const [branding, setBranding] = useState({ name: 'Loading...', slogan: '', industry: '', logo: '', owners: [{ name: 'Admin', role: 'Founder' }] });
-  const [siteConfig, setSiteConfig] = useState({ themeColor: '#2dd4bf', showHero: true, notificationEmail: 'orders@launchaxis.com', supportEmail: 'help@launchaxis.com', socials: { facebook: '', instagram: '' }, menuItems: [{ id: 1, label: 'Home', link: '#home' }, { id: 2, label: 'Catalog', link: '#catalog' }, { id: 3, label: 'About', link: '#about' }] });
+  const [siteConfig, setSiteConfig] = useState({ themeColor: '#2dd4bf', showHero: true, notificationEmail: 'orders@launchaxis.com', supportEmail: 'help@launchaxis.com', socials: { facebook: '', instagram: '' }, menuItems: [] });
   
   const [products, setProducts] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -166,7 +166,8 @@ function App() {
             return; 
         }
 
-        let targetId = user.uid;
+        // CRITICAL FIX: Fetch using user.email to match LoadingKernel.jsx!
+        let targetId = user.email; 
         setCurrentUserEmail(targetId);
 
         const docRef = doc(db, "users", targetId);
@@ -175,7 +176,6 @@ function App() {
         if (docSnap.exists()) {
             const liveData = docSnap.data();
             
-            // DYNAMIC FETCH: Pull exactly what the user selected in StartBuilding.jsx
             if (liveData.businessType === 'service') {
                setIsService(true);
             } else {
@@ -190,10 +190,19 @@ function App() {
                 setBranding(prev => ({ ...prev, name: liveData.aiArchitecture.businessName, slogan: liveData.aiArchitecture.tagline, industry: liveData.businessType }));
             }
 
+            // CRITICAL FIX: Safely build default menu items directly from Firebase fetch
             if (liveData.siteConfig) {
                 setSiteConfig(liveData.siteConfig);
-            } else if (liveData.aiArchitecture?.colorPalette?.primary) {
-                setSiteConfig(prev => ({ ...prev, themeColor: liveData.aiArchitecture.colorPalette.primary }));
+            } else {
+                const defaultMenu = liveData.businessType === 'service' 
+                  ? [ { id: 'core-home', label: 'Home', link: '#home', isCore: true }, { id: 'core-services', label: 'Services', link: '#services', isCore: true }, { id: 'core-about', label: 'About', link: '#about', isCore: true }, { id: 'core-contact', label: 'Contact', link: '#contact', isCore: true } ]
+                  : [ { id: 'core-home', label: 'Home', link: '#home', isCore: true }, { id: 'core-catalog', label: 'Catalog', link: '#catalog', isCore: true }, { id: 'core-about', label: 'About', link: '#about', isCore: true } ];
+                  
+                setSiteConfig(prev => ({ 
+                  ...prev, 
+                  themeColor: liveData.aiArchitecture?.colorPalette?.primary || '#2dd4bf',
+                  menuItems: defaultMenu
+                }));
             }
 
             if (liveData.accounts) setAccounts(liveData.accounts);
@@ -298,7 +307,7 @@ function App() {
   const handleSubmitLead = async (leadData) => {
     try {
       let targetId = "ceo@ecosole.store"; 
-      if (auth.currentUser) targetId = auth.currentUser.uid;
+      if (auth.currentUser) targetId = auth.currentUser.email;
 
       await addDoc(collection(db, `users/${targetId}/leads`), {
         ...leadData,
@@ -330,7 +339,7 @@ function App() {
 
     try {
         let targetId = "ceo@ecosole.store"; 
-        if (auth.currentUser) targetId = auth.currentUser.uid;
+        if (auth.currentUser) targetId = auth.currentUser.email;
 
         const orderRef = doc(db, `users/${targetId}/orders`, orderId);
         await setDoc(orderRef, newOrder);
