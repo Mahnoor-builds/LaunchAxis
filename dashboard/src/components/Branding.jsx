@@ -3,7 +3,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faRobot, faPalette, faUpload, faWandMagicSparkles, 
   faImage, faFont, faBuilding, faFileSignature, faDesktop, faPenNib,
-  faGlobe, faSpinner, faCheckCircle, faTimesCircle, faLightbulb, faEye, faTriangleExclamation
+  faGlobe, faSpinner, faCheckCircle, faTimesCircle, faLightbulb, 
+  faTriangleExclamation, faTag, faBullhorn, faIdCard, faSwatchbook
 } from '@fortawesome/free-solid-svg-icons';
 
 const Branding = ({ branding = {}, setBranding }) => {
@@ -60,7 +61,7 @@ const Branding = ({ branding = {}, setBranding }) => {
   };
 
   useEffect(() => {
-    if (branding.name) {
+    if (branding.name && branding.name !== 'Loading...') {
       const formatted = branding.name.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com';
       setDomainName(formatted);
       setDomainStatus('idle');
@@ -252,272 +253,670 @@ const Branding = ({ branding = {}, setBranding }) => {
     }
   };
 
+  // --- REFINED BENTO SAAS STYLES ---
+  const bentoCardStyle = {
+    background: '#ffffff',
+    borderRadius: '16px',
+    padding: '28px',
+    border: '1px solid #e2e8f0',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+  };
+
+  const labelStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    marginBottom: '8px',
+    fontSize: '12px',
+    fontWeight: '700',
+    color: '#334155'
+  };
+
+  const saasInputStyle = {
+    width: '100%',
+    padding: '12px 14px',
+    background: '#f8fafc',
+    border: '1px solid #cbd5e1',
+    borderRadius: '10px',
+    color: '#0f172a',
+    fontSize: '14px',
+    fontWeight: '500',
+    outline: 'none',
+    marginBottom: 0,
+    boxSizing: 'border-box',
+    transition: 'all 0.2s ease'
+  };
+
+  const primaryBtnStyle = {
+    padding: '12px 18px',
+    background: '#0f172a',
+    color: '#ffffff',
+    border: 'none',
+    borderRadius: '10px',
+    fontSize: '13px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    boxShadow: '0 4px 12px rgba(15, 23, 42, 0.12)',
+    transition: 'all 0.2s ease',
+    whiteSpace: 'nowrap'
+  };
+
+  const secondaryBtnStyle = {
+    padding: '12px 18px',
+    background: '#ffffff',
+    color: '#334155',
+    border: '1px solid #cbd5e1',
+    borderRadius: '10px',
+    fontSize: '13px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    transition: 'all 0.2s ease',
+    whiteSpace: 'nowrap'
+  };
+
+  const displayBrandName = branding.name && branding.name !== 'Loading...' ? branding.name : 'Unconfigured Brand';
+  const currentFontName = branding.font ? branding.font.split(',')[0].replace(/'/g, '') : 'Inter';
+
   return (
-    <div className="section active">
-      {/* HEADER WITH TABS */}
-      <div className="header" style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-        <div style={{ flex: '1 1 300px' }}>
-          <h1 style={{ margin: '0 0 4px 0', color: 'var(--text-dark)', fontSize: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <FontAwesomeIcon icon={faPalette} style={{ color: 'var(--neon-cyan)' }}/>
+    <section className="section active" style={{ paddingBottom: '48px', maxWidth: '1200px', margin: '0 auto' }}>
+      
+      {/* --- 1. TOP HEADER & SEGMENTED NAVIGATION --- */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '28px' }}>
+        <div>
+          <span style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.8px', color: '#4f46e5', display: 'block', marginBottom: '4px' }}>
+            Identity & Copywriting
+          </span>
+          <h2 style={{ margin: 0, fontSize: '26px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.5px' }}>
             Branding Studio
-            {/* AI QUOTA BADGE */}
-            <span style={{ fontSize: '11px', background: isAiLimitReached ? '#fef2f2' : '#f0fdfa', color: isAiLimitReached ? '#ef4444' : '#0d9488', border: isAiLimitReached ? '1px solid #fecaca' : '1px solid #99f6e4', padding: '4px 10px', borderRadius: '12px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <FontAwesomeIcon icon={faRobot} /> {aiUsageCount}/{AI_LIMIT} Prompts Used
-            </span>
-          </h1>
-          <p style={{ color:'var(--text-muted)', margin: 0, fontSize: '14px' }}>
-            Configure your brand identity and live styling. Changes auto-sync to your Website and Ledgers.
-          </p>
+          </h2>
         </div>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          <button className={`btn ${activeTab === 'studio' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setActiveTab('studio')} style={{ flex: '1 1 auto' }}>Visual Studio</button>
-          <button className={`btn ${activeTab === 'content' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setActiveTab('content')} style={{ flex: '1 1 auto' }}>Content Engine</button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          {/* Segmented Pill Switcher */}
+          <div style={{ background: '#e2e8f0', padding: '4px', borderRadius: '12px', display: 'flex', gap: '4px' }}>
+            <button 
+              onClick={() => setActiveTab('studio')} 
+              style={{ 
+                padding: '9px 18px', borderRadius: '9px', border: 'none', 
+                background: activeTab === 'studio' ? '#ffffff' : 'transparent', 
+                color: activeTab === 'studio' ? '#0f172a' : '#475569',
+                fontWeight: activeTab === 'studio' ? '800' : '600', fontSize: '13px', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: '8px',
+                boxShadow: activeTab === 'studio' ? '0 2px 4px rgba(0,0,0,0.06)' : 'none'
+              }}
+            >
+              <FontAwesomeIcon icon={faPalette} style={{ color: activeTab === 'studio' ? '#4f46e5' : '#64748b' }} />
+              Visual Studio
+            </button>
+            <button 
+              onClick={() => setActiveTab('content')} 
+              style={{ 
+                padding: '9px 18px', borderRadius: '9px', border: 'none', 
+                background: activeTab === 'content' ? '#ffffff' : 'transparent', 
+                color: activeTab === 'content' ? '#0f172a' : '#475569',
+                fontWeight: activeTab === 'content' ? '800' : '600', fontSize: '13px', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: '8px',
+                boxShadow: activeTab === 'content' ? '0 2px 4px rgba(0,0,0,0.06)' : 'none'
+              }}
+            >
+              <FontAwesomeIcon icon={faPenNib} style={{ color: activeTab === 'content' ? '#ea580c' : '#64748b' }} />
+              Content Engine
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* ======================================= */}
-      {/* TAB 1: VISUAL STUDIO & LIVE BRAND BOARD */}
-      {/* ======================================= */}
+      {/* --- 2. FOUR KEY BRAND SNAPSHOT CARDS --- */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '28px' }}>
+        
+        {/* CARD 1: ACTIVE BRAND */}
+        <div style={{ background: '#ffffff', borderRadius: '14px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+            <span style={{ fontSize: '13px', fontWeight: '700', color: '#64748b' }}>Active Identity</span>
+            <div style={{ width: '34px', height: '34px', borderRadius: '9px', background: '#eef2ff', color: '#4f46e5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>
+              <FontAwesomeIcon icon={faTag} />
+            </div>
+          </div>
+          <div style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {displayBrandName}
+          </div>
+          <div style={{ fontSize: '12px', color: '#4f46e5', fontWeight: '600' }}>
+            {branding.logo ? 'Custom logo active' : 'Default icon active'}
+          </div>
+        </div>
+
+        {/* CARD 2: DOMAIN STATUS */}
+        <div style={{ background: '#ffffff', borderRadius: '14px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+            <span style={{ fontSize: '13px', fontWeight: '700', color: '#64748b' }}>Web Domain</span>
+            <div style={{ width: '34px', height: '34px', borderRadius: '9px', background: '#ecfdf5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>
+              <FontAwesomeIcon icon={faGlobe} />
+            </div>
+          </div>
+          <div style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {domainName || 'Not checked yet'}
+          </div>
+          <div style={{ fontSize: '12px', color: domainStatus === 'available' ? '#059669' : domainStatus === 'taken' ? '#dc2626' : '#64748b', fontWeight: '600' }}>
+            {domainStatus === 'available' ? 'Domain is available' : domainStatus === 'taken' ? 'Domain already taken' : 'Click Check Domain below'}
+          </div>
+        </div>
+
+        {/* CARD 3: STYLE & FONT */}
+        <div style={{ background: '#ffffff', borderRadius: '14px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+            <span style={{ fontSize: '13px', fontWeight: '700', color: '#64748b' }}>Theme & Font</span>
+            <div style={{ width: '34px', height: '34px', borderRadius: '9px', background: '#fff7ed', color: '#ea580c', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>
+              <FontAwesomeIcon icon={faSwatchbook} />
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+            <span style={{ width: '18px', height: '18px', borderRadius: '5px', background: primaryColor, border: '1px solid rgba(0,0,0,0.1)', display: 'inline-block' }}></span>
+            <span style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', fontFamily: 'monospace' }}>{primaryColor.toUpperCase()}</span>
+          </div>
+          <div style={{ fontSize: '12px', color: '#ea580c', fontWeight: '600' }}>
+            Font: {currentFontName}
+          </div>
+        </div>
+
+        {/* CARD 4: AI CREDITS */}
+        <div style={{ background: '#ffffff', borderRadius: '14px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+            <span style={{ fontSize: '13px', fontWeight: '700', color: '#64748b' }}>AI Studio Quota</span>
+            <div style={{ width: '34px', height: '34px', borderRadius: '9px', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>
+              <FontAwesomeIcon icon={faRobot} />
+            </div>
+          </div>
+          <div style={{ fontSize: '20px', fontWeight: '800', color: isAiLimitReached ? '#dc2626' : '#0f172a', marginBottom: '4px' }}>
+            {aiUsageCount} / {AI_LIMIT} Used
+          </div>
+          <div style={{ fontSize: '12px', color: isAiLimitReached ? '#dc2626' : '#2563eb', fontWeight: '600' }}>
+            {isAiLimitReached ? 'Free limit reached' : `${AI_LIMIT - aiUsageCount} AI prompts remaining`}
+          </div>
+        </div>
+
+      </div>
+
+      {/* ========================================================= */}
+      {/* TAB 1: VISUAL STUDIO & LIVE BRAND BOARD                   */}
+      {/* ========================================================= */}
       {activeTab === 'studio' && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'flex-start' }}>
           
-          <div style={{ flex: '1 1 320px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* LEFT COLUMN: CONFIGURATION CARDS */}
+          <div style={{ flex: '1 1 360px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
               
-            <div className="card">
-              <h3 style={{ margin: '0 0 16px 0', color: 'var(--text-dark)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FontAwesomeIcon icon={faRobot} style={{ color: 'var(--neon-cyan)' }}/> Core Brand Identity
-              </h3>
-
-              <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', padding: '12px', borderRadius: '8px', marginBottom: '20px' }}>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: '#166534', fontWeight: '800' }}>
-                  <FontAwesomeIcon icon={faLightbulb} style={{ marginRight: '6px' }} /> Step 1: Explain Your Business
-                </label>
-                <input type="text" className="input-neon" style={{ marginBottom: '6px', background: '#fff', borderColor: '#86efac' }} value={nameKeyword} onChange={(e) => setNameKeyword(e.target.value)} placeholder="e.g. organic skincare for men" />
+            {/* CARD A: CORE BRAND IDENTITY */}
+            <div style={bentoCardStyle}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '22px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9' }}>
+                <div style={{ width: '34px', height: '34px', borderRadius: '9px', background: '#eef2ff', color: '#4f46e5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <FontAwesomeIcon icon={faWandMagicSparkles} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: '#0f172a' }}>Name, Domain & Tagline</h3>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748b' }}>Define how customers recognize your business</p>
+                </div>
               </div>
 
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)', fontWeight: '600' }}>Step 2: Business Name</label>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <input className="input-neon" style={{ marginBottom: 0, flex: '1 1 180px' }} value={branding.name || ''} onChange={(e) => handleChange('name', e.target.value)} placeholder="Enter Business Name" />
-                  <button className="btn btn-primary" style={{ padding: '10px 14px', whiteSpace: 'nowrap', fontSize: '13px', flex: '1 1 auto', justifyContent: 'center', opacity: isAiLimitReached ? 0.6 : 1, cursor: isAiLimitReached ? 'not-allowed' : 'pointer' }} onClick={generateNameOnly} disabled={isGenerating.name || isAiLimitReached}>
-                    {isGenerating.name ? <FontAwesomeIcon icon={faSpinner} spin /> : <><FontAwesomeIcon icon={faWandMagicSparkles} /> AI Name</>}
+              {/* STEP 1: NICHE DESCRIPTION */}
+              <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', padding: '16px', borderRadius: '12px', marginBottom: '20px' }}>
+                <label style={{ ...labelStyle, color: '#9a3412', marginBottom: '6px' }}>
+                  <FontAwesomeIcon icon={faLightbulb} style={{ color: '#ea580c' }} /> Step 1: What does your business sell or do?
+                </label>
+                <input 
+                  type="text" 
+                  style={{ ...saasInputStyle, background: '#ffffff', borderColor: '#fdba74' }} 
+                  value={nameKeyword} 
+                  onChange={(e) => setNameKeyword(e.target.value)} 
+                  placeholder="e.g. modern web design agency or luxury oud perfumes" 
+                />
+              </div>
+
+              {/* STEP 2: BUSINESS NAME */}
+              <div style={{ marginBottom: '20px' }}>
+                <label style={labelStyle}>
+                  <FontAwesomeIcon icon={faTag} style={{ color: '#2563eb' }} /> Step 2: Business Name
+                </label>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  <input 
+                    style={{ ...saasInputStyle, flex: '1 1 180px' }} 
+                    value={branding.name || ''} 
+                    onChange={(e) => handleChange('name', e.target.value)} 
+                    placeholder="Enter Business Name" 
+                  />
+                  <button 
+                    style={{ ...primaryBtnStyle, opacity: isAiLimitReached ? 0.6 : 1, cursor: isAiLimitReached ? 'not-allowed' : 'pointer' }} 
+                    onClick={generateNameOnly} 
+                    disabled={isGenerating.name || isAiLimitReached}
+                  >
+                    {isGenerating.name ? <FontAwesomeIcon icon={faSpinner} spin /> : <><FontAwesomeIcon icon={faWandMagicSparkles} style={{ color: '#f97316' }} /> Generate Name</>}
                   </button>
                 </div>
               </div>
 
-              <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', color: 'var(--text-dark)', fontWeight: 'bold' }}>Web Domain Availability</label>
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '8px' }}>
-                  <div style={{ flex: '1 1 200px', position: 'relative', display: 'flex', alignItems: 'center' }}>
-                    <FontAwesomeIcon icon={faGlobe} style={{ position: 'absolute', left: '12px', color: '#94a3b8' }} />
+              {/* DOMAIN CHECKER */}
+              <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '20px' }}>
+                <label style={labelStyle}>
+                  <FontAwesomeIcon icon={faGlobe} style={{ color: '#059669' }} /> Domain Availability Check
+                </label>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  <div style={{ flex: '1 1 180px', position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <FontAwesomeIcon icon={faGlobe} style={{ position: 'absolute', left: '14px', color: '#94a3b8', fontSize: '13px' }} />
                     <input 
-                     className="input-neon" 
-                      style={{ marginBottom: 0, paddingLeft: '35px', width: '100%', background: '#fff', color: '#0f172a' }} 
+                      style={{ ...saasInputStyle, paddingLeft: '36px', background: '#ffffff' }} 
                       value={domainName} 
                       onChange={(e) => {
-                      setDomainName(e.target.value.toLowerCase().replace(/\s+/g, ''));
-                      setDomainStatus('idle');
-                     }}
-                      placeholder="e.g. mycustomidea.store"
+                        setDomainName(e.target.value.toLowerCase().replace(/\s+/g, ''));
+                        setDomainStatus('idle');
+                      }}
+                      placeholder="e.g. mybrand.com"
                     />
                   </div>
-                  <button className="btn btn-outline" style={{ padding: '10px 15px', flex: '1 1 auto', justifyContent: 'center', borderColor: 'var(--text-dark)', color: 'var(--text-dark)', fontSize: '13px' }} onClick={() => checkDomainAvailability()} disabled={domainStatus === 'checking'}>
+                  <button 
+                    style={secondaryBtnStyle} 
+                    onClick={() => checkDomainAvailability()} 
+                    disabled={domainStatus === 'checking'}
+                  >
                     {domainStatus === 'checking' ? <FontAwesomeIcon icon={faSpinner} spin /> : 'Check Domain'}
                   </button>
                 </div>
-                <div style={{ fontSize: '12px', minHeight: '16px', fontWeight: '600' }}>
-                  {domainStatus === 'taken' && <span style={{ color: '#ef4444' }}><FontAwesomeIcon icon={faTimesCircle} /> Taken. Try another name.</span>}
-                  {domainStatus === 'available' && <span style={{ color: '#10b981' }}><FontAwesomeIcon icon={faCheckCircle} /> Available! ({domainName})</span>}
-                  {domainStatus === 'error' && <span style={{ color: '#f59e0b' }}>Could not connect to domain server.</span>}
-                </div>
+
+                {domainStatus !== 'idle' && (
+                  <div style={{ fontSize: '12px', marginTop: '10px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {domainStatus === 'taken' && <span style={{ color: '#dc2626' }}><FontAwesomeIcon icon={faTimesCircle} /> This domain is already registered. Try another variation.</span>}
+                    {domainStatus === 'available' && <span style={{ color: '#059669' }}><FontAwesomeIcon icon={faCheckCircle} /> Good news! {domainName} is available.</span>}
+                    {domainStatus === 'error' && <span style={{ color: '#ea580c' }}><FontAwesomeIcon icon={faTriangleExclamation} /> Could not reach domain lookup server.</span>}
+                  </div>
+                )}
               </div>
 
+              {/* STEP 3: SLOGAN */}
               <div>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)', fontWeight: '600' }}>Step 3: Brand Tagline</label>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <input className="input-neon" style={{ marginBottom: 0, flex: '1 1 180px' }} value={branding.slogan || ''} onChange={(e) => handleChange('slogan', e.target.value)} placeholder="Your brand promise..." />
-                  <button className="btn btn-outline" style={{ padding: '10px 14px', whiteSpace: 'nowrap', fontSize: '13px', flex: '1 1 auto', justifyContent: 'center', borderColor: 'var(--neon-cyan)', color: 'var(--text-dark)', opacity: isAiLimitReached ? 0.6 : 1, cursor: isAiLimitReached ? 'not-allowed' : 'pointer' }} onClick={generateSloganOnly} disabled={isGenerating.slogan || isAiLimitReached}>
-                    {isGenerating.slogan ? <FontAwesomeIcon icon={faSpinner} spin /> : <><FontAwesomeIcon icon={faWandMagicSparkles} /> AI Tagline</>}
+                <label style={labelStyle}>
+                  <FontAwesomeIcon icon={faBullhorn} style={{ color: '#4f46e5' }} /> Step 3: Brand Slogan
+                </label>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  <input 
+                    style={{ ...saasInputStyle, flex: '1 1 180px' }} 
+                    value={branding.slogan || ''} 
+                    onChange={(e) => handleChange('slogan', e.target.value)} 
+                    placeholder="Short, memorable brand promise" 
+                  />
+                  <button 
+                    style={{ ...secondaryBtnStyle, opacity: isAiLimitReached ? 0.6 : 1, cursor: isAiLimitReached ? 'not-allowed' : 'pointer' }} 
+                    onClick={generateSloganOnly} 
+                    disabled={isGenerating.slogan || isAiLimitReached}
+                  >
+                    {isGenerating.slogan ? <FontAwesomeIcon icon={faSpinner} spin /> : <><FontAwesomeIcon icon={faWandMagicSparkles} style={{ color: '#4f46e5' }} /> Write Slogan</>}
                   </button>
                 </div>
               </div>
             </div>
 
-            <div className="card">
-              <h3 style={{ margin: '0 0 20px 0', color: 'var(--text-dark)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FontAwesomeIcon icon={faImage} style={{ color: 'var(--neon-cyan)' }}/> Visual Assets
-              </h3>
-
-              <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>Brand Primary Color</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-                <input type="color" value={primaryColor} onChange={(e) => handleChange('color', e.target.value)} style={{ width: '40px', height: '40px', padding: 0, border: 'none', borderRadius: '4px', cursor: 'pointer' }} />
-                <span style={{ fontFamily: 'monospace', color: 'var(--text-dark)' }}>{primaryColor.toUpperCase()}</span>
+            {/* CARD B: VISUAL STYLING & LOGO */}
+            <div style={bentoCardStyle}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '22px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9' }}>
+                <div style={{ width: '34px', height: '34px', borderRadius: '9px', background: '#ecfdf5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <FontAwesomeIcon icon={faImage} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: '#0f172a' }}>Colors, Font & Logo</h3>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748b' }}>Set your visual theme across website and invoices</p>
+                </div>
               </div>
 
-              <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>Typography Style</label>
-              <select className="input-neon" value={branding.font || 'sans-serif'} onChange={(e) => handleChange('font', e.target.value)}>
-                <option value="'Inter', sans-serif">Modern Sans-Serif (Inter)</option>
-                <option value="'Playfair Display', serif">Luxury Serif (Playfair)</option>
-                <option value="'Space Grotesk', sans-serif">Tech / Geometric (Space Grotesk)</option>
-              </select>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '20px' }}>
+                {/* PRIMARY COLOR PICKER */}
+                <div style={{ flex: '1 1 140px' }}>
+                  <label style={labelStyle}>
+                    <FontAwesomeIcon icon={faPalette} style={{ color: '#ea580c' }} /> Primary Accent Color
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#f8fafc', padding: '8px 12px', borderRadius: '10px', border: '1px solid #cbd5e1', height: '45px', boxSizing: 'border-box' }}>
+                    <input 
+                      type="color" 
+                      value={primaryColor} 
+                      onChange={(e) => handleChange('color', e.target.value)} 
+                      style={{ width: '28px', height: '28px', padding: 0, border: 'none', borderRadius: '6px', cursor: 'pointer', background: 'none' }} 
+                    />
+                    <span style={{ fontFamily: 'monospace', fontWeight: '800', fontSize: '14px', color: '#0f172a' }}>
+                      {primaryColor.toUpperCase()}
+                    </span>
+                  </div>
+                </div>
 
-              <hr style={{ borderColor: '#e2e8f0', margin: '20px 0' }} />
+                {/* FONT SELECTOR */}
+                <div style={{ flex: '1 1 180px' }}>
+                  <label style={labelStyle}>
+                    <FontAwesomeIcon icon={faFont} style={{ color: '#2563eb' }} /> Brand Font Style
+                  </label>
+                  <select 
+                    style={saasInputStyle} 
+                    value={branding.font || "'Inter', sans-serif"} 
+                    onChange={(e) => handleChange('font', e.target.value)}
+                  >
+                    <option value="'Inter', sans-serif">Modern Clean (Inter)</option>
+                    <option value="'Playfair Display', serif">Editorial Luxury (Playfair)</option>
+                    <option value="'Space Grotesk', sans-serif">Bold Tech (Space Grotesk)</option>
+                  </select>
+                </div>
+              </div>
 
-              <label style={{ display: 'block', marginBottom: '10px', fontSize: '13px', color: 'var(--text-muted)' }}>Brand Logo</label>
-              <input type="file" accept="image/*" ref={logoInputRef} onChange={handleLogoUpload} style={{ display: 'none' }} />
-              <button className="btn btn-outline" style={{ width: '100%', marginBottom: '15px', justifyContent: 'center' }} onClick={() => logoInputRef.current.click()}>
-                <FontAwesomeIcon icon={faUpload} /> Upload Custom Logo (PNG/JPG)
-              </button>
+              {/* LOGO UPLOAD & AI VECTOR ENGINE */}
+              <div style={{ background: '#f8fafc', padding: '18px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                  <label style={{ ...labelStyle, marginBottom: 0 }}>
+                    <FontAwesomeIcon icon={faImage} style={{ color: '#059669' }} /> Brand Logo
+                  </label>
+                  <input type="file" accept="image/*" ref={logoInputRef} onChange={handleLogoUpload} style={{ display: 'none' }} />
+                  <button 
+                    style={{ ...secondaryBtnStyle, padding: '7px 12px', fontSize: '12px' }} 
+                    onClick={() => logoInputRef.current.click()}
+                  >
+                    <FontAwesomeIcon icon={faUpload} style={{ color: '#2563eb' }} /> Upload Image
+                  </button>
+                </div>
 
-              <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', color: 'var(--text-dark)', fontWeight: '700' }}>✨ AI Brand Logo Engine</label>
-                <input type="text" className="input-neon" style={{ marginBottom: '10px', fontSize: '12px', background: '#fff' }} placeholder="Optional: Describe symbol..." value={logoPrompt} onChange={(e) => setLogoPrompt(e.target.value)} />
-                <button className="btn btn-primary" style={{ width: '100%', padding: '10px', fontSize: '13px', justifyContent: 'center', opacity: isAiLimitReached ? 0.6 : 1, cursor: isAiLimitReached ? 'not-allowed' : 'pointer' }} onClick={generateLogo} disabled={isGenerating.logo || isAiLimitReached}>
-                  {isGenerating.logo ? 'Designing Brand Logo...' : <><FontAwesomeIcon icon={faWandMagicSparkles} /> Generate Brand Logo</>}
-                </button>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  <input 
+                    type="text" 
+                    style={{ ...saasInputStyle, background: '#ffffff', flex: '1 1 180px' }} 
+                    placeholder="Describe icon symbol (e.g. minimal geometric shield)" 
+                    value={logoPrompt} 
+                    onChange={(e) => setLogoPrompt(e.target.value)} 
+                  />
+                  <button 
+                    style={{ ...primaryBtnStyle, opacity: isAiLimitReached ? 0.6 : 1, cursor: isAiLimitReached ? 'not-allowed' : 'pointer' }} 
+                    onClick={generateLogo} 
+                    disabled={isGenerating.logo || isAiLimitReached}
+                  >
+                    {isGenerating.logo ? <FontAwesomeIcon icon={faSpinner} spin /> : <><FontAwesomeIcon icon={faWandMagicSparkles} style={{ color: '#10b981' }} /> AI Vector Logo</>}
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="card">
-              <h3 style={{ margin: '0 0 20px 0', color: 'var(--text-dark)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FontAwesomeIcon icon={faBuilding} style={{ color: 'var(--neon-cyan)' }}/> Official Profile
-              </h3>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '15px' }}>These details appear on official Financial Ledgers and invoices.</p>
+            {/* CARD C: OFFICIAL LEDGER SIGNATORY */}
+            <div style={bentoCardStyle}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9' }}>
+                <div style={{ width: '34px', height: '34px', borderRadius: '9px', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <FontAwesomeIcon icon={faBuilding} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: '#0f172a' }}>Official Invoice Signatory</h3>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748b' }}>Printed on your official financial statements</p>
+                </div>
+              </div>
               
-              <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)' }}><FontAwesomeIcon icon={faFileSignature} style={{ marginRight: '5px' }}/> Authorized Signatory Name</label>
-              <input className="input-neon" value={branding.signatory?.name || ''} onChange={(e) => handleSignatoryChange('name', e.target.value)} placeholder="Full Name" />
-
-              <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>Signatory Title</label>
-              <input className="input-neon" value={branding.signatory?.role || ''} onChange={(e) => handleSignatoryChange('role', e.target.value)} placeholder="e.g. CEO, Founder" />
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px' }}>
+                <div style={{ flex: '1 1 160px' }}>
+                  <label style={labelStyle}>
+                    <FontAwesomeIcon icon={faFileSignature} style={{ color: '#2563eb' }} /> Full Name
+                  </label>
+                  <input 
+                    style={saasInputStyle} 
+                    value={branding.signatory?.name || ''} 
+                    onChange={(e) => handleSignatoryChange('name', e.target.value)} 
+                    placeholder="Authorized Name" 
+                  />
+                </div>
+                <div style={{ flex: '1 1 140px' }}>
+                  <label style={labelStyle}>
+                    <FontAwesomeIcon icon={faIdCard} style={{ color: '#ea580c' }} /> Role / Title
+                  </label>
+                  <input 
+                    style={saasInputStyle} 
+                    value={branding.signatory?.role || ''} 
+                    onChange={(e) => handleSignatoryChange('role', e.target.value)} 
+                    placeholder="e.g. CEO & Founder" 
+                  />
+                </div>
+              </div>
             </div>
+
           </div>
 
-          <div style={{ flex: '1.2 1 320px', position: 'sticky', top: '20px' }}>
-            <h3 style={{ color: 'var(--text-dark)', marginBottom: '15px', paddingLeft: '5px' }}>Live Brand Kit Preview</h3>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', fontFamily: branding.font || 'sans-serif' }}>
-              <div style={{ background: primaryColor, borderRadius: '12px', padding: '40px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', color: '#fff', textAlign: 'center' }}>
-                {branding.logo ? (
-                  <img src={branding.logo} alt="Logo" style={{ maxHeight: '80px', objectFit: 'contain', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.2))' }} />
-                ) : (
-                  <FontAwesomeIcon icon={faImage} style={{ fontSize: '48px', opacity: 0.5, marginBottom: '10px' }} />
-                )}
-                <h1 style={{ margin: '15px 0 5px 0', fontSize: '32px', letterSpacing: '1px', wordBreak: 'break-word' }}>{branding.name || 'Brand Name'}</h1>
-                <p style={{ margin: 0, opacity: 0.9, fontSize: '14px', fontStyle: 'italic' }}>{branding.slogan || 'Your professional tagline appears here'}</p>
+          {/* RIGHT COLUMN: STICKY LIVE BRAND BOARD */}
+          <div style={{ flex: '1.1 1 360px', position: 'sticky', top: '20px' }}>
+            <div style={bentoCardStyle}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ width: '34px', height: '34px', borderRadius: '9px', background: '#fff7ed', color: '#ea580c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <FontAwesomeIcon icon={faDesktop} />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: '#0f172a' }}>Live Brand Kit Preview</h3>
+                    <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748b' }}>Real-time preview of your visual identity</p>
+                  </div>
+                </div>
+                <span style={{ fontSize: '11px', fontWeight: '800', color: '#059669', background: '#ecfdf5', padding: '4px 10px', borderRadius: '20px' }}>
+                  Auto-Synced
+                </span>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '15px' }}>
-                <div style={{ background: '#fff', borderRadius: '12px', padding: '20px', border: '1px solid #e2e8f0' }}>
-                  <div style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px' }}><FontAwesomeIcon icon={faFont} /> Typography</div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', color: 'var(--text-dark)' }}>
-                    <span style={{ fontSize: '36px', fontWeight: 'bold' }}>Aa</span><span style={{ fontSize: '20px' }}>Bb</span>
-                  </div>
-                  <div style={{ marginTop: '15px', fontSize: '12px', color: 'var(--text-muted)' }}>{branding.font ? branding.font.split(',')[0].replace(/'/g, '') : 'System Default'}</div>
-                </div>
-
-                <div style={{ background: '#1e293b', borderRadius: '12px', padding: '20px' }}>
-                  <div style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px' }}>Palette</div>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: primaryColor, border: '2px solid #fff' }}></div>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#0f172a', border: '2px solid #334155' }}></div>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#f8fafc' }}></div>
-                  </div>
-                  <div style={{ marginTop: '15px', fontSize: '12px', color: '#cbd5e1', fontFamily: 'monospace' }}>{primaryColor.toUpperCase()}</div>
-                </div>
-              </div>
-
-              <div style={{ background: '#fff', borderRadius: '12px', padding: '20px', border: '1px solid #e2e8f0' }}>
-                <div style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '15px' }}><FontAwesomeIcon icon={faDesktop} /> Digital Application</div>
-                <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
-                  <div style={{ background: '#f1f5f9', padding: '8px 12px', display: 'flex', gap: '6px', borderBottom: '1px solid #e2e8f0' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444' }}></div><div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#eab308' }}></div><div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e' }}></div>
-                  </div>
-                  <div style={{ padding: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      {branding.logo && <img src={branding.logo} alt="Logo" style={{ height: '20px' }} />}
-                      <span style={{ fontWeight: 'bold', fontSize: '14px', color: 'var(--text-dark)' }}>{branding.name || 'Brand'}</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontFamily: branding.font || "'Inter', sans-serif" }}>
+                
+                {/* HERO BRAND CARD */}
+                <div style={{ background: primaryColor, borderRadius: '14px', padding: '36px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.25), 0 8px 20px -4px rgba(15, 23, 42, 0.12)', color: '#ffffff', textAlign: 'center' }}>
+                  {branding.logo ? (
+                    <img src={branding.logo} alt="Logo" style={{ maxHeight: '76px', objectFit: 'contain', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' }} />
+                  ) : (
+                    <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '8px' }}>
+                      <FontAwesomeIcon icon={faImage} style={{ fontSize: '28px', color: '#ffffff' }} />
                     </div>
-                    <div style={{ display: 'flex', gap: '10px' }}><div style={{ width: '30px', height: '4px', background: '#e2e8f0', borderRadius: '2px' }}></div><div style={{ width: '30px', height: '4px', background: '#e2e8f0', borderRadius: '2px' }}></div></div>
+                  )}
+                  <h1 style={{ margin: '14px 0 6px 0', fontSize: '28px', fontWeight: '900', letterSpacing: '-0.5px', wordBreak: 'break-word', color: '#ffffff' }}>
+                    {displayBrandName}
+                  </h1>
+                  <p style={{ margin: 0, opacity: 0.92, fontSize: '14px', fontWeight: '500', maxWidth: '360px', lineHeight: '1.5' }}>
+                    {branding.slogan || 'Your brand slogan will appear right here'}
+                  </p>
+                </div>
+
+                {/* TYPOGRAPHY & PALETTE MINI BENTO */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '16px' }}>
+                  
+                  <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '18px', border: '1px solid #e2e8f0' }}>
+                    <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <FontAwesomeIcon icon={faFont} style={{ color: '#2563eb' }} /> Font Specimen
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', color: '#0f172a' }}>
+                      <span style={{ fontSize: '34px', fontWeight: '900' }}>Aa</span>
+                      <span style={{ fontSize: '18px', fontWeight: '600', color: '#475569' }}>Bb Cc</span>
+                    </div>
+                    <div style={{ marginTop: '10px', fontSize: '12px', fontWeight: '700', color: '#334155' }}>
+                      {currentFontName}
+                    </div>
                   </div>
-                  <div style={{ padding: '30px 15px', textAlign: 'center', background: '#f8fafc' }}>
-                    <div style={{ width: '60%', height: '12px', background: '#cbd5e1', margin: '0 auto 10px auto', borderRadius: '6px' }}></div>
-                    <div style={{ width: '40%', height: '8px', background: '#e2e8f0', margin: '0 auto 20px auto', borderRadius: '4px' }}></div>
-                    <button style={{ background: primaryColor, color: '#fff', border: 'none', padding: '8px 24px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>Call to Action</button>
+
+                  <div style={{ background: '#0f172a', borderRadius: '12px', padding: '18px', color: '#ffffff' }}>
+                    <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <FontAwesomeIcon icon={faPalette} style={{ color: '#f97316' }} /> Color System
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <div style={{ width: '34px', height: '34px', borderRadius: '8px', background: primaryColor, border: '2px solid #ffffff' }}></div>
+                      <div style={{ width: '34px', height: '34px', borderRadius: '8px', background: '#1e293b', border: '1px solid #475569' }}></div>
+                      <div style={{ width: '34px', height: '34px', borderRadius: '8px', background: '#f8fafc' }}></div>
+                    </div>
+                    <div style={{ marginTop: '12px', fontSize: '12px', color: '#cbd5e1', fontFamily: 'monospace', fontWeight: '700' }}>
+                      Primary: {primaryColor.toUpperCase()}
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* MINI WEBSITE MOCKUP */}
+                <div style={{ background: '#f8fafc', borderRadius: '12px', padding: '18px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <FontAwesomeIcon icon={faDesktop} style={{ color: '#059669' }} /> Storefront Header Preview
+                  </div>
+                  
+                  <div style={{ border: '1px solid #cbd5e1', borderRadius: '10px', overflow: 'hidden', background: '#ffffff' }}>
+                    <div style={{ background: '#f1f5f9', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '6px', borderBottom: '1px solid #e2e8f0' }}>
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444' }}></div>
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b' }}></div>
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></div>
+                      <span style={{ marginLeft: '8px', fontSize: '10px', color: '#64748b', fontWeight: '600', fontFamily: 'monospace' }}>
+                        {domainName || 'yourbrand.com'}
+                      </span>
+                    </div>
+                    
+                    <div style={{ padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {branding.logo && <img src={branding.logo} alt="Logo" style={{ height: '20px' }} />}
+                        <span style={{ fontWeight: '800', fontSize: '14px', color: '#0f172a' }}>{displayBrandName}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <div style={{ width: '28px', height: '5px', background: '#cbd5e1', borderRadius: '3px' }}></div>
+                        <div style={{ width: '28px', height: '5px', background: '#cbd5e1', borderRadius: '3px' }}></div>
+                      </div>
+                    </div>
+
+                    <div style={{ padding: '28px 16px', textAlign: 'center', background: '#ffffff' }}>
+                      <div style={{ fontSize: '15px', fontWeight: '800', color: '#0f172a', marginBottom: '6px' }}>
+                        {branding.slogan || 'Welcome to our official online platform'}
+                      </div>
+                      <div style={{ width: '55%', height: '6px', background: '#e2e8f0', margin: '0 auto 16px auto', borderRadius: '4px' }}></div>
+                      <span style={{ background: primaryColor, color: '#ffffff', padding: '7px 18px', borderRadius: '6px', fontSize: '11px', fontWeight: '800', display: 'inline-block' }}>
+                        Explore Now
+                      </span>
+                    </div>
                   </div>
                 </div>
+
               </div>
             </div>
           </div>
+
         </div>
       )}
 
-      {/* ======================================= */}
-      {/* TAB 2: AI CONTENT ENGINE                */}
-      {/* ======================================= */}
+      {/* ========================================================= */}
+      {/* TAB 2: AI CONTENT ENGINE                                  */}
+      {/* ========================================================= */}
       {activeTab === 'content' && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px' }}>
-          <div className="card" style={{ flex: '1 1 320px' }}>
-            <h3 style={{ margin: '0 0 10px 0', color: 'var(--text-dark)' }}><FontAwesomeIcon icon={faPenNib} style={{ color: 'var(--neon-cyan)', marginRight: '8px' }}/> AI Content Writer</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '20px' }}>Generate SEO descriptions, policies, or upload a product photo.</p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'flex-start' }}>
+          
+          {/* LEFT: PROMPT BUILDER */}
+          <div style={{ ...bentoCardStyle, flex: '1 1 360px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9' }}>
+              <div style={{ width: '34px', height: '34px', borderRadius: '9px', background: '#fff7ed', color: '#ea580c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <FontAwesomeIcon icon={faPenNib} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: '#0f172a' }}>AI Business Copywriter</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748b' }}>Draft product descriptions, social captions, or store policies</p>
+              </div>
+            </div>
             
-            <textarea className="input-neon" style={{ height: '100px', resize: 'none', marginBottom: '15px' }} placeholder="e.g. Write a strict privacy policy..." value={contentPrompt} onChange={(e) => setContentPrompt(e.target.value)} />
+            <label style={labelStyle}>
+              <FontAwesomeIcon icon={faLightbulb} style={{ color: '#ea580c' }} /> Writing Instructions
+            </label>
+            <textarea 
+              style={{ ...saasInputStyle, height: '120px', resize: 'vertical', marginBottom: '18px', lineHeight: '1.5' }} 
+              placeholder="e.g. Write a welcoming 'About Us' story or a return policy for our customers..." 
+              value={contentPrompt} 
+              onChange={(e) => setContentPrompt(e.target.value)} 
+            />
 
-            <div style={{ marginBottom: '20px' }}>
+            <div style={{ marginBottom: '22px' }}>
+              <label style={labelStyle}>
+                <FontAwesomeIcon icon={faImage} style={{ color: '#2563eb' }} /> Optional Product / Reference Photo
+              </label>
               <input type="file" accept="image/*" ref={contentImageRef} onChange={handleContentImageUpload} style={{ display: 'none' }} />
               {!contentImage ? (
-                <button className="btn btn-outline" style={{ width: '100%', fontSize: '13px', padding: '10px', justifyContent: 'center' }} onClick={() => contentImageRef.current.click()}><FontAwesomeIcon icon={faImage} style={{ marginRight: '8px' }} /> Upload Reference Image</button>
+                <button 
+                  style={{ ...secondaryBtnStyle, width: '100%' }} 
+                  onClick={() => contentImageRef.current.click()}
+                >
+                  <FontAwesomeIcon icon={faUpload} style={{ color: '#2563eb' }} /> Attach Reference Image
+                </button>
               ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
-                  <img src={contentImage} alt="Reference" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
-                  <span style={{ fontSize: '13px', color: 'var(--text-dark)', flex: '1 1 100px', fontWeight: '500' }}>Image ready for AI</span>
-                  <button className="btn btn-outline" style={{ padding: '6px 12px', fontSize: '12px', borderColor: '#ef4444', color: '#ef4444' }} onClick={() => setContentImage(null)}>Remove</button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#f8fafc', padding: '10px 14px', borderRadius: '10px', border: '1px solid #cbd5e1', flexWrap: 'wrap' }}>
+                  <img src={contentImage} alt="Reference" style={{ width: '42px', height: '42px', objectFit: 'cover', borderRadius: '6px' }} />
+                  <span style={{ fontSize: '13px', color: '#0f172a', flex: '1 1 100px', fontWeight: '700' }}>Image attached for context</span>
+                  <button 
+                    style={{ ...secondaryBtnStyle, padding: '6px 12px', fontSize: '12px', borderColor: '#fecaca', color: '#dc2626' }} 
+                    onClick={() => setContentImage(null)}
+                  >
+                    Remove
+                  </button>
                 </div>
               )}
             </div>
 
-            <button className="btn btn-primary" style={{ width: '100%', padding: '12px', justifyContent: 'center', opacity: isAiLimitReached ? 0.6 : 1, cursor: isAiLimitReached ? 'not-allowed' : 'pointer' }} onClick={generateText} disabled={isGenerating.text || isAiLimitReached}>
-              {isGenerating.text ? 'Drafting Content...' : <><FontAwesomeIcon icon={faWandMagicSparkles} /> Generate Text</>}
+            <button 
+              style={{ ...primaryBtnStyle, width: '100%', padding: '14px', opacity: isAiLimitReached ? 0.6 : 1, cursor: isAiLimitReached ? 'not-allowed' : 'pointer' }} 
+              onClick={generateText} 
+              disabled={isGenerating.text || isAiLimitReached}
+            >
+              {isGenerating.text ? (
+                <><FontAwesomeIcon icon={faSpinner} spin /> Writing Copy...</>
+              ) : (
+                <><FontAwesomeIcon icon={faWandMagicSparkles} style={{ color: '#f97316' }} /> Generate Copy</>
+              )}
             </button>
           </div>
 
-          <div className="card" style={{ flex: '1 1 320px' }}>
-            <h3 style={{ margin: '0 0 20px 0', color: 'var(--text-dark)' }}>Result Output</h3>
-            <div style={{ padding: '20px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', minHeight: '250px', whiteSpace: 'pre-wrap', color: generatedContent ? 'var(--text-dark)' : 'var(--text-muted)', fontSize: '14px', lineHeight: '1.6' }}>
-              {isGenerating.text ? <span className="blink">AI is writing...</span> : generatedContent || 'Your AI-generated content will appear here.'}
+          {/* RIGHT: GENERATED RESULT */}
+          <div style={{ ...bentoCardStyle, flex: '1.2 1 360px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9' }}>
+              <div style={{ width: '34px', height: '34px', borderRadius: '9px', background: '#ecfdf5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <FontAwesomeIcon icon={faCheckCircle} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: '#0f172a' }}>Generated Output</h3>
+                <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748b' }}>Ready to copy and paste into your website</p>
+              </div>
+            </div>
+
+            <div style={{ padding: '20px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', minHeight: '260px', whiteSpace: 'pre-wrap', color: generatedContent ? '#0f172a' : '#64748b', fontSize: '14px', lineHeight: '1.7', fontWeight: generatedContent ? '500' : '400' }}>
+              {isGenerating.text ? 'AI is drafting your content...' : generatedContent || 'Your AI-written text will appear here once generated.'}
             </div>
           </div>
+
         </div>
       )}
 
-      {/* ======================================= */}
-      {/* THE UNIFIED CUSTOM POPUP MODAL          */}
-      {/* ======================================= */}
+      {/* ========================================================= */}
+      {/* THE UNIFIED CUSTOM POPUP MODAL                            */}
+      {/* ========================================================= */}
       {modal.isOpen && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
-          <div style={{ background: '#fff', width: '100%', maxWidth: '440px', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', overflow: 'hidden', padding: '30px 24px', textAlign: 'center' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.72)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}>
+          <div style={{ background: '#ffffff', width: '100%', maxWidth: '440px', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', overflow: 'hidden', padding: '28px 24px', textAlign: 'center' }}>
             
             {/* Modal Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={{ margin: 0, fontSize: '18px', color: '#0f172a', fontWeight: '800' }}>
-                {modal.type === 'alert' && <FontAwesomeIcon icon={faTriangleExclamation} style={{ color: '#ef4444', marginRight: '8px' }} />}
+              <h3 style={{ margin: 0, fontSize: '18px', color: '#0f172a', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {modal.type === 'alert' ? (
+                  <FontAwesomeIcon icon={faTriangleExclamation} style={{ color: '#ea580c' }} />
+                ) : (
+                  <FontAwesomeIcon icon={faWandMagicSparkles} style={{ color: '#4f46e5' }} />
+                )}
                 {modal.title}
               </h3>
-              <button onClick={closeModal} style={{ background: 'none', border: 'none', fontSize: '20px', color: '#64748b', cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={(e) => e.target.style.color = '#0f172a'} onMouseOut={(e) => e.target.style.color = '#64748b'}>
+              <button onClick={closeModal} style={{ background: 'none', border: 'none', fontSize: '20px', color: '#64748b', cursor: 'pointer' }}>
                 <FontAwesomeIcon icon={faTimesCircle} />
               </button>
             </div>
 
             {/* Modal Body: Alert */}
             {modal.type === 'alert' && (
-              <p style={{ fontSize: '14px', color: '#475569', lineHeight: '1.6', marginBottom: '24px' }}>{modal.message}</p>
+              <p style={{ fontSize: '14px', color: '#475569', lineHeight: '1.6', marginBottom: '24px', textAlign: 'left' }}>{modal.message}</p>
             )}
 
             {/* Modal Body: Confirm Name */}
             {modal.type === 'confirmName' && (
               <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '24px', marginBottom: '24px' }}>
-                <div style={{ fontSize: '12px', color: '#64748b', textTransform: 'uppercase', fontWeight: 'bold', marginBottom: '8px' }}>Generated Brand Name</div>
-                <h2 style={{ margin: '0 0 16px 0', fontSize: '28px', color: '#0f172a', letterSpacing: '-0.5px' }}>{modal.payload.name}</h2>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: modal.payload.status === 'available' ? '#ecfdf5' : '#fef2f2', color: modal.payload.status === 'available' ? '#059669' : '#dc2626', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '700' }}>
+                <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: '800', letterSpacing: '0.6px', marginBottom: '8px' }}>Suggested Brand Name</div>
+                <h2 style={{ margin: '0 0 14px 0', fontSize: '28px', color: '#0f172a', fontWeight: '900', letterSpacing: '-0.5px' }}>{modal.payload.name}</h2>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: modal.payload.status === 'available' ? '#ecfdf5' : '#fef2f2', color: modal.payload.status === 'available' ? '#059669' : '#dc2626', padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: '800' }}>
                   <FontAwesomeIcon icon={faGlobe} /> {modal.payload.domain} ({modal.payload.status})
                 </div>
               </div>
@@ -525,35 +924,36 @@ const Branding = ({ branding = {}, setBranding }) => {
 
             {/* Modal Body: Confirm Slogan */}
             {modal.type === 'confirmSlogan' && (
-              <div style={{ background: '#f0fdfa', border: '1px dashed #5eead4', borderRadius: '12px', padding: '24px', marginBottom: '24px' }}>
-                <div style={{ fontSize: '12px', color: '#0d9488', textTransform: 'uppercase', fontWeight: 'bold', marginBottom: '12px' }}>Generated Tagline</div>
-                <p style={{ margin: 0, fontSize: '18px', color: '#0f172a', fontWeight: '600', fontStyle: 'italic', lineHeight: '1.4' }}>"{modal.payload.slogan}"</p>
+              <div style={{ background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: '12px', padding: '24px', marginBottom: '24px' }}>
+                <div style={{ fontSize: '11px', color: '#4f46e5', textTransform: 'uppercase', fontWeight: '800', letterSpacing: '0.6px', marginBottom: '10px' }}>Suggested Tagline</div>
+                <p style={{ margin: 0, fontSize: '18px', color: '#0f172a', fontWeight: '700', lineHeight: '1.4' }}>"{modal.payload.slogan}"</p>
               </div>
             )}
 
             {/* Modal Body: Confirm Logo */}
             {modal.type === 'confirmLogo' && (
-              <div style={{ background: primaryColor, borderRadius: '12px', padding: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '180px', marginBottom: '24px', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' }}>
-                <img src={modal.payload.logo} alt="Preview" style={{ maxHeight: '140px', maxWidth: '100%', objectFit: 'contain', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.2))' }} />
+              <div style={{ background: primaryColor, borderRadius: '12px', padding: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '160px', marginBottom: '24px' }}>
+                <img src={modal.payload.logo} alt="Preview" style={{ maxHeight: '130px', maxWidth: '100%', objectFit: 'contain', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.2))' }} />
               </div>
             )}
 
             {/* Modal Actions */}
-            <div style={{ display: 'flex', gap: '12px', flexDirection: modal.type === 'alert' ? 'column' : 'row' }}>
+            <div style={{ display: 'flex', gap: '12px' }}>
               {modal.type !== 'alert' && (
-                <button onClick={closeModal} style={{ flex: 1, padding: '14px', background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', transition: 'background 0.2s' }} onMouseOver={(e) => e.target.style.background = '#e2e8f0'} onMouseOut={(e) => e.target.style.background = '#f1f5f9'}>
+                <button onClick={closeModal} style={{ ...secondaryBtnStyle, flex: 1, padding: '14px' }}>
                   Discard
                 </button>
               )}
-              <button onClick={modal.type === 'alert' ? closeModal : confirmModalAction} style={{ flex: 1, padding: '14px', background: '#0f172a', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'transform 0.2s' }} onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}>
-                {modal.type === 'alert' ? 'Got it' : <><FontAwesomeIcon icon={faCheckCircle} /> Apply to Dashboard</>}
+              <button onClick={modal.type === 'alert' ? closeModal : confirmModalAction} style={{ ...primaryBtnStyle, flex: 1, padding: '14px' }}>
+                {modal.type === 'alert' ? 'Got It' : <><FontAwesomeIcon icon={faCheckCircle} style={{ color: '#10b981' }} /> Apply to Brand</>}
               </button>
             </div>
             
           </div>
         </div>
       )}
-    </div>
+
+    </section>
   );
 };
 
