@@ -9,7 +9,7 @@ import {
   faBriefcase, faRocket, faArrowRight, faBars, faXmark, 
   faCircleCheck, faArrowTrendUp, faClock, faBoxOpen, 
   faSliders, faReceipt, faCheck, faLightbulb, faChartLine, 
-  faRobot, faCommentDots, faMinus, faPlus
+  faRobot, faCommentDots, faMinus, faPlus, faStore
 } from '@fortawesome/free-solid-svg-icons';
 import './Homepage.css';
 
@@ -503,7 +503,7 @@ const Homepage = () => {
             <h3>Bookkeeping & Landed Cost Calculator.</h3>
             <p>Separate cash receipts from credit invoices cleanly. Calculate true unit landed cost (base cost + batch shipping) so you know your exact profit margin before selling.</p>
             <div className="bf-stat-callout">
-              <span><FontAwesomeIcon icon={faCheckCircle} /> Print-ready PDF Account Statements</span>
+              <span><FontAwesomeIcon icon={faCircleCheck} /> Print-ready PDF Account Statements</span>
             </div>
           </div>
 
