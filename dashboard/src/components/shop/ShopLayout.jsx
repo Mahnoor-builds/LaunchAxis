@@ -1,27 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShoppingBag, faUser, faSearch, faArrowRight, faBars, faXmark, faBoxOpen, faRightFromBracket } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faShoppingBag, faSearch, faArrowRight, faBars, faXmark, 
+  faEnvelope, faPhone, faLocationDot, faScaleBalanced, 
+  faTruckFast, faRotateLeft, faShieldHalved, faCheckCircle
+} from '@fortawesome/free-solid-svg-icons';
+import { faFacebookF, faInstagram, faLinkedinIn } from '@fortawesome/free-brands-svg-icons';
 
-const ShopLayout = ({ children, branding, cartCount, siteConfig, openCart }) => {
+const ShopLayout = ({ children, branding = {}, cartCount = 0, siteConfig = {}, openCart }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Policy Modal & Newsletter States
+  const [activePolicy, setActivePolicy] = useState(null);
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterSubscribed, setNewsletterSubscribed] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
 
-  const config = siteConfig || {
-    themeColor: '#2dd4bf',
-    menuItems: [
-        { id: 'core-home', label: 'Home', link: '#home' },
-        { id: 'core-catalog', label: 'Catalog', link: '#catalog' },
-        { id: 'core-about', label: 'About', link: '#about' }
-    ],
-    supportEmail: 'help@launchaxis.com'
-  };
+  const themeColor = siteConfig?.themeColor || branding?.color || '#2563eb';
+  const fontFamily = branding?.font || siteConfig?.fontFamily || "'Inter', sans-serif";
+  const brandName = branding?.name && branding.name !== 'Loading...' ? branding.name : 'Official Store';
+
+  const rawMenu = siteConfig?.menuItems?.length > 0 ? siteConfig.menuItems : [
+    { id: 'core-home', label: 'Home', link: '#home' },
+    { id: 'core-catalog', label: 'Catalog', link: '#catalog' },
+    { id: 'core-about', label: 'About', link: '#about' }
+  ];
+
+  // Filter out service-only links if switching from service to store mode
+  const menuItems = rawMenu.filter(item => item.link !== '#services' && item.link !== '#contact');
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -29,25 +41,40 @@ const ShopLayout = ({ children, branding, cartCount, siteConfig, openCart }) => 
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // --- SMART NAVIGATION LOGIC ---
+  // Safe external URL helper
+  const getSafeExternalUrl = (url) => {
+    if (!url || typeof url !== 'string') return null;
+    const trimmed = url.trim();
+    if (!trimmed) return null;
+    if (/^https?:\/\//i.test(trimmed)) return trimmed;
+    return `https://${trimmed}`;
+  };
+
+  // --- SMART STORE NAVIGATION LOGIC (Synced with /store routes in App.js) ---
   const handleNavigation = (e, link) => {
     e.preventDefault();
     setIsMobileMenuOpen(false);
 
-    if (link === '#catalog' || link === '/catalog') {
-      navigate('/catalog');
-    } else if (link === '#home' || link === '/') {
-      if (location.pathname !== '/') {
-        navigate('/');
+    if (link === '#catalog' || link === '/catalog' || link === '/store/catalog') {
+      navigate('/store/catalog');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (link === '#home' || link === '/' || link === '/store') {
+      if (location.pathname !== '/store') {
+        navigate('/store');
       } else {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } else if (link.startsWith('#')) {
-      if (location.pathname !== '/') {
-        navigate('/');
+      const targetId = link.substring(1);
+      if (location.pathname !== '/store') {
+        navigate('/store');
+        setTimeout(() => {
+          const el = document.getElementById(targetId);
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }, 150);
       } else {
-        const element = document.getElementById(link.substring(1));
-        if (element) element.scrollIntoView({ behavior: 'smooth' });
+        const el = document.getElementById(targetId);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
       }
     } else {
       navigate(link);
@@ -57,225 +84,347 @@ const ShopLayout = ({ children, branding, cartCount, siteConfig, openCart }) => 
   // --- LIVE SEARCH SUBMIT HANDLER ---
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    if (!searchQuery.trim()) return;
+    const cleanQuery = searchQuery.replace(/[<>]/g, '').trim().slice(0, 80);
+    if (!cleanQuery) return;
 
-    // 1. Store search query for catalog to pick up
-    localStorage.setItem('launchAxisSearchQuery', searchQuery.trim());
+    localStorage.setItem('launchAxisSearchQuery', cleanQuery);
     localStorage.setItem('launchAxisStoreCategory', 'All');
-
     setIsSearchOpen(false);
     
-    // 2. Redirect to catalog or trigger custom refresh if already on catalog
-    if (location.pathname === '/catalog') {
+    if (location.pathname === '/store/catalog') {
       window.dispatchEvent(new Event('launchAxisSearchTriggered'));
     } else {
-      navigate('/catalog');
+      navigate('/store/catalog');
     }
     window.scrollTo(0, 0);
   };
 
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault();
+    if (!newsletterEmail.trim()) return;
+    setNewsletterSubscribed(true);
+    setNewsletterEmail('');
+  };
+
   return (
-    <div style={{ fontFamily: config.fontFamily || "'Inter', sans-serif", background: '#fff', minHeight: '100vh', display:'flex', flexDirection:'column' }}>
+    <div style={{ fontFamily, background: '#ffffff', minHeight: '100vh', display: 'flex', flexDirection: 'column', color: '#0f172a' }}>
       
       <style>{`
         .desktop-nav { display: flex; }
         .mobile-toggle { display: none; }
-        .footer-grid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+        .footer-grid { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
         @media (max-width: 768px) {
           .desktop-nav { display: none !important; }
-          .mobile-toggle { display: block !important; }
-          .nav-container { padding: 15px 20px !important; }
-          .footer-padding { padding: 50px 20px 30px 20px !important; }
+          .mobile-toggle { display: flex !important; }
+          .nav-container { padding: 14px 20px !important; }
+          .footer-padding { padding: 56px 20px 30px 20px !important; }
         }
       `}</style>
 
       {/* === NAVBAR === */}
-      <nav className="nav-container" style={{
-          padding: '15px 5%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          position: 'sticky', top: 0, background: 'rgba(255,255,255,0.98)', zIndex: 100, 
-          transition: 'box-shadow 0.3s',
-          boxShadow: scrolled ? '0 4px 20px rgba(0,0,0,0.05)' : 'none',
-          borderBottom: scrolled ? 'none' : '1px solid #f1f5f9'
-      }}>
+      <nav 
+        className="nav-container" 
+        style={{
+          padding: '16px 5%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          position: 'sticky', top: 0, background: 'rgba(255, 255, 255, 0.96)', backdropFilter: 'blur(10px)', zIndex: 100, 
+          transition: 'box-shadow 0.3s ease',
+          boxShadow: scrolled ? '0 4px 20px rgba(15, 23, 42, 0.06)' : 'none',
+          borderBottom: '1px solid #f1f5f9'
+        }}
+      >
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <button className="mobile-toggle" onClick={() => setIsMobileMenuOpen(true)} style={{ background: 'none', border: 'none', fontSize: '20px', color: '#0f172a', cursor: 'pointer', padding: 0 }}>
-                <FontAwesomeIcon icon={faBars} />
+        {/* Left: Brand Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <button 
+            className="mobile-toggle" 
+            onClick={() => setIsMobileMenuOpen(true)} 
+            style={{ background: '#f8fafc', border: '1px solid #e2e8f0', width: '38px', height: '38px', borderRadius: '10px', fontSize: '16px', color: '#0f172a', cursor: 'pointer', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <FontAwesomeIcon icon={faBars} />
+          </button>
+
+          <Link to="/store" style={{ textDecoration: 'none', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {branding?.logo && (
+              <img src={branding.logo} alt={brandName} style={{ height: '36px', borderRadius: '8px', objectFit: 'contain' }} />
+            )}
+            <span style={{ fontSize: '21px', fontWeight: '900', letterSpacing: '-0.6px', color: '#0f172a' }}>
+              {brandName}
+            </span>
+          </Link>
+        </div>
+
+        {/* Center: Navigation Links */}
+        <div className="desktop-nav" style={{ gap: '32px', fontSize: '14px', fontWeight: '700' }}>
+          {menuItems.map(item => (
+            <a 
+              key={item.id || item.label} 
+              href={item.link} 
+              onClick={(e) => handleNavigation(e, item.link)}
+              style={{ textDecoration: 'none', color: '#475569', cursor: 'pointer', transition: 'color 0.2s' }}
+              onMouseOver={(e) => e.target.style.color = themeColor}
+              onMouseOut={(e) => e.target.style.color = '#475569'}
+            >
+              {item.label}
+            </a>
+          ))}
+        </div>
+
+        {/* Right: Search & Shopping Bag */}
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', position: 'relative' }}>
+          
+          {/* Search Button & Popover */}
+          <div>
+            <button 
+              onClick={() => setIsSearchOpen(!isSearchOpen)} 
+              style={{ background: '#f8fafc', border: '1px solid #e2e8f0', width: '40px', height: '40px', borderRadius: '10px', color: '#0f172a', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px' }}
+              title="Search Catalog"
+            >
+              <FontAwesomeIcon icon={isSearchOpen ? faXmark : faSearch} />
             </button>
-            <Link to="/" style={{ textDecoration:'none', color:'#0f172a', display:'flex', alignItems:'center', gap:'10px' }}>
-                {branding.logo ? (
-                    <img src={branding.logo} alt="Logo" style={{ height:'35px', borderRadius:'6px' }} />
-                ) : (
-                    <div style={{ fontSize:'22px', fontWeight:'900', letterSpacing:'-1px' }}>{branding.name}</div>
-                )}
-            </Link>
-        </div>
 
-        <div className="desktop-nav" style={{ gap:'30px', fontSize:'14px', fontWeight:'600' }}>
-            {config.menuItems.map(item => (
-                <a 
-                  key={item.id} href={item.link} onClick={(e) => handleNavigation(e, item.link)}
-                  style={{ textDecoration:'none', color:'#475569', cursor: 'pointer', transition: 'color 0.2s' }}
-                  onMouseOver={(e) => e.target.style.color = config.themeColor}
-                  onMouseOut={(e) => e.target.style.color = '#475569'}
-                >
-                  {item.label}
-                </a>
-            ))}
-        </div>
-
-        <div style={{ display:'flex', gap:'20px', alignItems:'center', position: 'relative' }}>
-            
-            {/* SEARCH ICON & DROPDOWN */}
-            <div>
-                <FontAwesomeIcon 
-                    icon={isSearchOpen ? faXmark : faSearch} 
-                    onClick={() => { setIsSearchOpen(!isSearchOpen); setIsUserMenuOpen(false); }} 
-                    style={{ color:'#0f172a', cursor:'pointer', fontSize: '20px' }} 
-                />
-                {isSearchOpen && (
-                    <div style={{ position: 'absolute', top: '40px', right: '40px', width: '300px', background: '#fff', borderRadius: '12px', padding: '15px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0', animation: 'fadeIn 0.2s ease-out' }}>
-                        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '10px' }}>
-                            <input 
-                                type="text" placeholder="Search products..." autoFocus
-                                value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                                style={{ flex: 1, padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', fontSize: '14px' }}
-                            />
-                            <button type="submit" style={{ background: config.themeColor, color: '#fff', border: 'none', borderRadius: '8px', padding: '0 15px', cursor: 'pointer', fontWeight: 'bold' }}>
-                                <FontAwesomeIcon icon={faSearch} />
-                            </button>
-                        </form>
-                    </div>
-                )}
-            </div>
-            
-            {/* CART ICON */}
-            <div onClick={openCart} style={{ position:'relative', color:'#0f172a', cursor:'pointer' }}>
-                <FontAwesomeIcon icon={faShoppingBag} style={{ fontSize: '22px' }} />
-                {cartCount > 0 && (
-                    <span style={{ position:'absolute', top:'-6px', right:'-8px', background: config.themeColor, color:'#fff', fontSize:'10px', width:'18px', height:'18px', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:'bold', border: '2px solid #fff' }}>
-                        {cartCount}
-                    </span>
-                )}
-            </div>
-            
-            {/* USER LOGIN ICON & DROPDOWN */}
-            <div className="desktop-nav" style={{ position: 'relative' }}>
-                <FontAwesomeIcon 
-                    icon={faUser} 
-                    onClick={() => { setIsUserMenuOpen(!isUserMenuOpen); setIsSearchOpen(false); }} 
-                    style={{ color:'#0f172a', cursor:'pointer', fontSize: '20px' }} 
-                />
-                {isUserMenuOpen && (
-                    <div style={{ position: 'absolute', top: '40px', right: '0', width: '220px', background: '#fff', borderRadius: '12px', padding: '10px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '5px', animation: 'fadeIn 0.2s ease-out' }}>
-                        <div style={{ padding: '10px', borderBottom: '1px solid #f1f5f9', marginBottom: '5px' }}>
-                            <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>Welcome to {branding.name}</p>
-                            <h4 style={{ margin: '5px 0 0 0', fontSize: '15px', color: '#0f172a' }}>Sign In / Register</h4>
-                        </div>
-                        <button style={{ width: '100%', padding: '12px', background: '#0f172a', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', marginBottom: '5px' }}>Sign In</button>
-                        <button style={{ width: '100%', padding: '10px', background: 'transparent', color: '#475569', border: 'none', textAlign: 'left', cursor: 'pointer', borderRadius: '6px', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '10px' }} onMouseOver={(e) => e.currentTarget.style.background = '#f8fafc'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                            <FontAwesomeIcon icon={faBoxOpen} /> Track My Orders
-                        </button>
-                    </div>
-                )}
-            </div>
+            {isSearchOpen && (
+              <div style={{ position: 'absolute', top: '52px', right: '0', width: '310px', background: '#ffffff', borderRadius: '14px', padding: '14px', boxShadow: '0 15px 35px -5px rgba(15, 23, 42, 0.15)', border: '1px solid #e2e8f0', zIndex: 120 }}>
+                <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '8px' }}>
+                  <input 
+                    type="text" 
+                    placeholder="Search products..." 
+                    autoFocus
+                    maxLength={80}
+                    value={searchQuery} 
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{ flex: 1, padding: '10px 14px', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#f8fafc', outline: 'none', fontSize: '13px', color: '#0f172a', fontWeight: '500', margin: 0 }}
+                  />
+                  <button type="submit" style={{ background: '#0f172a', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0 16px', cursor: 'pointer', fontWeight: '700' }}>
+                    <FontAwesomeIcon icon={faSearch} style={{ color: '#f97316' }} />
+                  </button>
+                </form>
+              </div>
+            )}
+          </div>
+          
+          {/* Shopping Bag Pill Button */}
+          <button 
+            onClick={openCart} 
+            style={{ background: '#0f172a', color: '#ffffff', border: 'none', height: '40px', padding: '0 16px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '800', fontSize: '13px', boxShadow: '0 4px 12px rgba(15, 23, 42, 0.12)' }}
+          >
+            <FontAwesomeIcon icon={faShoppingBag} style={{ color: '#10b981', fontSize: '14px' }} />
+            <span>Bag</span>
+            <span style={{ background: themeColor, color: '#ffffff', fontSize: '11px', padding: '2px 8px', borderRadius: '20px', fontWeight: '800' }}>
+              {cartCount}
+            </span>
+          </button>
 
         </div>
       </nav>
 
-      {/* === MOBILE SLIDE-OUT MENU === */}
-      <div style={{
-          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-          background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)',
-          zIndex: 999, opacity: isMobileMenuOpen ? 1 : 0, pointerEvents: isMobileMenuOpen ? 'auto' : 'none',
-          transition: 'opacity 0.3s'
-      }} onClick={() => setIsMobileMenuOpen(false)}>
-          
-          <div style={{
-              width: '80%', maxWidth: '300px', height: '100%', background: '#fff',
-              padding: '30px 20px', display: 'flex', flexDirection: 'column',
-              transform: isMobileMenuOpen ? 'translateX(0)' : 'translateX(-100%)',
-              transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              boxShadow: '10px 0 25px rgba(0,0,0,0.1)'
-          }} onClick={e => e.stopPropagation()}>
-              
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-                  <div style={{ fontSize:'20px', fontWeight:'900', letterSpacing:'-1px', color: '#0f172a' }}>{branding.name}</div>
-                  <button onClick={() => setIsMobileMenuOpen(false)} style={{ background: 'none', border: 'none', fontSize: '24px', color: '#64748b', cursor: 'pointer' }}>
-                      <FontAwesomeIcon icon={faXmark} />
-                  </button>
+      {/* === MOBILE SLIDE-OUT DRAWER === */}
+      {isMobileMenuOpen && (
+        <div 
+          style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.55)', backdropFilter: 'blur(4px)', zIndex: 999 }} 
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
+          <div 
+            style={{ width: '82%', maxWidth: '300px', height: '100%', background: '#ffffff', padding: '28px 22px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '10px 0 30px rgba(0,0,0,0.15)' }} 
+            onClick={e => e.stopPropagation()}
+          >
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9' }}>
+                <span style={{ fontSize: '19px', fontWeight: '900', color: '#0f172a' }}>{brandName}</span>
+                <button onClick={() => setIsMobileMenuOpen(false)} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', width: '34px', height: '34px', borderRadius: '8px', fontSize: '16px', color: '#64748b', cursor: 'pointer' }}>
+                  <FontAwesomeIcon icon={faXmark} />
+                </button>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', fontSize: '18px', fontWeight: '700' }}>
-                  {config.menuItems.map(item => (
-                      <a 
-                        key={item.id} href={item.link} onClick={(e) => handleNavigation(e, item.link)}
-                        style={{ textDecoration:'none', color:'#0f172a' }}
-                      >
-                        {item.label}
-                      </a>
-                  ))}
-                  <div style={{ borderTop: '1px solid #e2e8f0', margin: '10px 0' }}></div>
-                  <a href="#" style={{ textDecoration:'none', color:'#475569', fontSize: '16px' }}><FontAwesomeIcon icon={faUser} style={{ width: '25px' }} /> Account Details</a>
-                  <a href="#" style={{ textDecoration:'none', color:'#475569', fontSize: '16px' }}><FontAwesomeIcon icon={faBoxOpen} style={{ width: '25px' }} /> Track Orders</a>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', fontSize: '16px', fontWeight: '700' }}>
+                {menuItems.map(item => (
+                  <a 
+                    key={item.id || item.label} 
+                    href={item.link} 
+                    onClick={(e) => handleNavigation(e, item.link)}
+                    style={{ textDecoration: 'none', color: '#0f172a', padding: '6px 0' }}
+                  >
+                    {item.label}
+                  </a>
+                ))}
               </div>
+            </div>
+
+            <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '20px', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', fontWeight: '700', color: '#475569' }}>
+              <span onClick={() => { setIsMobileMenuOpen(false); setActivePolicy('shipping'); }} style={{ cursor: 'pointer' }}>Shipping & Delivery Info</span>
+              <span onClick={() => { setIsMobileMenuOpen(false); setActivePolicy('refund'); }} style={{ cursor: 'pointer' }}>Returns & Exchange Policy</span>
+              <span onClick={() => { setIsMobileMenuOpen(false); setActivePolicy('privacy'); }} style={{ cursor: 'pointer' }}>Privacy Policy</span>
+            </div>
           </div>
-      </div>
+        </div>
+      )}
 
-      <main style={{ flex:1 }}>
+      {/* === MAIN PAGE CONTENT === */}
+      <main style={{ flex: 1 }}>
         {children}
       </main>
 
-      <footer className="footer-padding" style={{ background:'#0f172a', color:'#f8fafc', padding:'80px 5% 40px 5%' }}>
-        <div className="footer-grid" style={{ display:'grid', gap:'40px', maxWidth:'1400px', margin:'0 auto' }}>
-            
-            <div>
-                <h3 style={{ fontSize:'24px', margin:'0 0 15px 0', color: config.themeColor, fontWeight: '900', letterSpacing: '-1px' }}>{branding.name}</h3>
-                <p style={{ color:'#94a3b8', fontSize:'14px', lineHeight:'1.6', marginBottom:'24px' }}>
-                    {branding.slogan || 'Defining the future of retail.'} <br/>
-                    Premium quality, delivered directly to your doorstep.
-                </p>
+      {/* === FOOTER === */}
+      <footer className="footer-padding" style={{ background: '#0f172a', color: '#f8fafc', padding: '72px 5% 36px 5%', borderTop: '1px solid #1e293b' }}>
+        <div className="footer-grid" style={{ display: 'grid', gap: '40px', maxWidth: '1360px', margin: '0 auto' }}>
+          
+          {/* Col 1: Brand & Socials */}
+          <div>
+            <h3 style={{ fontSize: '22px', margin: '0 0 12px 0', color: '#ffffff', fontWeight: '900', letterSpacing: '-0.5px' }}>
+              {brandName}
+            </h3>
+            <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: '1.6', marginBottom: '20px', maxWidth: '280px' }}>
+              {branding?.slogan || siteConfig?.heroSubtitle || 'Curated quality products delivered directly to your doorstep.'}
+            </p>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              {getSafeExternalUrl(siteConfig?.socials?.instagram) && (
+                <a href={getSafeExternalUrl(siteConfig.socials.instagram)} target="_blank" rel="noopener noreferrer" style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(255,255,255,0.08)', color: '#ffffff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
+                  <FontAwesomeIcon icon={faInstagram} />
+                </a>
+              )}
+              {getSafeExternalUrl(siteConfig?.socials?.facebook) && (
+                <a href={getSafeExternalUrl(siteConfig.socials.facebook)} target="_blank" rel="noopener noreferrer" style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(255,255,255,0.08)', color: '#ffffff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
+                  <FontAwesomeIcon icon={faFacebookF} />
+                </a>
+              )}
+              {getSafeExternalUrl(siteConfig?.socials?.linkedin) && (
+                <a href={getSafeExternalUrl(siteConfig.socials.linkedin)} target="_blank" rel="noopener noreferrer" style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(255,255,255,0.08)', color: '#ffffff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
+                  <FontAwesomeIcon icon={faLinkedinIn} />
+                </a>
+              )}
+            </div>
+          </div>
+
+          {/* Col 2: Store Navigation */}
+          <div>
+            <h4 style={{ margin: '0 0 18px 0', fontSize: '15px', fontWeight: '800', color: '#ffffff' }}>Store Navigation</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '14px' }}>
+              {menuItems.map(item => (
+                <a 
+                  key={item.id || item.label} 
+                  href={item.link} 
+                  onClick={(e) => handleNavigation(e, item.link)} 
+                  style={{ color: '#cbd5e1', textDecoration: 'none', cursor: 'pointer' }}
+                >
+                  {item.label}
+                </a>
+              ))}
+              <span onClick={openCart} style={{ color: '#cbd5e1', cursor: 'pointer' }}>View Shopping Bag ({cartCount})</span>
+            </div>
+          </div>
+
+          {/* Col 3: Shipping, Returns & Legal Policies */}
+          <div>
+            <h4 style={{ margin: '0 0 18px 0', fontSize: '15px', fontWeight: '800', color: '#ffffff' }}>Shipping & Policies</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '14px', color: '#cbd5e1' }}>
+              <span onClick={() => setActivePolicy('shipping')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FontAwesomeIcon icon={faTruckFast} style={{ color: '#f97316', fontSize: '12px' }} /> Shipping & Delivery Policy
+              </span>
+              <span onClick={() => setActivePolicy('refund')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FontAwesomeIcon icon={faRotateLeft} style={{ color: '#10b981', fontSize: '12px' }} /> Returns & Exchange Policy
+              </span>
+              <span onClick={() => setActivePolicy('privacy')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FontAwesomeIcon icon={faShieldHalved} style={{ color: '#38bdf8', fontSize: '12px' }} /> Privacy Policy
+              </span>
+              <span onClick={() => setActivePolicy('terms')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FontAwesomeIcon icon={faScaleBalanced} style={{ color: '#a855f7', fontSize: '12px' }} /> Terms of Service
+              </span>
+            </div>
+          </div>
+
+          {/* Col 4: Contact & Newsletter */}
+          <div>
+            <h4 style={{ margin: '0 0 18px 0', fontSize: '15px', fontWeight: '800', color: '#ffffff' }}>Customer Support</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', color: '#cbd5e1', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FontAwesomeIcon icon={faEnvelope} style={{ color: themeColor }} />
+                <span>{siteConfig?.supportEmail || 'help@launchaxis.com'}</span>
+              </div>
+              {siteConfig?.supportPhone && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <FontAwesomeIcon icon={faPhone} style={{ color: '#10b981' }} />
+                  <span>{siteConfig.supportPhone}</span>
+                </div>
+              )}
+              {siteConfig?.physicalAddress && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <FontAwesomeIcon icon={faLocationDot} style={{ color: '#f97316' }} />
+                  <span>{siteConfig.physicalAddress}</span>
+                </div>
+              )}
             </div>
 
-            <div>
-                <h4 style={{ marginBottom:'20px', fontSize:'16px', fontWeight:'700', color: '#fff' }}>Shop Links</h4>
-                <div style={{ display:'flex', flexDirection:'column', gap:'12px', fontSize:'14px' }}>
-                    {config.menuItems.map(item => (
-                        <a key={item.id} href={item.link} onClick={(e) => handleNavigation(e, item.link)} style={{ color:'#cbd5e1', textDecoration:'none', cursor:'pointer' }}>{item.label}</a>
-                    ))}
-                </div>
-            </div>
+            {newsletterSubscribed ? (
+              <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.4)', color: '#34d399', padding: '10px 14px', borderRadius: '10px', fontSize: '12px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FontAwesomeIcon icon={faCheckCircle} /> Subscribed for store updates!
+              </div>
+            ) : (
+              <form onSubmit={handleNewsletterSubmit} style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', borderRadius: '10px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.12)' }}>
+                <input 
+                  type="email" 
+                  required
+                  placeholder="Enter email for offers..." 
+                  value={newsletterEmail}
+                  onChange={e => setNewsletterEmail(e.target.value)}
+                  style={{ padding: '12px 14px', background: 'transparent', border: 'none', color: '#ffffff', width: '100%', outline: 'none', fontSize: '13px', margin: 0 }} 
+                />
+                <button type="submit" style={{ background: themeColor, border: 'none', padding: '0 18px', cursor: 'pointer', color: '#ffffff', fontWeight: '800' }}>
+                  <FontAwesomeIcon icon={faArrowRight} />
+                </button>
+              </form>
+            )}
+          </div>
 
-            <div>
-                <h4 style={{ marginBottom:'20px', fontSize:'16px', fontWeight:'700', color: '#fff' }}>Customer Care</h4>
-                <div style={{ display:'flex', flexDirection:'column', gap:'12px', fontSize:'14px', color:'#cbd5e1' }}>
-                    <span style={{ cursor:'pointer' }}>Track Order</span>
-                    <span style={{ cursor:'pointer' }}>Shipping Policy</span>
-                    <span style={{ cursor:'pointer' }}>Returns & Exchange</span>
-                    <span style={{ cursor:'pointer' }}>Contact: {config.supportEmail}</span>
-                </div>
-            </div>
-
-            <div>
-                <h4 style={{ marginBottom:'20px', fontSize:'16px', fontWeight:'700', color: '#fff' }}>Stay in the Loop</h4>
-                <p style={{ color:'#cbd5e1', fontSize:'14px', marginBottom:'15px', lineHeight: '1.6' }}>Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.</p>
-                <div style={{ display:'flex', background: 'rgba(255,255,255,0.05)', borderRadius:'8px', overflow:'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
-                    <input type="email" placeholder="Enter your email" style={{ padding:'14px 16px', background:'transparent', border:'none', color:'#fff', width:'100%', outline:'none', fontSize:'14px' }} />
-                    <button style={{ background: config.themeColor, border:'none', padding:'0 24px', cursor:'pointer', color:'#0f172a', fontWeight: 'bold' }}>
-                        <FontAwesomeIcon icon={faArrowRight} />
-                    </button>
-                </div>
-            </div>
         </div>
         
-        <div style={{ borderTop:'1px solid rgba(255,255,255,0.1)', marginTop:'60px', paddingTop:'25px', display:'flex', justifyContent:'space-between', alignItems:'center', fontSize:'13px', color:'#64748b', flexWrap:'wrap', gap:'15px' }}>
-            <div>&copy; 2026 {branding.name}. All rights reserved.</div>
-            <div style={{ display: 'flex', gap: '15px' }}>
-                <span style={{ cursor: 'pointer' }}>Privacy Policy</span>
-                <span style={{ cursor: 'pointer' }}>Terms of Service</span>
-            </div>
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', marginTop: '48px', paddingTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', color: '#64748b', flexWrap: 'wrap', gap: '15px', maxWidth: '1360px', marginLeft: 'auto', marginRight: 'auto' }}>
+          <div>&copy; {new Date().getFullYear()} {brandName}. All rights reserved.</div>
+          <div style={{ display: 'flex', gap: '18px' }}>
+            <span onClick={() => setActivePolicy('shipping')} style={{ cursor: 'pointer' }}>Shipping</span>
+            <span onClick={() => setActivePolicy('refund')} style={{ cursor: 'pointer' }}>Returns</span>
+            <span onClick={() => setActivePolicy('privacy')} style={{ cursor: 'pointer' }}>Privacy</span>
+            <span onClick={() => setActivePolicy('terms')} style={{ cursor: 'pointer' }}>Terms</span>
+          </div>
         </div>
       </footer>
+
+      {/* === STOREFRONT POLICY POPUP MODAL === */}
+      {activePolicy && (
+        <div 
+          style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.72)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px' }}
+          onClick={() => setActivePolicy(null)}
+        >
+          <div 
+            style={{ background: '#ffffff', borderRadius: '18px', width: '100%', maxWidth: '620px', maxHeight: '82vh', overflowY: 'auto', padding: '32px', position: 'relative', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.35)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <button 
+              onClick={() => setActivePolicy(null)} 
+              style={{ position: 'absolute', top: '20px', right: '20px', background: '#f8fafc', border: '1px solid #cbd5e1', width: '36px', height: '36px', borderRadius: '50%', fontSize: '15px', cursor: 'pointer', color: '#0f172a' }}
+            >
+              <FontAwesomeIcon icon={faXmark} />
+            </button>
+
+            <span style={{ fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px', color: '#2563eb', background: '#eff6ff', padding: '4px 10px', borderRadius: '20px', display: 'inline-block', marginBottom: '10px' }}>
+              Official Store Policy
+            </span>
+
+            <h2 style={{ margin: '0 0 16px 0', color: '#0f172a', fontSize: '22px', fontWeight: '900' }}>
+              {activePolicy === 'shipping' && 'Shipping & Delivery Policy'}
+              {activePolicy === 'refund' && 'Returns, Refund & Exchange Policy'}
+              {activePolicy === 'privacy' && 'Privacy Policy'}
+              {activePolicy === 'terms' && 'Terms of Service'}
+            </h2>
+
+            <div style={{ whiteSpace: 'pre-wrap', color: '#475569', fontSize: '14px', lineHeight: '1.7', background: '#f8fafc', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+              {activePolicy === 'shipping' && (siteConfig?.policies?.shippingPolicy || 'Orders are processed within 24 hours and dispatched via our registered courier partners. Standard delivery takes 2–4 business days across Pakistan with Cash on Delivery available.')}
+              {activePolicy === 'refund' && (siteConfig?.policies?.refundPolicy || 'We offer a hassle-free 7-day return and exchange policy for unused items in their original packaging. Contact our support email with your order details to initiate an exchange.')}
+              {activePolicy === 'privacy' && (siteConfig?.policies?.privacyPolicy || 'Your personal details (name, phone number, and delivery address) are strictly used to fulfill and deliver your orders safely and are never shared with third-party marketers.')}
+              {activePolicy === 'terms' && (siteConfig?.policies?.termsOfService || `By placing an order with ${brandName}, you agree to provide accurate delivery information and honor Cash on Delivery payments upon doorstep arrival.`)}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

@@ -1,21 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faPlus, faMinus, faStar, faShieldHalved, faTruckFast } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faXmark, faPlus, faMinus, faStar, faShieldHalved, 
+  faTruckFast, faCheckCircle, faBan, faShoppingBag, 
+  faLayerGroup, faCircleInfo, faRotateLeft
+} from '@fortawesome/free-solid-svg-icons';
 
-const ShopProductModal = ({ product, isOpen, onClose, addToCart, themeColor }) => {
+const ShopProductModal = ({ product, isOpen, onClose, addToCart, themeColor = '#2563eb', siteConfig = {} }) => {
   const [currentImage, setCurrentImage] = useState(0);
   const [qty, setQty] = useState(1);
   const [selectedVariants, setSelectedVariants] = useState({});
+  const [openAccordion, setOpenAccordion] = useState(0);
 
   // Reset state every time a new product is opened
   useEffect(() => {
     if (isOpen && product) {
       setCurrentImage(0);
       setQty(1);
+      setOpenAccordion(0);
       
       // Auto-select the first option for any available variants
       const initialVariants = {};
-      if (product.variants) {
+      if (Array.isArray(product.variants)) {
         product.variants.forEach(v => {
           if (v.options && v.options.length > 0) {
             initialVariants[v.name] = v.options[0];
@@ -28,14 +34,19 @@ const ShopProductModal = ({ product, isOpen, onClose, addToCart, themeColor }) =
 
   if (!isOpen || !product) return null;
 
+  const isSoldOut = product.status === 'sold-out';
+  const safePrice = Math.max(0, Number(product.price) || 0);
+
   const handleVariantSelect = (variantName, optionValue) => {
     setSelectedVariants(prev => ({ ...prev, [variantName]: optionValue }));
   };
 
   const handleAddToCart = () => {
+    if (isSoldOut) return;
     const finalProduct = {
       ...product,
-      qty: qty,
+      price: safePrice,
+      qty: Math.max(1, qty),
       selectedVariants: selectedVariants,
       cartId: `${product.id}-${JSON.stringify(selectedVariants)}`
     };
@@ -44,116 +55,164 @@ const ShopProductModal = ({ product, isOpen, onClose, addToCart, themeColor }) =
     onClose();
   };
 
-  const images = product.images && product.images.length > 0 ? product.images : [null];
+  const images = Array.isArray(product.images) && product.images.length > 0 ? product.images : [null];
+
+  // Combine founder's custom infoSections with a helpful Shipping & Exchange tab
+  const customSections = Array.isArray(product.infoSections) ? product.infoSections : [];
+  const shippingPolicyText = siteConfig?.policies?.shippingPolicy || 'Orders are processed within 24 hours and delivered nationwide in 2–4 business days with Cash on Delivery.';
+  const refundPolicyText = siteConfig?.policies?.refundPolicy || 'Easy 7-day return and exchange on unused items in original packaging.';
+
+  const allAccordionTabs = [
+    ...customSections,
+    {
+      id: 'default_shipping_tab',
+      title: 'Shipping & Easy Returns',
+      content: `${shippingPolicyText}\n\n${refundPolicyText}`
+    }
+  ];
 
   return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-      background: 'rgba(15, 23, 42, 0.7)', zIndex: 1000, display: 'flex',
-      alignItems: 'center', justifyContent: 'center', padding: '20px', backdropFilter: 'blur(8px)',
-      opacity: isOpen ? 1 : 0, transition: 'opacity 0.3s ease-in-out'
-    }} onClick={onClose}>
+    <div 
+      style={{
+        position: 'fixed', inset: 0,
+        background: 'rgba(15, 23, 42, 0.72)', zIndex: 1000, display: 'flex',
+        alignItems: 'center', justifyContent: 'center', padding: '20px', backdropFilter: 'blur(6px)',
+        fontFamily: "'Inter', sans-serif"
+      }} 
+      onClick={onClose}
+    >
       
       {/* Modal Container */}
-      <div style={{
-        background: '#fff', width: '100%', maxWidth: '1000px', maxHeight: '90vh', borderRadius: '20px',
-        display: 'flex', flexWrap: 'wrap', overflowY: 'auto', position: 'relative',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-      }} onClick={e => e.stopPropagation()}>
+      <div 
+        style={{
+          background: '#ffffff', width: '100%', maxWidth: '1020px', maxHeight: '90vh', borderRadius: '20px',
+          display: 'flex', flexWrap: 'wrap', overflowY: 'auto', position: 'relative',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.45)', border: '1px solid #e2e8f0'
+        }} 
+        onClick={e => e.stopPropagation()}
+      >
         
         {/* Close Button */}
-        <button onClick={onClose} style={{
-          position: 'absolute', top: '20px', right: '20px', background: '#f1f5f9',
-          border: 'none', width: '40px', height: '40px', borderRadius: '50%',
-          cursor: 'pointer', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          transition: 'background 0.2s, transform 0.2s'
-        }} 
-        onMouseOver={(e) => { e.currentTarget.style.background = '#e2e8f0'; e.currentTarget.style.transform = 'scale(1.1)'; }} 
-        onMouseOut={(e) => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.transform = 'scale(1)'; }}>
-          <FontAwesomeIcon icon={faXmark} size="lg" style={{ color: '#0f172a' }} />
+        <button 
+          onClick={onClose} 
+          style={{
+            position: 'absolute', top: '18px', right: '18px', background: '#f8fafc',
+            border: '1px solid #cbd5e1', width: '38px', height: '38px', borderRadius: '50%',
+            cursor: 'pointer', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#0f172a'
+          }}
+        >
+          <FontAwesomeIcon icon={faXmark} />
         </button>
 
-        {/* === LEFT SIDE: IMAGE GALLERY === */}
-        <div style={{ flex: '1 1 400px', background: '#f8fafc', padding: '30px', display:'flex', flexDirection:'column', gap: '15px' }}>
+        {/* === LEFT SIDE: INTERACTIVE IMAGE GALLERY === */}
+        <div style={{ flex: '1 1 400px', background: '#f8fafc', padding: '28px', display: 'flex', flexDirection: 'column', gap: '16px', borderRight: '1px solid #e2e8f0' }}>
           
-          <div style={{ flex: 1, background: '#fff', borderRadius: '16px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e2e8f0', minHeight: '350px' }}>
+          <div style={{ position: 'relative', flex: 1, background: '#ffffff', borderRadius: '16px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #e2e8f0', minHeight: '360px' }}>
+            {(product.promoBadge || product.isFeatured) && !isSoldOut && (
+              <span style={{ position: 'absolute', top: '14px', left: '14px', background: '#0f172a', color: '#ffffff', padding: '5px 12px', borderRadius: '6px', fontSize: '10px', fontWeight: '800', letterSpacing: '0.8px', textTransform: 'uppercase' }}>
+                {product.promoBadge || 'BEST SELLER'}
+              </span>
+            )}
+
             {images[currentImage] ? (
-              <img src={images[currentImage]} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              <img src={images[currentImage]} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'contain', maxHeight: '420px' }} />
             ) : (
-              <span style={{ color: '#94a3b8', fontSize: '16px', fontWeight: '600' }}>No Image Provided</span>
+              <span style={{ color: '#94a3b8', fontSize: '14px', fontWeight: '700' }}>No Product Image</span>
             )}
           </div>
 
           {images.length > 1 && (
-            <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '10px' }}>
+            <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '4px' }}>
               {images.map((img, idx) => (
-                <div key={idx} onClick={() => setCurrentImage(idx)} style={{ 
-                  width: '80px', height: '80px', borderRadius: '10px', cursor: 'pointer', overflow: 'hidden',
-                  border: currentImage === idx ? `2px solid ${themeColor}` : '1px solid #cbd5e1',
-                  opacity: currentImage === idx ? 1 : 0.6, transition: 'all 0.2s'
-                }}>
-                  <img src={img} alt={`Thumbnail ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div 
+                  key={idx} 
+                  onClick={() => setCurrentImage(idx)} 
+                  style={{ 
+                    width: '74px', height: '74px', borderRadius: '10px', cursor: 'pointer', overflow: 'hidden', flexShrink: 0,
+                    border: currentImage === idx ? `2px solid ${themeColor}` : '1px solid #cbd5e1',
+                    opacity: currentImage === idx ? 1 : 0.6, background: '#ffffff'
+                  }}
+                >
+                  <img src={img} alt={`Thumbnail ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* === RIGHT SIDE: PRODUCT DETAILS === */}
-        <div style={{ flex: '1 1 450px', padding: '40px', display: 'flex', flexDirection: 'column' }}>
+        {/* === RIGHT SIDE: PRODUCT OVERVIEW, VARIANTS & FAQ ACCORDIONS === */}
+        <div style={{ flex: '1.1 1 440px', padding: '34px 32px', display: 'flex', flexDirection: 'column' }}>
           
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-              <div style={{ color: themeColor, fontWeight: '700', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                {product.category || 'Premium Collection'}
-              </div>
-              <div style={{ display: 'flex', color: '#eab308', fontSize: '12px', gap: '2px' }}>
-                  <FontAwesomeIcon icon={faStar} /><FontAwesomeIcon icon={faStar} /><FontAwesomeIcon icon={faStar} /><FontAwesomeIcon icon={faStar} /><FontAwesomeIcon icon={faStar} />
-                  <span style={{ color: '#64748b', marginLeft: '5px' }}>(4.9)</span>
-              </div>
+          {/* Category & Rating */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', paddingRight: '32px' }}>
+            <span style={{ background: '#eef2ff', color: '#4f46e5', fontWeight: '800', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.6px', padding: '4px 10px', borderRadius: '6px' }}>
+              {product.category || 'Collection'}
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center', color: '#f59e0b', fontSize: '12px', gap: '3px' }}>
+              <FontAwesomeIcon icon={faStar} /><FontAwesomeIcon icon={faStar} /><FontAwesomeIcon icon={faStar} /><FontAwesomeIcon icon={faStar} /><FontAwesomeIcon icon={faStar} />
+              <span style={{ color: '#64748b', marginLeft: '5px', fontWeight: '700' }}>Verified Quality</span>
+            </div>
           </div>
 
-          <h2 style={{ fontSize: '2.2rem', fontWeight: '900', margin: '0 0 15px 0', color: '#0f172a', lineHeight: '1.2', letterSpacing: '-0.5px' }}>
+          {/* Product Title */}
+          <h2 style={{ fontSize: '26px', fontWeight: '900', margin: '0 0 12px 0', color: '#0f172a', lineHeight: '1.25', letterSpacing: '-0.5px' }}>
             {product.name}
           </h2>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '15px', margin: '0 0 25px 0' }}>
-              <p style={{ fontSize: '2rem', fontWeight: '800', color: '#0f172a', margin: 0 }}>
-                PKR {product.price.toLocaleString()}
-              </p>
-              <span style={{ color: '#10b981', background: '#ecfdf5', padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '800' }}>
-                  IN STOCK
+
+          {/* Price & Stock Status */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '18px' }}>
+            <span style={{ fontSize: '26px', fontWeight: '900', color: '#059669' }}>
+              PKR {safePrice.toLocaleString()}
+            </span>
+            {isSoldOut ? (
+              <span style={{ color: '#dc2626', background: '#fef2f2', border: '1px solid #fecaca', padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <FontAwesomeIcon icon={faBan} /> OUT OF STOCK
               </span>
+            ) : (
+              <span style={{ color: '#059669', background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <FontAwesomeIcon icon={faCheckCircle} /> IN STOCK
+              </span>
+            )}
           </div>
 
-          <p style={{ color: '#475569', lineHeight: '1.7', fontSize: '15px', marginBottom: '30px' }}>
-            {product.description || 'Elevate your everyday with this premium item. Crafted with precision and designed for the modern lifestyle, it delivers both unmatched functionality and aesthetic brilliance.'}
+          {/* Main Description */}
+          <p style={{ color: '#475569', lineHeight: '1.65', fontSize: '14px', margin: '0 0 22px 0', whiteSpace: 'pre-wrap' }}>
+            {product.description || 'Crafted with premium materials and attention to detail for everyday reliability and style.'}
           </p>
           
-          {/* DYNAMIC VARIANTS ENGINE */}
-          {product.variants && product.variants.length > 0 && (
-            <div style={{ marginBottom: '30px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* DYNAMIC VARIANTS SELECTOR (SIZES / COLORS / VOLUME) */}
+          {Array.isArray(product.variants) && product.variants.length > 0 && (
+            <div style={{ marginBottom: '24px', padding: '16px', background: '#f8fafc', borderRadius: '14px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
               {product.variants.map((variant, idx) => (
                 <div key={idx}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                      <span style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a' }}>{variant.name}</span>
-                      <span style={{ fontSize: '14px', color: '#64748b' }}>{selectedVariants[variant.name]}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '12px' }}>
+                    <span style={{ fontWeight: '800', color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                      <FontAwesomeIcon icon={faLayerGroup} style={{ color: '#4f46e5', marginRight: '6px' }} />
+                      Select {variant.name}:
+                    </span>
+                    <span style={{ fontWeight: '800', color: '#4f46e5' }}>{selectedVariants[variant.name]}</span>
                   </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                    {variant.options.map((opt, i) => {
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {(variant.options || []).map((opt, i) => {
                       const isSelected = selectedVariants[variant.name] === opt;
                       return (
                         <button 
-                          key={i} onClick={() => handleVariantSelect(variant.name, opt)}
+                          key={i} 
+                          type="button"
+                          onClick={() => handleVariantSelect(variant.name, opt)}
                           style={{
-                            padding: '10px 20px', background: isSelected ? '#0f172a' : '#fff', 
-                            color: isSelected ? '#fff' : '#0f172a',
+                            padding: '8px 16px', 
+                            background: isSelected ? '#0f172a' : '#ffffff', 
+                            color: isSelected ? '#ffffff' : '#334155',
                             border: isSelected ? '1px solid #0f172a' : '1px solid #cbd5e1',
-                            borderRadius: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer',
-                            transition: 'all 0.2s'
+                            borderRadius: '8px', fontSize: '13px', fontWeight: '700', cursor: 'pointer',
+                            transition: 'all 0.15s ease'
                           }}
                         >
                           {opt}
                         </button>
-                      )
+                      );
                     })}
                   </div>
                 </div>
@@ -161,40 +220,89 @@ const ShopProductModal = ({ product, isOpen, onClose, addToCart, themeColor }) =
             </div>
           )}
 
-          {/* Quantity & Add to Cart Row */}
-          <div style={{ display: 'flex', gap: '15px', marginTop: 'auto', paddingTop: '20px', borderTop: '1px solid #f1f5f9' }}>
-              <div style={{ display: 'flex', alignItems: 'center', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '5px' }}>
-                  <button onClick={() => setQty(Math.max(1, qty - 1))} style={{ width: '40px', height: '40px', border: 'none', background: 'transparent', cursor: 'pointer', color: '#475569', fontSize: '16px' }}>
-                      <FontAwesomeIcon icon={faMinus} />
-                  </button>
-                  <span style={{ width: '40px', textAlign: 'center', fontWeight: '800', fontSize: '16px', color: '#0f172a' }}>{qty}</span>
-                  <button onClick={() => setQty(qty + 1)} style={{ width: '40px', height: '40px', border: 'none', background: 'transparent', cursor: 'pointer', color: '#475569', fontSize: '16px' }}>
-                      <FontAwesomeIcon icon={faPlus} />
-                  </button>
-              </div>
-
+          {/* QUANTITY & ADD TO BAG ROW */}
+          <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '4px' }}>
               <button 
-                onClick={handleAddToCart} 
-                style={{
-                  flex: 1, padding: '0 20px', background: themeColor, color: '#fff', border: 'none',
-                  borderRadius: '12px', fontSize: '16px', fontWeight: '800', textTransform: 'uppercase', 
-                  cursor: 'pointer', transition: 'all 0.2s', letterSpacing: '1px',
-                  boxShadow: `0 10px 20px -5px ${themeColor}66`
-                }}
-                onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
-                onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+                type="button"
+                disabled={isSoldOut}
+                onClick={() => setQty(Math.max(1, qty - 1))} 
+                style={{ width: '38px', height: '38px', border: 'none', background: 'transparent', cursor: isSoldOut ? 'not-allowed' : 'pointer', color: '#475569', fontSize: '14px' }}
               >
-                Add to Bag • PKR {(product.price * qty).toLocaleString()}
+                <FontAwesomeIcon icon={faMinus} />
               </button>
+              <span style={{ width: '36px', textAlign: 'center', fontWeight: '800', fontSize: '15px', color: '#0f172a' }}>{qty}</span>
+              <button 
+                type="button"
+                disabled={isSoldOut}
+                onClick={() => setQty(qty + 1)} 
+                style={{ width: '38px', height: '38px', border: 'none', background: 'transparent', cursor: isSoldOut ? 'not-allowed' : 'pointer', color: '#475569', fontSize: '14px' }}
+              >
+                <FontAwesomeIcon icon={faPlus} />
+              </button>
+            </div>
+
+            <button 
+              type="button"
+              disabled={isSoldOut}
+              onClick={handleAddToCart} 
+              style={{
+                flex: '1 1 200px', padding: '14px 20px', 
+                background: isSoldOut ? '#cbd5e1' : '#0f172a', 
+                color: isSoldOut ? '#64748b' : '#ffffff', 
+                border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: '800', 
+                cursor: isSoldOut ? 'not-allowed' : 'pointer', 
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                boxShadow: isSoldOut ? 'none' : '0 10px 20px -5px rgba(15, 23, 42, 0.25)'
+              }}
+            >
+              <FontAwesomeIcon icon={isSoldOut ? faBan : faShoppingBag} style={{ color: isSoldOut ? '#64748b' : '#f97316' }} />
+              {isSoldOut ? 'Currently Sold Out' : `Add to Bag • PKR ${(safePrice * qty).toLocaleString()}`}
+            </button>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '25px', padding: '15px', background: '#f8fafc', borderRadius: '10px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#475569', fontSize: '12px', fontWeight: '600' }}>
-                  <FontAwesomeIcon icon={faShieldHalved} style={{ color: themeColor, fontSize: '16px' }} /> Secure Transaction
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#475569', fontSize: '12px', fontWeight: '600' }}>
-                  <FontAwesomeIcon icon={faTruckFast} style={{ color: themeColor, fontSize: '16px' }} /> Ships within 24hrs
-              </div>
+          {/* TRUST HIGHLIGHTS */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px', marginBottom: '24px' }}>
+            <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '10px 12px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: '700', color: '#065f46' }}>
+              <FontAwesomeIcon icon={faTruckFast} style={{ color: '#059669' }} /> Fast Doorstep COD
+            </div>
+            <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', padding: '10px 12px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: '700', color: '#9a3412' }}>
+              <FontAwesomeIcon icon={faRotateLeft} style={{ color: '#ea580c' }} /> Easy Exchange
+            </div>
+            <div style={{ background: '#eff6ff', border: '1px solid #bfdbfe', padding: '10px 12px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: '700', color: '#1e40af' }}>
+              <FontAwesomeIcon icon={faShieldHalved} style={{ color: '#2563eb' }} /> Quality Checked
+            </div>
+          </div>
+
+          {/* EXPANDABLE PRODUCT INFO & FAQ ACCORDION TABS */}
+          <div style={{ borderTop: '1px solid #e2e8f0', marginTop: 'auto' }}>
+            {allAccordionTabs.map((tab, idx) => {
+              const isOpenTab = openAccordion === idx;
+              return (
+                <div key={tab.id || idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenAccordion(isOpenTab ? -1 : idx)}
+                    style={{
+                      width: '100%', padding: '14px 0', background: 'none', border: 'none',
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      cursor: 'pointer', textAlign: 'left', fontSize: '13px', fontWeight: '800', color: '#0f172a'
+                    }}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <FontAwesomeIcon icon={faCircleInfo} style={{ color: themeColor, fontSize: '13px' }} />
+                      {tab.title}
+                    </span>
+                    <FontAwesomeIcon icon={isOpenTab ? faMinus : faPlus} style={{ color: '#64748b', fontSize: '11px' }} />
+                  </button>
+                  {isOpenTab && (
+                    <div style={{ paddingBottom: '14px', fontSize: '13px', color: '#475569', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+                      {tab.content}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
         </div>
