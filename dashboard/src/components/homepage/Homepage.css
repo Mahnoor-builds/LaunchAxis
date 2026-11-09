@@ -1,5 +1,5 @@
 /* ==========================================================================
-   1. LIGHT BENTO SAAS DESIGN SYSTEM TOKENS
+   LIGHT BENTO SAAS DESIGN SYSTEM TOKENS
    ========================================================================== */
 .homepage-wrapper {
   --bg-page: #ffffff;
@@ -11,7 +11,6 @@
   --border-light: #e2e8f0;
   --border-hover: #cbd5e1;
 
-  /* Multi-Accent Palette (Matches Admin Dashboard) */
   --accent-blue: #2563eb;
   --accent-blue-bg: #eff6ff;
   --accent-emerald: #059669;
@@ -34,13 +33,13 @@
 }
 
 /* ==========================================================================
-   2. STICKY SAAS NAVBAR & DROPDOWN MENUS
+   STICKY SAAS NAVBAR
    ========================================================================== */
 .homepage-wrapper .saas-navbar-header {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-light);
@@ -126,12 +125,11 @@
   color: #1d4ed8;
 }
 
-.homepage-wrapper .dropdown-trigger i {
+.homepage-wrapper .dropdown-trigger svg {
   font-size: 10px;
   color: var(--text-muted);
 }
 
-/* Dropdown Popover */
 .homepage-wrapper .dropdown-wrapper {
   position: relative;
 }
@@ -206,7 +204,7 @@
   color: var(--text-muted);
 }
 
-/* Navbar Right Actions */
+/* Navbar Actions */
 .homepage-wrapper .nav-actions {
   display: flex;
   align-items: center;
@@ -261,7 +259,7 @@
   transition: all 0.2s ease;
 }
 
-.homepage-wrapper .btn-primary-nav i {
+.homepage-wrapper .btn-primary-nav svg {
   color: #f97316;
 }
 
@@ -273,20 +271,20 @@
 .homepage-wrapper .founder-hub-pill {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: var(--bg-subtle);
   border: 1px solid var(--border-hover);
-  padding: 5px 14px 5px 6px;
+  padding: 5px 12px 5px 6px;
   border-radius: 100px;
   color: var(--text-main);
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
 }
 
 .homepage-wrapper .founder-avatar {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: var(--accent-blue);
   color: #ffffff;
@@ -294,21 +292,22 @@
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .homepage-wrapper .mobile-menu-toggle {
   display: none;
   background: var(--bg-subtle);
   border: 1px solid var(--border-light);
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
   color: var(--text-main);
-  font-size: 16px;
+  font-size: 18px;
   cursor: pointer;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .homepage-wrapper .mobile-nav-drawer {
@@ -316,7 +315,7 @@
 }
 
 /* ==========================================================================
-   3. CLEAN EXECUTIVE HERO SECTION
+   HERO SECTION
    ========================================================================== */
 .homepage-wrapper .hero-section {
   padding: 64px 24px 80px;
@@ -346,7 +345,6 @@
   border-radius: 100px;
   font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.2px;
 }
 
 .homepage-wrapper .pill-blue { background: var(--accent-blue-bg); color: var(--accent-blue); border: 1px solid #bfdbfe; }
@@ -354,7 +352,7 @@
 .homepage-wrapper .pill-orange { background: var(--accent-orange-bg); color: var(--accent-orange); border: 1px solid #fed7aa; }
 
 .homepage-wrapper .hero-main-title {
-  font-size: clamp(34px, 5.2vw, 60px);
+  font-size: clamp(32px, 5vw, 60px);
   font-weight: 900;
   line-height: 1.12;
   letter-spacing: -1.8px;
@@ -368,7 +366,7 @@
 }
 
 .homepage-wrapper .hero-description {
-  font-size: clamp(16px, 2vw, 19px);
+  font-size: clamp(15px, 1.8vw, 19px);
   color: var(--text-secondary);
   max-width: 720px;
   margin: 0 auto 32px;
@@ -400,7 +398,7 @@
   transition: all 0.2s ease;
 }
 
-.homepage-wrapper .btn-hero-primary i {
+.homepage-wrapper .btn-hero-primary svg {
   color: #f97316;
 }
 
@@ -433,7 +431,7 @@
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 24px;
+  gap: 20px;
   font-size: 13px;
   font-weight: 600;
   color: var(--text-muted);
@@ -441,7 +439,7 @@
 }
 
 /* ==========================================================================
-   4. INTERACTIVE HERO DASHBOARD SHOWCASE
+   INTERACTIVE HERO DASHBOARD SHOWCASE
    ========================================================================== */
 .homepage-wrapper .hero-showcase-wrapper {
   max-width: 1040px;
@@ -462,7 +460,7 @@
 .homepage-wrapper .showcase-tab-btn {
   background: transparent;
   border: none;
-  padding: 9px 18px;
+  padding: 9px 16px;
   border-radius: 10px;
   font-size: 13px;
   font-weight: 700;
@@ -547,7 +545,6 @@
   display: block;
 }
 
-/* Simulated Dashboard Inside Hero Frame */
 .homepage-wrapper .simulated-workspace-ui {
   display: flex;
   min-height: 380px;
@@ -640,7 +637,7 @@
 
 .homepage-wrapper .sim-metrics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 12px;
 }
 
@@ -681,7 +678,7 @@
 
 .homepage-wrapper .sim-bottom-split {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 14px;
 }
 
@@ -715,7 +712,7 @@
   margin-bottom: 6px;
 }
 
-.homepage-wrapper .sim-check-row.done i {
+.homepage-wrapper .sim-check-row.done svg {
   color: var(--accent-emerald);
 }
 
@@ -750,7 +747,7 @@
 }
 
 /* ==========================================================================
-   5. SECTIONS & BENTO FEATURE GRID
+   SECTIONS & BENTOS
    ========================================================================== */
 .homepage-wrapper .section-block {
   padding: 88px 24px;
@@ -885,7 +882,7 @@
   gap: 6px;
 }
 
-.homepage-wrapper .bf-mini-tags span i {
+.homepage-wrapper .bf-mini-tags span svg {
   color: var(--accent-emerald);
 }
 
@@ -898,16 +895,19 @@
   border-radius: 10px;
   font-size: 12px;
   font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* ==========================================================================
-   6. DUAL TEMPLATE SHOWCASE & AXIS AI CO-FOUNDER BANNER
+   DUAL TEMPLATES & AXIS BANNER
    ========================================================================== */
 .homepage-wrapper .dual-template-grid {
   max-width: 1180px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 24px;
 }
 
@@ -961,7 +961,7 @@
   gap: 10px;
 }
 
-.homepage-wrapper .ts-checklist li i {
+.homepage-wrapper .ts-checklist li svg {
   margin-top: 4px;
 }
 
@@ -982,7 +982,7 @@
 }
 
 .homepage-wrapper .axis-banner-content {
-  flex: 1.2 1 360px;
+  flex: 1.2 1 340px;
 }
 
 .homepage-wrapper .axis-banner-content h2 {
@@ -1031,7 +1031,7 @@
 }
 
 .homepage-wrapper .axis-chat-preview-card {
-  flex: 1 1 320px;
+  flex: 1 1 300px;
   background: var(--bg-subtle);
   border: 1px solid var(--border-light);
   border-radius: 16px;
@@ -1095,7 +1095,7 @@
 }
 
 /* ==========================================================================
-   7. FOUR STEPS, PRICING & FAQ ACCORDIONS
+   STEPS, PRICING & FAQ
    ========================================================================== */
 .homepage-wrapper .four-steps-grid {
   max-width: 1180px;
@@ -1149,7 +1149,7 @@
   color: var(--text-secondary);
 }
 
-/* Pricing Grid */
+/* Pricing */
 .homepage-wrapper .pricing-bento-grid {
   max-width: 1140px;
   margin: 0 auto;
@@ -1256,7 +1256,7 @@
   gap: 10px;
 }
 
-/* FAQ Accordion */
+/* FAQ */
 .homepage-wrapper .faq-bento-container {
   max-width: 780px;
   margin: 0 auto;
@@ -1288,7 +1288,7 @@
   font-family: inherit;
 }
 
-.homepage-wrapper .faq-bento-question i {
+.homepage-wrapper .faq-bento-question svg {
   color: var(--accent-blue);
   font-size: 13px;
 }
@@ -1301,7 +1301,7 @@
 }
 
 /* ==========================================================================
-   8. FINAL CTA, FEEDBACK FORM & FOOTER
+   FINAL CTA, FEEDBACK & FOOTER
    ========================================================================== */
 .homepage-wrapper .final-cta-bento {
   max-width: 1180px;
@@ -1335,7 +1335,7 @@
 }
 
 .homepage-wrapper .final-cta-feedback {
-  flex: 1 1 320px;
+  flex: 1 1 300px;
   background: #ffffff;
   border: 1px solid var(--border-light);
   border-radius: 16px;
@@ -1457,23 +1457,23 @@
 }
 
 /* ==========================================================================
-   9. UPGRADED FLOATING AXIS AI CHATBOT LAUNCHER
+   UPGRADED FLOATING CHATBOT LAUNCHER (WITH ROBOT ICON & TEXT)
    ========================================================================== */
 .homepage-wrapper .axis-chatbot-launcher {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  bottom: 20px;
+  right: 20px;
   z-index: 9999;
   background: #0f172a;
   color: #ffffff;
   border: 1px solid #334155;
   border-radius: 100px;
-  padding: 8px 18px 8px 10px;
+  padding: 8px 16px 8px 8px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   cursor: pointer;
-  box-shadow: 0 14px 30px -5px rgba(15, 23, 42, 0.35);
+  box-shadow: 0 14px 30px -5px rgba(15, 23, 42, 0.4);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   font-family: inherit;
 }
@@ -1481,7 +1481,6 @@
 .homepage-wrapper .axis-chatbot-launcher:hover {
   transform: translateY(-4px);
   background: #1e293b;
-  box-shadow: 0 18px 36px -5px rgba(37, 99, 235, 0.35);
   border-color: var(--accent-blue);
 }
 
@@ -1531,28 +1530,41 @@
 
 .homepage-wrapper .axis-bot-sparkle {
   color: #fb923c;
-  font-size: 14px;
+  font-size: 13px;
   margin-left: 2px;
 }
 
 /* ==========================================================================
-   10. RESPONSIVE MEDIA QUERIES (INCLUDING ULTRA-SMALL <425PX MOBILE FIX)
+   MOBILE RESPONSIVE BREAKPOINTS (FIXED OVERFLOW & BUTTON SQUISHING)
    ========================================================================== */
+@media (max-width: 1024px) {
+  .homepage-wrapper .bento-feature-grid {
+    grid-template-columns: 1fr;
+  }
+  .homepage-wrapper .bento-feature-card.span-two {
+    grid-column: span 1;
+  }
+  .homepage-wrapper .saas-footer-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (max-width: 980px) {
   .homepage-wrapper .nav-menu,
   .homepage-wrapper .nav-login-btn,
-  .homepage-wrapper .nav-signup-btn {
-    display: none;
+  .homepage-wrapper .nav-signup-btn,
+  .homepage-wrapper .btn-primary-nav {
+    display: none !important;
   }
 
   .homepage-wrapper .mobile-menu-toggle {
-    display: inline-flex;
+    display: inline-flex !important;
   }
 
   .homepage-wrapper .mobile-nav-drawer {
     display: flex;
     flex-direction: column;
-    padding: 16px 24px 24px;
+    padding: 16px 20px 24px;
     background: #ffffff;
     border-bottom: 1px solid var(--border-light);
     gap: 12px;
@@ -1594,43 +1606,38 @@
     color: #ffffff;
     font-weight: 800;
     cursor: pointer;
-  }
-
-  .homepage-wrapper .bento-feature-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .homepage-wrapper .bento-feature-card.span-two {
-    grid-column: span 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
   }
 
   .homepage-wrapper .sim-sidebar {
     display: none;
   }
-
-  .homepage-wrapper .saas-footer-grid {
-    grid-template-columns: 1fr 1fr;
-  }
 }
 
-@media (max-width: 560px) {
+@media (max-width: 540px) {
   .homepage-wrapper .saas-navbar {
-    padding: 0 14px;
+    padding: 0 16px;
     height: 64px;
   }
 
   .homepage-wrapper .brand-name-text {
-    font-size: 17px;
+    font-size: 16px;
   }
 
-  .homepage-wrapper .btn-primary-nav {
-    padding: 8px 12px;
-    font-size: 12px;
-    border-radius: 8px;
+  .homepage-wrapper .founder-hub-pill {
+    padding: 4px 8px 4px 4px;
+    font-size: 11.5px;
+  }
+
+  .homepage-wrapper .founder-hub-text {
+    display: none; /* Shows only avatar + arrow on very narrow screens */
   }
 
   .homepage-wrapper .hero-section {
-    padding: 44px 16px 56px;
+    padding: 40px 16px 60px;
   }
 
   .homepage-wrapper .btn-hero-primary,
@@ -1645,27 +1652,27 @@
 
   .homepage-wrapper .axis-cofounder-banner,
   .homepage-wrapper .final-cta-bento {
-    padding: 24px 20px;
+    padding: 24px 18px;
   }
 
   .homepage-wrapper .saas-footer-grid {
     grid-template-columns: 1fr;
   }
 
+  /* Compact Chatbot Launcher on small phones */
   .homepage-wrapper .axis-bot-text {
     display: none;
   }
 
   .homepage-wrapper .axis-chatbot-launcher {
-    padding: 8px 12px 8px 8px;
+    padding: 8px;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    justify-content: center;
   }
-}
 
-@media (max-width: 390px) {
-  .homepage-wrapper .btn-primary-nav span {
-    font-size: 11.5px;
-  }
-  .homepage-wrapper .founder-hub-text {
+  .homepage-wrapper .axis-bot-sparkle {
     display: none;
   }
 }

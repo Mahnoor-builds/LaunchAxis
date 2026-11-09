@@ -2,17 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../../firebaseConfig';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faLayerGroup, faChevronDown, faBookOpen, faChartPie, 
+  faGlobe, faWallet, faWandMagicSparkles, faBagShopping, 
+  faBriefcase, faRocket, faArrowRight, faBars, faXmark, 
+  faCircleCheck, faArrowTrendUp, faClock, faBoxOpen, 
+  faSliders, faReceipt, faCheck, faLightbulb, faChartLine, 
+  faRobot, faCommentDots, faMinus, faPlus
+} from '@fortawesome/free-solid-svg-icons';
 import './Homepage.css';
 
 // ============================================================================
 // OPTIONAL: Paste your own dashboard screenshot paths or URLs here anytime!
-// If left empty (''), the homepage automatically renders a live interactive UI preview.
 // ============================================================================
 const DASHBOARD_SCREENSHOTS = {
-  overview: '', // e.g. '/images/dashboard-overview.png'
-  website: '',  // e.g. '/images/website-editor.png'
-  finance: '',  // e.g. '/images/finance-ledger.png'
-  branding: ''  // e.g. '/images/branding-studio.png'
+  overview: '',
+  website: '',
+  finance: '',
+  branding: ''
 };
 
 const Homepage = () => {
@@ -23,7 +31,7 @@ const Homepage = () => {
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
 
-  // Firebase Auth Listener (Untouched)
+  // Firebase Auth Listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -45,7 +53,6 @@ const Homepage = () => {
   const handleDocsClick = (e) => {
     e.preventDefault();
     setMobileMenuOpen(false);
-    // Navigates to /docs when you build your Documentation page, or scrolls smoothly if #docs exists
     const docsEl = document.getElementById('docs');
     if (docsEl) {
       docsEl.scrollIntoView({ behavior: 'smooth' });
@@ -74,10 +81,10 @@ const Homepage = () => {
   ];
 
   const previewTabs = [
-    { id: 'overview', label: 'Command Center', icon: 'fa-solid fa-chart-pie', color: '#2563eb', url: 'app.launchaxis.com/admin/dashboard' },
-    { id: 'website', label: 'Website Builder', icon: 'fa-solid fa-globe', color: '#059669', url: 'app.launchaxis.com/admin/website' },
-    { id: 'finance', label: 'Financial Center', icon: 'fa-solid fa-wallet', color: '#ea580c', url: 'app.launchaxis.com/admin/finance' },
-    { id: 'branding', label: 'Branding Studio', icon: 'fa-solid fa-palette', color: '#4f46e5', url: 'app.launchaxis.com/admin/branding' }
+    { id: 'overview', label: 'Command Center', icon: faChartPie, color: '#2563eb', url: 'app.launchaxis.com/admin/dashboard' },
+    { id: 'website', label: 'Website Builder', icon: faGlobe, color: '#059669', url: 'app.launchaxis.com/admin/website' },
+    { id: 'finance', label: 'Financial Center', icon: faWallet, color: '#ea580c', url: 'app.launchaxis.com/admin/finance' },
+    { id: 'branding', label: 'Branding Studio', icon: faWandMagicSparkles, color: '#4f46e5', url: 'app.launchaxis.com/admin/branding' }
   ];
 
   const currentTabObj = previewTabs.find(t => t.id === activePreviewTab) || previewTabs[0];
@@ -86,15 +93,15 @@ const Homepage = () => {
     <div className="homepage-wrapper">
       
       {/* =================================================================
-          1. CLEAN SAAS STICKY NAVBAR (WITH DROPDOWNS & DOCUMENTATION LINK)
+          1. CLEAN SAAS STICKY NAVBAR (MOBILE OPTIMIZED)
          ================================================================= */}
       <header className="saas-navbar-header">
         <nav className="saas-navbar">
           
-          {/* Brand Logo (Replace icon with your <img> logo anytime) */}
+          {/* Brand Logo */}
           <div className="nav-brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <div className="brand-logo-badge">
-              <i className="fa-solid fa-layer-group"></i>
+              <FontAwesomeIcon icon={faLayerGroup} />
             </div>
             <span className="brand-name-text">LaunchAxis</span>
           </div>
@@ -105,32 +112,32 @@ const Homepage = () => {
 
             <div className="dropdown-wrapper">
               <button type="button" className="dropdown-trigger">
-                Platform <i className="fa-solid fa-chevron-down"></i>
+                Platform <FontAwesomeIcon icon={faChevronDown} />
               </button>
               <div className="dropdown-menu">
                 <a href="#bento-features">
-                  <span className="dd-icon dd-blue"><i className="fa-solid fa-chart-pie"></i></span>
+                  <span className="dd-icon dd-blue"><FontAwesomeIcon icon={faChartPie} /></span>
                   <div>
                     <strong>Command Center</strong>
                     <span>Daily business overview & tasks</span>
                   </div>
                 </a>
                 <a href="#website-showcase">
-                  <span className="dd-icon dd-emerald"><i className="fa-solid fa-globe"></i></span>
+                  <span className="dd-icon dd-emerald"><FontAwesomeIcon icon={faGlobe} /></span>
                   <div>
                     <strong>Website & Store Builder</strong>
                     <span>E-commerce & agency templates</span>
                   </div>
                 </a>
                 <a href="#bento-features">
-                  <span className="dd-icon dd-orange"><i className="fa-solid fa-wallet"></i></span>
+                  <span className="dd-icon dd-orange"><FontAwesomeIcon icon={faWallet} /></span>
                   <div>
                     <strong>Financial Center</strong>
                     <span>Bookkeeping, stock & PDF statements</span>
                   </div>
                 </a>
                 <a href="#bento-features">
-                  <span className="dd-icon dd-indigo"><i className="fa-solid fa-wand-magic-sparkles"></i></span>
+                  <span className="dd-icon dd-indigo"><FontAwesomeIcon icon={faWandMagicSparkles} /></span>
                   <div>
                     <strong>AI Branding Studio</strong>
                     <span>Names, domains, logos & copywriter</span>
@@ -141,25 +148,25 @@ const Homepage = () => {
 
             <div className="dropdown-wrapper">
               <button type="button" className="dropdown-trigger">
-                Solutions <i className="fa-solid fa-chevron-down"></i>
+                Solutions <FontAwesomeIcon icon={faChevronDown} />
               </button>
               <div className="dropdown-menu">
                 <a href="#website-showcase">
-                  <span className="dd-icon dd-emerald"><i className="fa-solid fa-bag-shopping"></i></span>
+                  <span className="dd-icon dd-emerald"><FontAwesomeIcon icon={faBagShopping} /></span>
                   <div>
                     <strong>For E-Commerce Brands</strong>
                     <span>Catalog, variants & COD checkout</span>
                   </div>
                 </a>
                 <a href="#website-showcase">
-                  <span className="dd-icon dd-indigo"><i className="fa-solid fa-briefcase"></i></span>
+                  <span className="dd-icon dd-indigo"><FontAwesomeIcon icon={faBriefcase} /></span>
                   <div>
                     <strong>For Service Agencies</strong>
                     <span>Case study portfolios & client leads</span>
                   </div>
                 </a>
                 <a href="#how-it-works">
-                  <span className="dd-icon dd-orange"><i className="fa-solid fa-rocket"></i></span>
+                  <span className="dd-icon dd-orange"><FontAwesomeIcon icon={faRocket} /></span>
                   <div>
                     <strong>For New Founders</strong>
                     <span>Go from raw idea to live business</span>
@@ -168,22 +175,21 @@ const Homepage = () => {
               </div>
             </div>
 
-            {/* Direct Documentation Link in Navbar */}
             <a href="/docs" onClick={handleDocsClick} className="nav-link nav-doc-link">
-              <i className="fa-solid fa-book-open"></i> Documentation
+              <FontAwesomeIcon icon={faBookOpen} /> Documentation
             </a>
 
             <a href="#pricing" className="nav-link">Pricing</a>
             <a href="#faq" className="nav-link">FAQ</a>
           </div>
 
-          {/* Right Auth Actions (Preserves exact routes) */}
+          {/* Right Auth Actions */}
           <div className="nav-actions">
             {userProfile ? (
               <button onClick={() => navigate('/profile')} className="founder-hub-pill">
                 <span className="founder-avatar">{userProfile}</span>
                 <span className="founder-hub-text">Founder Hub</span>
-                <i className="fa-solid fa-arrow-right"></i>
+                <FontAwesomeIcon icon={faArrowRight} />
               </button>
             ) : (
               <>
@@ -195,7 +201,7 @@ const Homepage = () => {
                 </button>
                 <button onClick={() => navigate('/start-building')} className="btn-primary-nav">
                   <span>Start building</span>
-                  <i className="fa-solid fa-arrow-right"></i>
+                  <FontAwesomeIcon icon={faArrowRight} />
                 </button>
               </>
             )}
@@ -207,7 +213,7 @@ const Homepage = () => {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle Menu"
             >
-              <i className={`fa-solid ${mobileMenuOpen ? 'fa-xmark' : 'fa-bars'}`}></i>
+              <FontAwesomeIcon icon={mobileMenuOpen ? faXmark : faBars} />
             </button>
           </div>
         </nav>
@@ -219,7 +225,7 @@ const Homepage = () => {
             <a href="#bento-features" onClick={() => setMobileMenuOpen(false)}>Platform Features</a>
             <a href="#website-showcase" onClick={() => setMobileMenuOpen(false)}>Store & Agency Websites</a>
             <a href="/docs" onClick={handleDocsClick}>
-              <i className="fa-solid fa-book-open" style={{ color: '#2563eb', marginRight: '8px' }}></i> Documentation
+              <FontAwesomeIcon icon={faBookOpen} style={{ color: '#2563eb', marginRight: '8px' }} /> Documentation
             </a>
             <a href="#pricing" onClick={() => setMobileMenuOpen(false)}>Pricing Plans</a>
             <a href="#faq" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
@@ -229,7 +235,7 @@ const Homepage = () => {
                 <button onClick={() => navigate('/login')} className="mobile-auth-outline">Log in</button>
                 <button onClick={() => navigate('/auth')} className="mobile-auth-outline">Sign up</button>
                 <button onClick={() => navigate('/start-building')} className="mobile-auth-primary">
-                  Start building <i className="fa-solid fa-arrow-right"></i>
+                  Start building <FontAwesomeIcon icon={faArrowRight} />
                 </button>
               </div>
             )}
@@ -238,15 +244,15 @@ const Homepage = () => {
       </header>
 
       {/* =================================================================
-          2. CLEAN EXECUTIVE HERO SECTION (NO GLITCHY AUTO-TYPER OR V2 TAG)
+          2. EXECUTIVE HERO SECTION
          ================================================================= */}
       <section id="platform" className="hero-section">
         <div className="hero-container">
           
           <div className="hero-category-tags">
-            <span className="cat-pill pill-blue"><i className="fa-solid fa-wand-magic-sparkles"></i> AI Brand Studio</span>
-            <span className="cat-pill pill-emerald"><i className="fa-solid fa-store"></i> Live Web Storefront</span>
-            <span className="cat-pill pill-orange"><i className="fa-solid fa-file-invoice-dollar"></i> Accounting & Stock</span>
+            <span className="cat-pill pill-blue"><FontAwesomeIcon icon={faWandMagicSparkles} /> AI Brand Studio</span>
+            <span className="cat-pill pill-emerald"><FontAwesomeIcon icon={faStore} /> Live Web Storefront</span>
+            <span className="cat-pill pill-orange"><FontAwesomeIcon icon={faReceipt} /> Accounting & Stock</span>
           </div>
 
           <h1 className="hero-main-title">
@@ -260,26 +266,23 @@ const Homepage = () => {
           <div className="hero-cta-group">
             <button onClick={() => navigate('/start-building')} className="btn-hero-primary">
               <span>Start building for free</span>
-              <i className="fa-solid fa-arrow-right"></i>
+              <FontAwesomeIcon icon={faArrowRight} />
             </button>
             <button onClick={handleDocsClick} className="btn-hero-secondary">
-              <i className="fa-solid fa-book-open" style={{ color: '#2563eb' }}></i>
+              <FontAwesomeIcon icon={faBookOpen} style={{ color: '#2563eb' }} />
               <span>Read Documentation</span>
             </button>
           </div>
 
           <div className="hero-trust-row">
-            <span><i className="fa-solid fa-circle-check" style={{ color: '#059669' }}></i> No credit card required</span>
-            <span><i className="fa-solid fa-circle-check" style={{ color: '#059669' }}></i> Free Forever Cadet Plan</span>
-            <span><i className="fa-solid fa-circle-check" style={{ color: '#059669' }}></i> Product & Service templates included</span>
+            <span><FontAwesomeIcon icon={faCircleCheck} style={{ color: '#059669' }} /> No credit card required</span>
+            <span><FontAwesomeIcon icon={faCircleCheck} style={{ color: '#059669' }} /> Free Forever Cadet Plan</span>
+            <span><FontAwesomeIcon icon={faCircleCheck} style={{ color: '#059669' }} /> Product & Service templates</span>
           </div>
 
-          {/* =============================================================
-              INTERACTIVE DASHBOARD PREVIEW FRAME (OR YOUR SCREENSHOTS)
-             ============================================================= */}
+          {/* Interactive Dashboard Preview Frame */}
           <div className="hero-showcase-wrapper">
             
-            {/* Segmented Tab Switcher */}
             <div className="showcase-tab-bar">
               {previewTabs.map(tab => (
                 <button
@@ -288,13 +291,12 @@ const Homepage = () => {
                   onClick={() => setActivePreviewTab(tab.id)}
                   className={`showcase-tab-btn ${activePreviewTab === tab.id ? 'active' : ''}`}
                 >
-                  <i className={tab.icon} style={{ color: activePreviewTab === tab.id ? tab.color : '#64748b' }}></i>
+                  <FontAwesomeIcon icon={tab.icon} style={{ color: activePreviewTab === tab.id ? tab.color : '#64748b' }} />
                   <span>{tab.label}</span>
                 </button>
               ))}
             </div>
 
-            {/* Browser Window Frame */}
             <div className="browser-mockup-window">
               <div className="browser-top-chrome">
                 <div className="browser-dots">
@@ -303,7 +305,7 @@ const Homepage = () => {
                   <span className="b-dot green"></span>
                 </div>
                 <div className="browser-address-bar">
-                  <i className="fa-solid fa-lock" style={{ color: '#059669', marginRight: '6px' }}></i>
+                  <FontAwesomeIcon icon={faCircleCheck} style={{ color: '#059669', marginRight: '6px' }} />
                   {currentTabObj.url}
                 </div>
                 <div className="browser-status-badge">Live Workspace</div>
@@ -318,28 +320,26 @@ const Homepage = () => {
                   />
                 ) : (
                   <div className="simulated-workspace-ui">
-                    {/* Simulated Sidebar */}
                     <div className="sim-sidebar">
                       <div className="sim-brand-row">
                         <span className="sim-brand-dot"></span>
                         <strong>Obsidian Digital</strong>
                       </div>
                       <div className={`sim-nav-item ${activePreviewTab === 'overview' ? 'active' : ''}`} onClick={() => setActivePreviewTab('overview')}>
-                        <i className="fa-solid fa-chart-pie"></i> Dashboard
+                        <FontAwesomeIcon icon={faChartPie} /> Dashboard
                       </div>
                       <div className={`sim-nav-item ${activePreviewTab === 'finance' ? 'active' : ''}`} onClick={() => setActivePreviewTab('finance')}>
-                        <i className="fa-solid fa-wallet"></i> Finance
+                        <FontAwesomeIcon icon={faWallet} /> Finance
                       </div>
                       <div className={`sim-nav-item ${activePreviewTab === 'branding' ? 'active' : ''}`} onClick={() => setActivePreviewTab('branding')}>
-                        <i className="fa-solid fa-wand-magic-sparkles"></i> Branding (AI)
+                        <FontAwesomeIcon icon={faWandMagicSparkles} /> Branding (AI)
                       </div>
                       <div className={`sim-nav-item ${activePreviewTab === 'website' ? 'active' : ''}`} onClick={() => setActivePreviewTab('website')}>
-                        <i className="fa-solid fa-globe"></i> Website
+                        <FontAwesomeIcon icon={faGlobe} /> Website
                       </div>
-                      <div className="sim-nav-item"><i className="fa-solid fa-box-open"></i> Catalog & Work</div>
+                      <div className="sim-nav-item"><FontAwesomeIcon icon={faBoxOpen} /> Catalog & Work</div>
                     </div>
 
-                    {/* Simulated Main Content Area */}
                     <div className="sim-main-canvas">
                       {activePreviewTab === 'overview' && (
                         <>
@@ -352,35 +352,35 @@ const Homepage = () => {
                           </div>
                           <div className="sim-metrics-grid">
                             <div className="sim-metric-card">
-                              <div className="sim-m-top"><span>Total Sales</span><i className="fa-solid fa-arrow-trend-up sim-ic-emerald"></i></div>
+                              <div className="sim-m-top"><span>Total Sales</span><FontAwesomeIcon icon={faArrowTrendUp} className="sim-ic-emerald" /></div>
                               <strong>Rs 148,500</strong>
                               <small style={{ color: '#059669' }}>+18% this week</small>
                             </div>
                             <div className="sim-metric-card">
-                              <div className="sim-m-top"><span>Available Cash</span><i className="fa-solid fa-wallet sim-ic-blue"></i></div>
+                              <div className="sim-m-top"><span>Available Cash</span><FontAwesomeIcon icon={faWallet} className="sim-ic-blue" /></div>
                               <strong>Rs 92,000</strong>
                               <small>Reconciled in ledger</small>
                             </div>
                             <div className="sim-metric-card">
-                              <div className="sim-m-top"><span>Orders to Pack</span><i className="fa-solid fa-clock sim-ic-orange"></i></div>
+                              <div className="sim-m-top"><span>Orders to Pack</span><FontAwesomeIcon icon={faClock} className="sim-ic-orange" /></div>
                               <strong>6 Pending</strong>
                               <small style={{ color: '#ea580c' }}>Ready for dispatch</small>
                             </div>
                             <div className="sim-metric-card">
-                              <div className="sim-m-top"><span>Active Listings</span><i className="fa-solid fa-box-open sim-ic-indigo"></i></div>
+                              <div className="sim-m-top"><span>Active Listings</span><FontAwesomeIcon icon={faBoxOpen} className="sim-ic-indigo" /></div>
                               <strong>24 Live</strong>
                               <small>Synced to storefront</small>
                             </div>
                           </div>
                           <div className="sim-bottom-split">
                             <div className="sim-panel">
-                              <h5><i className="fa-solid fa-clipboard-check" style={{ color: '#ea580c' }}></i> Next Steps & Launch Checklist</h5>
-                              <div className="sim-check-row done"><i className="fa-solid fa-circle-check"></i> Brand identity & domain verified</div>
-                              <div className="sim-check-row done"><i className="fa-solid fa-circle-check"></i> Storefront catalog & FAQ tabs published</div>
-                              <div className="sim-check-row"><i className="fa-regular fa-circle"></i> Dispatch 6 pending COD customer orders</div>
+                              <h5><FontAwesomeIcon icon={faCircleCheck} style={{ color: '#ea580c' }} /> Next Steps & Launch Checklist</h5>
+                              <div className="sim-check-row done"><FontAwesomeIcon icon={faCheck} /> Brand identity & domain verified</div>
+                              <div className="sim-check-row done"><FontAwesomeIcon icon={faCheck} /> Storefront catalog & FAQ tabs published</div>
+                              <div className="sim-check-row"><FontAwesomeIcon icon={faCircleCheck} /> Dispatch 6 pending COD customer orders</div>
                             </div>
                             <div className="sim-panel">
-                              <h5><i className="fa-solid fa-store" style={{ color: '#4f46e5' }}></i> Brand & Ideal Customer</h5>
+                              <h5><FontAwesomeIcon icon={faStore} style={{ color: '#4f46e5' }} /> Brand & Ideal Customer</h5>
                               <p style={{ margin: '0 0 10px', fontSize: '12px', color: '#475569' }}>Modern digital products & accessories tailored for everyday professionals.</p>
                               <div style={{ display: 'flex', gap: '8px' }}>
                                 <span className="sim-color-chip"><i style={{ background: '#2563eb' }}></i> #2563EB</span>
@@ -403,7 +403,7 @@ const Homepage = () => {
                           </div>
                           <div className="sim-bottom-split">
                             <div className="sim-panel">
-                              <h5><i className="fa-solid fa-sliders" style={{ color: '#2563eb' }}></i> Live Theme & Hero Controls</h5>
+                              <h5><FontAwesomeIcon icon={faSliders} style={{ color: '#2563eb' }} /> Live Theme & Hero Controls</h5>
                               <div className="sim-input-mock">Subdomain: <strong>obsidian.launchaxis.com</strong></div>
                               <div className="sim-input-mock">Headline: <strong>Crafted for Everyday Excellence</strong></div>
                               <div className="sim-input-mock">Sections: <strong>Hero, Catalog, Best Sellers, FAQs, Policies</strong></div>
@@ -434,7 +434,7 @@ const Homepage = () => {
                             <div className="sim-metric-card"><span>Payables</span><strong style={{ color: '#4f46e5' }}>Rs 0</strong></div>
                           </div>
                           <div className="sim-panel">
-                            <h5><i className="fa-solid fa-receipt" style={{ color: '#059669' }}></i> Recent Ledger Entries</h5>
+                            <h5><FontAwesomeIcon icon={faReceipt} style={{ color: '#059669' }} /> Recent Ledger Entries</h5>
                             <div className="sim-check-row done"><span>Cash Receipt • Website Order #1042</span><strong style={{ color: '#059669', marginLeft: 'auto' }}>+Rs 12,500</strong></div>
                             <div className="sim-check-row done"><span>Cash Payment • Packaging & Courier Batch</span><strong style={{ color: '#dc2626', marginLeft: 'auto' }}>-Rs 3,200</strong></div>
                           </div>
@@ -452,7 +452,7 @@ const Homepage = () => {
                           </div>
                           <div className="sim-bottom-split">
                             <div className="sim-panel">
-                              <h5><i className="fa-solid fa-wand-magic-sparkles" style={{ color: '#4f46e5' }}></i> AI Name, Domain & SVG Logo</h5>
+                              <h5><FontAwesomeIcon icon={faWandMagicSparkles} style={{ color: '#4f46e5' }} /> AI Name, Domain & SVG Logo</h5>
                               <div className="sim-input-mock">Domain Status: <strong style={{ color: '#059669' }}>obsidianstore.com (Available)</strong></div>
                               <div className="sim-input-mock">Typography: <strong>Inter / Playfair Display</strong></div>
                             </div>
@@ -485,48 +485,44 @@ const Homepage = () => {
 
         <div className="bento-feature-grid">
           
-          {/* Bento Card 1 */}
           <div className="bento-feature-card span-two">
-            <div className="bf-icon-box bg-blue"><i className="fa-solid fa-chart-pie"></i></div>
+            <div className="bf-icon-box bg-blue"><FontAwesomeIcon icon={faChartPie} /></div>
             <span className="bf-tag" style={{ color: '#2563eb' }}>DAILY COMMAND CENTER</span>
             <h3>Crystal-clear visibility from day one.</h3>
             <p>Track your product sales, available cash in hand, pending orders, and step-by-step launch tasks in a clean interface anyone can understand at a single glance.</p>
             <div className="bf-mini-tags">
-              <span><i className="fa-solid fa-check"></i> Guided Founder Checklist</span>
-              <span><i className="fa-solid fa-check"></i> Low-Stock Warnings</span>
-              <span><i className="fa-solid fa-check"></i> Live Order Counters</span>
+              <span><FontAwesomeIcon icon={faCheck} /> Guided Founder Checklist</span>
+              <span><FontAwesomeIcon icon={faCheck} /> Low-Stock Warnings</span>
+              <span><FontAwesomeIcon icon={faCheck} /> Live Order Counters</span>
             </div>
           </div>
 
-          {/* Bento Card 2 */}
           <div className="bento-feature-card">
-            <div className="bf-icon-box bg-orange"><i className="fa-solid fa-calculator"></i></div>
+            <div className="bf-icon-box bg-orange"><FontAwesomeIcon icon={faReceipt} /></div>
             <span className="bf-tag" style={{ color: '#ea580c' }}>CHARTERED-GRADE LEDGER</span>
             <h3>Bookkeeping & Landed Cost Calculator.</h3>
             <p>Separate cash receipts from credit invoices cleanly. Calculate true unit landed cost (base cost + batch shipping) so you know your exact profit margin before selling.</p>
             <div className="bf-stat-callout">
-              <span> Print-ready PDF Account Statements</span>
+              <span><FontAwesomeIcon icon={faCheckCircle} /> Print-ready PDF Account Statements</span>
             </div>
           </div>
 
-          {/* Bento Card 3 */}
           <div className="bento-feature-card">
-            <div className="bf-icon-box bg-indigo"><i className="fa-solid fa-palette"></i></div>
+            <div className="bf-icon-box bg-indigo"><FontAwesomeIcon icon={faWandMagicSparkles} /></div>
             <span className="bf-tag" style={{ color: '#4f46e5' }}>AI BRANDING STUDIO</span>
             <h3>Name, domain check, logo & copywriter.</h3>
             <p>Generate punchy brand names, verify live `.com` and `.store` domain availability via WHOIS, design scalable vector logos, and draft SEO copy in seconds.</p>
           </div>
 
-          {/* Bento Card 4 */}
           <div className="bento-feature-card span-two">
-            <div className="bf-icon-box bg-emerald"><i className="fa-solid fa-globe"></i></div>
+            <div className="bf-icon-box bg-emerald"><FontAwesomeIcon icon={faGlobe} /></div>
             <span className="bf-tag" style={{ color: '#059669' }}>DUAL WEBSITE ENGINE</span>
             <h3>Built for both Product Stores and Service Agencies.</h3>
             <p>Whether you sell physical items with size/color variants and Cash on Delivery, or run an agency showcasing case study portfolios and capturing client leads, LaunchAxis adapts your website automatically.</p>
             <div className="bf-mini-tags">
-              <span><i className="fa-solid fa-check"></i> Product Info & FAQ Accordions</span>
-              <span><i className="fa-solid fa-check"></i> Agency Case Study Modals</span>
-              <span><i className="fa-solid fa-check"></i> Auto-Synced Legal & Shipping Policies</span>
+              <span><FontAwesomeIcon icon={faCheck} /> Product Info & FAQ Accordions</span>
+              <span><FontAwesomeIcon icon={faCheck} /> Agency Case Study Modals</span>
+              <span><FontAwesomeIcon icon={faCheck} /> Auto-Synced Legal & Shipping Policies</span>
             </div>
           </div>
 
@@ -534,7 +530,7 @@ const Homepage = () => {
       </section>
 
       {/* =================================================================
-          4. DUAL WEBSITE SHOWCASE (PRODUCT STORE VS SERVICE PORTFOLIO)
+          4. DUAL WEBSITE SHOWCASE
          ================================================================= */}
       <section id="website-showcase" className="section-block bg-slate-soft">
         <div className="section-header-center">
@@ -545,33 +541,31 @@ const Homepage = () => {
 
         <div className="dual-template-grid">
           
-          {/* E-Commerce Card */}
           <div className="template-showcase-card">
             <div className="ts-header">
-              <span className="ts-badge badge-emerald"><i className="fa-solid fa-bag-shopping"></i> E-Commerce Mode</span>
+              <span className="ts-badge badge-emerald"><FontAwesomeIcon icon={faBagShopping} /> E-Commerce Mode</span>
               <h3>Complete Retail Storefront</h3>
               <p>Designed for clothing, perfume, skincare, electronics, and retail brands.</p>
             </div>
             <ul className="ts-checklist">
-              <li><i className="fa-solid fa-circle-check" style={{ color: '#059669' }}></i> Interactive Product Quick-View Modal with multi-photo gallery</li>
-              <li><i className="fa-solid fa-circle-check" style={{ color: '#059669' }}></i> Custom Size, Color & Volume variant selectors</li>
-              <li><i className="fa-solid fa-circle-check" style={{ color: '#059669' }}></i> Expandable Ingredients, Benefits, Size Guide & FAQ tabs</li>
-              <li><i className="fa-solid fa-circle-check" style={{ color: '#059669' }}></i> Slide-out Shopping Bag with Free Shipping progress bar & COD Checkout</li>
+              <li><FontAwesomeIcon icon={faCircleCheck} style={{ color: '#059669' }} /> Interactive Product Quick-View Modal with multi-photo gallery</li>
+              <li><FontAwesomeIcon icon={faCircleCheck} style={{ color: '#059669' }} /> Custom Size, Color & Volume variant selectors</li>
+              <li><FontAwesomeIcon icon={faCircleCheck} style={{ color: '#059669' }} /> Expandable Ingredients, Benefits, Size Guide & FAQ tabs</li>
+              <li><FontAwesomeIcon icon={faCircleCheck} style={{ color: '#059669' }} /> Slide-out Shopping Bag with Free Shipping progress bar & COD Checkout</li>
             </ul>
           </div>
 
-          {/* Service Agency Card */}
           <div className="template-showcase-card">
             <div className="ts-header">
-              <span className="ts-badge badge-indigo"><i className="fa-solid fa-briefcase"></i> Service & Agency Mode</span>
+              <span className="ts-badge badge-indigo"><FontAwesomeIcon icon={faBriefcase} /> Service & Agency Mode</span>
               <h3>Client Portfolio & Lead Hub</h3>
               <p>Designed for software houses, design studios, consultants, and real estate firms.</p>
             </div>
             <ul className="ts-checklist">
-              <li><i className="fa-solid fa-circle-check" style={{ color: '#4f46e5' }}></i> Service Category cards linked directly to portfolio case studies</li>
-              <li><i className="fa-solid fa-circle-check" style={{ color: '#4f46e5' }}></i> Full Case Study Modal with client name, deliverables tags & results</li>
-              <li><i className="fa-solid fa-circle-check" style={{ color: '#4f46e5' }}></i> Leadership Team showcase & "Why Choose Us" strength highlights</li>
-              <li><i className="fa-solid fa-circle-check" style={{ color: '#4f46e5' }}></i> Direct Consultation & Lead Capture form synced to your CRM tab</li>
+              <li><FontAwesomeIcon icon={faCircleCheck} style={{ color: '#4f46e5' }} /> Service Category cards linked directly to portfolio case studies</li>
+              <li><FontAwesomeIcon icon={faCircleCheck} style={{ color: '#4f46e5' }} /> Full Case Study Modal with client name, deliverables tags & results</li>
+              <li><FontAwesomeIcon icon={faCircleCheck} style={{ color: '#4f46e5' }} /> Leadership Team showcase & "Why Choose Us" strength highlights</li>
+              <li><FontAwesomeIcon icon={faCircleCheck} style={{ color: '#4f46e5' }} /> Direct Consultation & Lead Capture form synced to your CRM tab</li>
             </ul>
           </div>
 
@@ -591,7 +585,7 @@ const Homepage = () => {
             </p>
             <div className="axis-banner-buttons">
               <button onClick={handleAxisClick} className="btn-axis-primary">
-                <i className="fa-solid fa-robot"></i> Launch Axis AI Assistant
+                <FontAwesomeIcon icon={faRobot} /> Launch Axis AI Assistant
               </button>
               <button onClick={() => navigate('/start-building')} className="btn-axis-secondary">
                 Build My Workspace &rarr;
@@ -601,10 +595,10 @@ const Homepage = () => {
 
           <div className="axis-chat-preview-card">
             <div className="acp-header">
-              <div className="acp-avatar"><i className="fa-solid fa-robot"></i></div>
+              <div className="acp-avatar"><FontAwesomeIcon icon={faRobot} /></div>
               <div>
                 <strong>Axis AI Co-Founder</strong>
-                <span><i className="fa-solid fa-circle" style={{ color: '#10b981', fontSize: '7px' }}></i> Online & Ready</span>
+                <span><FontAwesomeIcon icon={faCircleCheck} style={{ color: '#10b981', fontSize: '9px' }} /> Online & Ready</span>
               </div>
             </div>
             <div className="acp-bubble user">
@@ -630,7 +624,7 @@ const Homepage = () => {
         <div className="four-steps-grid">
           <div className="step-bento-card">
             <div className="step-top-row">
-              <span className="step-icon-badge bg-blue"><i className="fa-solid fa-lightbulb"></i></span>
+              <span className="step-icon-badge bg-blue"><FontAwesomeIcon icon={faLightbulb} /></span>
               <span className="step-num">STEP 01</span>
             </div>
             <h4>Describe your idea</h4>
@@ -639,7 +633,7 @@ const Homepage = () => {
 
           <div className="step-bento-card">
             <div className="step-top-row">
-              <span className="step-icon-badge bg-indigo"><i className="fa-solid fa-wand-magic-sparkles"></i></span>
+              <span className="step-icon-badge bg-indigo"><FontAwesomeIcon icon={faWandMagicSparkles} /></span>
               <span className="step-num">STEP 02</span>
             </div>
             <h4>Generate your brand</h4>
@@ -648,7 +642,7 @@ const Homepage = () => {
 
           <div className="step-bento-card">
             <div className="step-top-row">
-              <span className="step-icon-badge bg-emerald"><i className="fa-solid fa-globe"></i></span>
+              <span className="step-icon-badge bg-emerald"><FontAwesomeIcon icon={faGlobe} /></span>
               <span className="step-num">STEP 03</span>
             </div>
             <h4>Publish your website</h4>
@@ -657,7 +651,7 @@ const Homepage = () => {
 
           <div className="step-bento-card">
             <div className="step-top-row">
-              <span className="step-icon-badge bg-orange"><i className="fa-solid fa-chart-line"></i></span>
+              <span className="step-icon-badge bg-orange"><FontAwesomeIcon icon={faChartLine} /></span>
               <span className="step-num">STEP 04</span>
             </div>
             <h4>Manage orders & cash</h4>
@@ -678,7 +672,6 @@ const Homepage = () => {
 
         <div className="pricing-bento-grid">
           
-          {/* Cadet */}
           <div className="pricing-bento-card">
             <div className="p-tier-badge">CADET TIER</div>
             <div className="p-price">PKR 0 <span>/ forever</span></div>
@@ -687,14 +680,13 @@ const Homepage = () => {
               Start Free Forever &rarr;
             </button>
             <ul className="p-feature-list">
-              <li><i className="fa-solid fa-check" style={{ color: '#059669' }}></i> AI Business & Brand Architecture</li>
-              <li><i className="fa-solid fa-check" style={{ color: '#059669' }}></i> 1 Live Storefront or Agency Site</li>
-              <li><i className="fa-solid fa-check" style={{ color: '#059669' }}></i> 50 Monthly Financial Ledger Entries</li>
-              <li><i className="fa-solid fa-check" style={{ color: '#059669' }}></i> 10 Free AI Studio Generations</li>
+              <li><FontAwesomeIcon icon={faCheck} style={{ color: '#059669' }} /> AI Business & Brand Architecture</li>
+              <li><FontAwesomeIcon icon={faCheck} style={{ color: '#059669' }} /> 1 Live Storefront or Agency Site</li>
+              <li><FontAwesomeIcon icon={faCheck} style={{ color: '#059669' }} /> 50 Monthly Financial Ledger Entries</li>
+              <li><FontAwesomeIcon icon={faCheck} style={{ color: '#059669' }} /> 10 Free AI Studio Generations</li>
             </ul>
           </div>
 
-          {/* Pilot (Highlighted) */}
           <div className="pricing-bento-card featured-plan">
             <div className="popular-pill-tag">MOST POPULAR</div>
             <div className="p-tier-badge" style={{ color: '#2563eb' }}>PILOT TIER</div>
@@ -704,14 +696,13 @@ const Homepage = () => {
               Start Free Trial &rarr;
             </button>
             <ul className="p-feature-list">
-              <li><i className="fa-solid fa-check" style={{ color: '#2563eb' }}></i> Everything in Cadet Tier</li>
-              <li><i className="fa-solid fa-check" style={{ color: '#2563eb' }}></i> Unlimited Collections & Portfolio Items</li>
-              <li><i className="fa-solid fa-check" style={{ color: '#2563eb' }}></i> Unlimited Bookkeeping & PDF Statements</li>
-              <li><i className="fa-solid fa-check" style={{ color: '#2563eb' }}></i> Unlimited AI Copywriting & Logo Tools</li>
+              <li><FontAwesomeIcon icon={faCheck} style={{ color: '#2563eb' }} /> Everything in Cadet Tier</li>
+              <li><FontAwesomeIcon icon={faCheck} style={{ color: '#2563eb' }} /> Unlimited Collections & Portfolio Items</li>
+              <li><FontAwesomeIcon icon={faCheck} style={{ color: '#2563eb' }} /> Unlimited Bookkeeping & PDF Statements</li>
+              <li><FontAwesomeIcon icon={faCheck} style={{ color: '#2563eb' }} /> Unlimited AI Copywriting & Logo Tools</li>
             </ul>
           </div>
 
-          {/* Commander */}
           <div className="pricing-bento-card">
             <div className="p-tier-badge" style={{ color: '#ea580c' }}>COMMANDER TIER</div>
             <div className="p-price">PKR 15,000 <span>/ month</span></div>
@@ -720,10 +711,10 @@ const Homepage = () => {
               Get Started &rarr;
             </button>
             <ul className="p-feature-list">
-              <li><i className="fa-solid fa-check" style={{ color: '#ea580c' }}></i> Everything in Pilot Tier</li>
-              <li><i className="fa-solid fa-check" style={{ color: '#ea580c' }}></i> Multi-Brand Workspace Support</li>
-              <li><i className="fa-solid fa-check" style={{ color: '#ea580c' }}></i> Priority Courier & Domain Onboarding</li>
-              <li><i className="fa-solid fa-check" style={{ color: '#ea580c' }}></i> Dedicated Account Support</li>
+              <li><FontAwesomeIcon icon={faCheck} style={{ color: '#ea580c' }} /> Everything in Pilot Tier</li>
+              <li><FontAwesomeIcon icon={faCheck} style={{ color: '#ea580c' }} /> Multi-Brand Workspace Support</li>
+              <li><FontAwesomeIcon icon={faCheck} style={{ color: '#ea580c' }} /> Priority Courier & Domain Onboarding</li>
+              <li><FontAwesomeIcon icon={faCheck} style={{ color: '#ea580c' }} /> Dedicated Account Support</li>
             </ul>
           </div>
 
@@ -731,7 +722,7 @@ const Homepage = () => {
       </section>
 
       {/* =================================================================
-          8. INTERACTIVE FAQ ACCORDION
+          8. FAQ ACCORDION
          ================================================================= */}
       <section id="faq" className="section-block bg-slate-soft">
         <div className="section-header-center">
@@ -750,7 +741,7 @@ const Homepage = () => {
                   onClick={() => setOpenFaqIndex(isOpen ? -1 : idx)}
                 >
                   <span>{item.q}</span>
-                  <i className={`fa-solid ${isOpen ? 'fa-minus' : 'fa-plus'}`}></i>
+                  <FontAwesomeIcon icon={isOpen ? faMinus : faPlus} />
                 </button>
                 {isOpen && (
                   <div className="faq-bento-answer">
@@ -764,7 +755,7 @@ const Homepage = () => {
       </section>
 
       {/* =================================================================
-          9. FINAL CTA & FOUNDER FEEDBACK CARD
+          9. FINAL CTA & FOUNDER FEEDBACK
          ================================================================= */}
       <section className="section-block">
         <div className="final-cta-bento">
@@ -775,7 +766,7 @@ const Homepage = () => {
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
               <button onClick={() => navigate('/start-building')} className="btn-hero-primary">
                 <span>Start building — it's free</span>
-                <i className="fa-solid fa-arrow-right"></i>
+                <FontAwesomeIcon icon={faArrowRight} />
               </button>
               <button onClick={() => navigate('/auth')} className="btn-hero-secondary">
                 Create Account
@@ -784,11 +775,11 @@ const Homepage = () => {
           </div>
 
           <div className="final-cta-feedback">
-            <h4><i className="fa-solid fa-comment-dots" style={{ color: '#2563eb' }}></i> Have a feature request or feedback?</h4>
+            <h4><FontAwesomeIcon icon={faCommentDots} style={{ color: '#2563eb' }} /> Have a feature request or feedback?</h4>
             <p>Tell us what would make your launch experience even better.</p>
             {reviewSubmitted ? (
               <div className="feedback-success-box">
-                <i className="fa-solid fa-circle-check"></i> Thank you! Your feedback has been recorded.
+                <FontAwesomeIcon icon={faCircleCheck} /> Thank you! Your feedback has been recorded.
               </div>
             ) : (
               <form 
@@ -807,13 +798,13 @@ const Homepage = () => {
       </section>
 
       {/* =================================================================
-          10. CLEAN ENTERPRISE FOOTER
+          10. ENTERPRISE FOOTER
          ================================================================= */}
       <footer className="saas-footer">
         <div className="saas-footer-grid">
           <div className="footer-brand-col">
             <div className="nav-brand" style={{ marginBottom: '12px' }}>
-              <div className="brand-logo-badge"><i className="fa-solid fa-layer-group"></i></div>
+              <div className="brand-logo-badge"><FontAwesomeIcon icon={faLayerGroup} /></div>
               <span className="brand-name-text" style={{ color: '#0f172a' }}>LaunchAxis</span>
             </div>
             <p>The unified AI business operating system for launching and scaling modern e-commerce stores and service agencies.</p>
@@ -851,7 +842,7 @@ const Homepage = () => {
       </footer>
 
       {/* =================================================================
-          11. UPGRADED FLOATING AXIS AI CHATBOT LAUNCHER
+          11. UPGRADED FLOATING AXIS AI CHATBOT LAUNCHER (WITH CLEAR ROBOT ICON)
          ================================================================= */}
       <button 
         type="button"
@@ -860,15 +851,15 @@ const Homepage = () => {
         title="Ask Axis AI Co-Founder"
       >
         <div className="axis-bot-avatar">
-          <i className="fa-solid fa-robot"></i>
+          <FontAwesomeIcon icon={faRobot} />
           <span className="axis-online-dot"></span>
         </div>
         <div className="axis-bot-text">
           <span className="axis-bot-title">Ask Axis AI</span>
-          <span className="axis-bot-sub">24/7 Business Co-Founder</span>
+          <span className="axis-bot-sub">24/7 Co-Founder</span>
         </div>
         <div className="axis-bot-sparkle">
-          <i className="fa-solid fa-wand-magic-sparkles"></i>
+          <FontAwesomeIcon icon={faWandMagicSparkles} />
         </div>
       </button>
 
