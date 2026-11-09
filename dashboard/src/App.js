@@ -91,7 +91,7 @@ const AdminPanel = ({
           {activeSection === 'branding' && features?.wantsBranding && <Branding branding={branding} setBranding={setBranding} />}
           {activeSection === 'website' && features?.wantsWebsite && <WebsiteEditor branding={branding} products={products} siteConfig={siteConfig} setSiteConfig={setSiteConfig} isService={isService} />}
           {activeSection === 'products' && <Products siteConfig={siteConfig} />}
-          {activeSection === 'projects' && <Projects />}
+          {activeSection === 'projects' && <Projects siteConfig={siteConfig} />}
           {activeSection === 'leads' && <Leads />}
           {activeSection === 'orders' && <Orders orders={orders} updateOrderStatus={updateOrderStatus} />}
           {activeSection === 'settings' && <Settings branding={branding} setSiteConfig={setSiteConfig} siteConfig={siteConfig}/>} 
@@ -313,10 +313,9 @@ function App() {
         status: 'New',
         timestamp: Date.now()
       });
-      alert("Thank you! Your inquiry has been submitted.");
     } catch (error) {
       console.error("Error saving lead:", error);
-      alert("Failed to submit inquiry.");
+      throw error;
     }
   };
 
@@ -345,10 +344,9 @@ function App() {
         
         setCart([]); 
         setIsCartOpen(false); 
-        alert("Order Placed Successfully!");
     } catch (error) {
         console.error("Error saving order:", error);
-        alert("Failed to place order.");
+        throw error;
     }
   };
 
@@ -395,7 +393,7 @@ function App() {
         
         <Route path="/store/catalog" element={
           <>
-            <ShopCartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} updateQty={updateQty} removeFromCart={removeFromCart} />
+            <ShopCartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} updateQty={updateQty} removeFromCart={removeFromCart} siteConfig={siteConfig} />
             <ShopCatalog branding={branding} products={products} cartCount={cart.reduce((sum, item) => sum + item.qty, 0)} addToCart={addToCart} siteConfig={siteConfig} openCart={() => setIsCartOpen(true)} />
           </>
         } />
@@ -410,7 +408,7 @@ function App() {
              />
           ) : (
             <>
-              <ShopCartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} updateQty={updateQty} removeFromCart={removeFromCart} />
+              <ShopCartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} updateQty={updateQty} removeFromCart={removeFromCart} siteConfig={siteConfig} />
               <ShopHome branding={branding} products={products} cartCount={cart.reduce((sum, item) => sum + item.qty, 0)} addToCart={addToCart} siteConfig={siteConfig} openCart={() => setIsCartOpen(true)} />
             </>
           )

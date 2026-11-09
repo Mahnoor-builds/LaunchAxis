@@ -2,6 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, updateProfile } from 'firebase/auth';
 import { auth } from '../../firebaseConfig';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faLayerGroup, faUser, faEnvelope, faLock, faShieldHalved, 
+  faArrowRight, faSpinner, faCheckCircle, faCircle, 
+  faWandMagicSparkles, faStore, faWallet, faChartPie, faArrowLeft
+} from '@fortawesome/free-solid-svg-icons';
 import './Auth.css';
 
 const Auth = () => {
@@ -17,6 +23,11 @@ const Auth = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+  // Live visual check helpers (purely visual, does not alter validation logic)
+  const hasMinLen = formData.password.length >= 8;
+  const hasUpper = /[A-Z]/.test(formData.password);
+  const hasNumAndSym = /\d/.test(formData.password) && /[@$!%*?&]/.test(formData.password);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -79,72 +90,97 @@ const Auth = () => {
 
   return (
     <div className="auth-wrapper split-layout">
-      {/* LEFT PANEL: FORM */}
+      
+      {/* LEFT PANEL: EXECUTIVE SAAS SIGNUP FORM */}
       <div className="form-side">
         <div className="form-container">
-          <div className="brand-logo">
-            <i className="fa-solid fa-rocket"></i> LaunchAxis
+          
+          <div className="auth-top-nav">
+            <Link to="/" className="brand-logo">
+              <span className="brand-logo-badge">
+                <FontAwesomeIcon icon={faLayerGroup} />
+              </span>
+              <span>LaunchAxis</span>
+            </Link>
+            <Link to="/" className="back-home-pill">
+              <FontAwesomeIcon icon={faArrowLeft} /> Home
+            </Link>
           </div>
 
           <div className="form-header">
-            <h1>Sign up for LaunchAxis</h1>
-            <p>Create your founder profile to access the AI builder.</p>
+            <span className="auth-eyebrow-badge">FOUNDER ONBOARDING</span>
+            <h1>Create your account</h1>
+            <p>Set up your founder profile to launch your brand, website, and financial workspace.</p>
           </div>
 
-          <button className="google-btn" onClick={handleGoogleSignIn}>
+          <button type="button" className="google-btn" onClick={handleGoogleSignIn}>
             <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" />
-            Continue with Google
+            <span>Continue with Google</span>
           </button>
 
-          <div className="divider">Or register with email</div>
+          <div className="divider">Or register with work email</div>
 
           <form onSubmit={handleSignup} autoComplete="off">
             <div className="input-group">
-              <label>Full Name</label>
+              <label>
+                <FontAwesomeIcon icon={faUser} className="label-icon icon-blue" /> Full Name
+              </label>
               <input 
                 type="text" 
                 name="fullName" 
                 value={formData.fullName} 
                 onChange={handleInputChange} 
-                placeholder="e.g. John" 
+                placeholder="e.g. Mahnoor Naveed" 
                 required 
                 autoComplete="off"
               />
             </div>
             
             <div className="input-group">
-              <label>Email Address</label>
+              <label>
+                <FontAwesomeIcon icon={faEnvelope} className="label-icon icon-emerald" /> Email Address
+              </label>
               <input 
                 type="email" 
                 name="email" 
                 value={formData.email} 
                 onChange={handleInputChange} 
-                placeholder="ceo@startup.com" 
+                placeholder="founder@yourcompany.com" 
                 required 
                 autoComplete="off"
               />
             </div>
             
             <div className="input-group">
-              <label>Secure Password</label>
+              <label>
+                <FontAwesomeIcon icon={faLock} className="label-icon icon-indigo" /> Secure Password
+              </label>
               <input 
                 type="password" 
                 name="password" 
                 value={formData.password} 
                 onChange={handleInputChange} 
-                placeholder="Create a password" 
+                placeholder="Create a strong password" 
                 required 
                 autoComplete="new-password"
               />
               <ul className="password-rules">
-                <li><i className="fa-solid fa-circle"></i> Minimum 8 characters</li>
-                <li><i className="fa-solid fa-circle"></i> At least 1 uppercase letter</li>
-                <li><i className="fa-solid fa-circle"></i> At least 1 number and 1 symbol</li>
+                <li className={hasMinLen ? 'rule-met' : ''}>
+                  <FontAwesomeIcon icon={hasMinLen ? faCheckCircle : faCircle} /> Minimum 8 characters
+                </li>
+                <li className={hasUpper ? 'rule-met' : ''}>
+                  <FontAwesomeIcon icon={hasUpper ? faCheckCircle : faCircle} /> At least 1 uppercase letter
+                </li>
+                <li className={hasNumAndSym ? 'rule-met' : ''}>
+                  <FontAwesomeIcon icon={hasNumAndSym ? faCheckCircle : faCircle} /> At least 1 number & 1 symbol (@$!%*?&)
+                </li>
               </ul>
             </div>
             
             <div className="input-group">
-              <label>Confirm Password</label>
+              <label>
+                <FontAwesomeIcon icon={faShieldHalved} className="label-icon icon-orange" /> Confirm Password
+              </label>
               <input 
                 type="password" 
                 name="confirmPassword" 
@@ -154,7 +190,7 @@ const Auth = () => {
                 required 
                 autoComplete="new-password"
               />
-              {errorMsg && <div className="error-msg" style={{ display: 'block' }}>{errorMsg}</div>}
+              {errorMsg && <div className="error-msg">{errorMsg}</div>}
             </div>
 
             <div className="legal-check">
@@ -172,30 +208,80 @@ const Auth = () => {
             
             <button type="submit" className="btn-primary" disabled={isSubmitting}>
               {isSubmitting ? (
-                <><i className="fa-solid fa-circle-notch fa-spin"></i> Initializing...</>
+                <><FontAwesomeIcon icon={faSpinner} spin /> Initializing Workspace...</>
               ) : (
-                <>Initialize Workspace <i className="fa-solid fa-arrow-right"></i></>
+                <><span>Initialize Workspace</span> <FontAwesomeIcon icon={faArrowRight} className="btn-arrow-orange" /></>
               )}
             </button>
           </form>
 
           <div className="auth-footer">
-            Already have an account? <Link to="/login">Log in here</Link>
+            Already have an account? <Link to="/login">Log in to your workspace</Link>
           </div>
         </div>
       </div>
 
-      {/* RIGHT PANEL: VISUALS */}
+      {/* RIGHT PANEL: BENTO SAAS WORKSPACE SHOWCASE */}
       <div className="visual-side">
-        <div className="cosmic-overlay"></div>
-        <div className="planet">
-          <div className="planet-ring"></div>
-        </div>
-        <div className="visual-content">
-          <h2>From idea to orbit.</h2>
-          <p>Join a global network of founders. LaunchAxis automatically architects your brand, web storefront, and financial ledger in minutes.</p>
+        <div className="bento-showcase-container">
+          
+          <div className="visual-header-block">
+            <span className="visual-eyebrow">ALL-IN-ONE BUSINESS OS</span>
+            <h2>Everything you need to launch and scale, ready on day one.</h2>
+            <p>Join ambitious founders building their brand identity, live storefront, and financial ledgers in one unified workspace.</p>
+          </div>
+
+          <div className="visual-bento-grid">
+            <div className="visual-bento-card">
+              <div className="vb-icon badge-indigo">
+                <FontAwesomeIcon icon={faWandMagicSparkles} />
+              </div>
+              <div>
+                <h4>AI Branding Studio</h4>
+                <p>Generate names, check live domain availability, and design vector logos.</p>
+              </div>
+            </div>
+
+            <div className="visual-bento-card">
+              <div className="vb-icon badge-emerald">
+                <FontAwesomeIcon icon={faStore} />
+              </div>
+              <div>
+                <h4>Store & Agency Websites</h4>
+                <p>Launch a retail store with COD checkout or a client service portfolio.</p>
+              </div>
+            </div>
+
+            <div className="visual-bento-card">
+              <div className="vb-icon badge-blue">
+                <FontAwesomeIcon icon={faWallet} />
+              </div>
+              <div>
+                <h4>Financial & Stock Ledger</h4>
+                <p>Track cash flow, invoices, landed unit costs, and print PDF statements.</p>
+              </div>
+            </div>
+
+            <div className="visual-bento-card">
+              <div className="vb-icon badge-orange">
+                <FontAwesomeIcon icon={faChartPie} />
+              </div>
+              <div>
+                <h4>Daily Command Center</h4>
+                <p>Follow a step-by-step launch checklist and monitor live orders.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="visual-trust-bar">
+            <span><FontAwesomeIcon icon={faCheckCircle} className="trust-check" /> Free Forever Cadet Tier</span>
+            <span><FontAwesomeIcon icon={faCheckCircle} className="trust-check" /> Instant Cloud Sync</span>
+            <span><FontAwesomeIcon icon={faCheckCircle} className="trust-check" /> No Coding Required</span>
+          </div>
+
         </div>
       </div>
+
     </div>
   );
 };
